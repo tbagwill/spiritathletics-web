@@ -21,7 +21,7 @@ export default function Staff() {
     {
       name: 'Candice Vargas',
       title: 'Senior Coach, Social Media',
-      description: 'Candice combines her coaching expertise with social media management, helping showcase our athletes\' achievements and keeping our community connected.',
+      description: 'Candice combines her coaching expertise with social media management, helping showcase our athletes&apos; achievements and keeping our community connected.',
       image: '/images/staff/candice-placeholder.jpg'
     },
     {
@@ -45,7 +45,7 @@ export default function Staff() {
     {
       name: 'Bethany Snow',
       title: 'Senior Coach',
-      description: 'Bethany\'s coaching philosophy focuses on building confidence and skills. She creates a supportive environment where athletes can grow and succeed.',
+      description: 'Bethany&apos;s coaching philosophy focuses on building confidence and skills. She creates a supportive environment where athletes can grow and succeed.',
       image: '/images/staff/bethany-placeholder.jpg'
     },
     {
@@ -63,7 +63,7 @@ export default function Staff() {
     {
       name: 'Aniya Willis',
       title: 'Senior Coach',
-      description: 'Aniya\'s positive attitude and coaching skills inspire athletes to reach new heights. She is dedicated to fostering growth and teamwork.',
+      description: 'Aniya&apos;s positive attitude and coaching skills inspire athletes to reach new heights. She is dedicated to fostering growth and teamwork.',
       image: '/images/staff/aniya-placeholder.jpg'
     },
     {
@@ -205,7 +205,7 @@ export default function Staff() {
             Join Our Team
           </h2>
           <p className="text-xl text-gray-200 mb-8 leading-relaxed animate-fade-in-up delay-200">
-            Are you passionate about cheerleading and working with young athletes? We're always looking for dedicated individuals to join our Spirit Athletics family.
+            Are you passionate about cheerleading and working with young athletes? We&apos;re always looking for dedicated individuals to join our Spirit Athletics family.
           </p>
           <div className="flex justify-center animate-fade-in-up delay-300">
             <a 

@@ -101,7 +101,7 @@ export default function Programs() {
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Each program is carefully designed to provide age-appropriate training, skill development, 
-              and competitive opportunities that match your athlete's goals and experience level.
+              and competitive opportunities that match your athlete&apos;s goals and experience level.
             </p>
           </div>
 
@@ -177,7 +177,7 @@ export default function Programs() {
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Compare our programs to find the perfect fit for your athlete's skill level and goals.
+              Compare our programs to find the perfect fit for your athlete&apos;s skill level and goals.
             </p>
           </div>
 

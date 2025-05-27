@@ -20,7 +20,7 @@ export default function ParentPortal() {
             <span className="text-white"> Portal</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-300">
-            Access your athlete's information, schedules, payments, and more through our secure parent portal powered by iClassPro.
+            Access your athlete&apos;s information, schedules, payments, and more through our secure parent portal powered by iClassPro.
           </p>
         </div>
       </section>
@@ -35,7 +35,7 @@ export default function ParentPortal() {
           </h2>
           
           <p className="text-xl text-gray-600 mb-12 leading-relaxed animate-fade-in-up delay-200">
-            Log in to your iClassPro parent portal to manage your athlete's account, view schedules, make payments, and stay connected with Spirit Athletics.
+            Log in to your iClassPro parent portal to manage your athlete&apos;s account, view schedules, make payments, and stay connected with Spirit Athletics.
           </p>
 
           <div className="animate-fade-in-up delay-300">
@@ -159,7 +159,7 @@ export default function ParentPortal() {
             Ready to Access Your Portal?
           </h2>
           <p className="text-xl text-gray-200 mb-8 leading-relaxed animate-fade-in-up delay-200">
-            Stay connected with your athlete's cheerleading journey. Access schedules, make payments, and communicate with coaches all in one place.
+            Stay connected with your athlete&apos;s cheerleading journey. Access schedules, make payments, and communicate with coaches all in one place.
           </p>
           <div className="animate-fade-in-up delay-300">
             <a 

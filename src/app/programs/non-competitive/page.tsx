@@ -290,7 +290,7 @@ export default function NonCompetitiveProgram() {
       <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1, #000000)' }}>
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6 animate-fade-in-up">
-            Ready to Start Your Athlete's Cheerleading Journey?
+            Ready to Start Your Athlete&apos;s Cheerleading Journey?
           </h2>
           <p className="text-xl text-gray-200 mb-8 leading-relaxed animate-fade-in-up delay-200">
             Want to prepare for your next season? Contact us for information on tryouts and/or classes to get ready for our next season.

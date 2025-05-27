@@ -20,7 +20,7 @@ export default function Contact() {
             <span className="text-white"> Us</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-300">
-            Get in touch with Spirit Athletics. We're here to answer your questions and help your athlete begin their cheerleading journey.
+            Get in touch with Spirit Athletics. We&apos;re here to answer your questions and help your athlete begin their cheerleading journey.
           </p>
         </div>
       </section>
@@ -144,7 +144,7 @@ export default function Contact() {
               </span>
             </h2>
             <p className="text-xl text-gray-600 animate-fade-in-up delay-200">
-              Have questions about our programs? Ready to get started? We'd love to hear from you!
+              Have questions about our programs? Ready to get started? We&apos;d love to hear from you!
             </p>
           </div>
 
@@ -236,7 +236,7 @@ export default function Contact() {
                   rows={6}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 resize-vertical"
-                  placeholder="Tell us about your athlete's experience level, age, and what you're looking for..."
+                  placeholder="Tell us about your athlete&apos;s experience level, age, and what you&apos;re looking for..."
                 ></textarea>
               </div>
 
@@ -261,7 +261,7 @@ export default function Contact() {
             Ready to Get Started?
           </h2>
           <p className="text-xl text-gray-200 mb-8 leading-relaxed animate-fade-in-up delay-200">
-            Don't wait! Contact us today to learn more about our programs and how your athlete can join the Spirit Athletics family.
+            Don&apos;t wait! Contact us today to learn more about our programs and how your athlete can join the Spirit Athletics family.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-300">
             <a 

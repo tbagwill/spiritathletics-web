@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export default function About() {
   return (
     <div className="min-h-screen">
@@ -43,12 +41,8 @@ export default function About() {
                   Our journey has been one of growth, transformation, and an unwavering commitment to 
                   developing young athletes into confident, skilled cheerleaders.
                 </p>
-                <p>
-                  What started as a local cheerleading program has grown into a comprehensive athletic 
-                  organization that serves athletes at every level. From our non-competitive programs 
-                  that focus on building foundational skills and confidence, to our Elite All-Star 
-                  teams that compete at the highest levels, we've maintained our core mission: 
-                  to provide every athlete with the opportunity to reach their full potential.
+                <p className="text-xl text-gray-600 leading-relaxed animate-fade-in-up delay-200">
+                  What began as High Desert Cheer has evolved into Spirit Athletics, maintaining our commitment to excellence while expanding our programs. We&apos;ve built a reputation for developing not just skilled athletes, but confident, disciplined young people who carry these values into all areas of their lives.
                 </p>
                 <p>
                   The transition to Spirit Athletics marks not just a name change, but a renewed 

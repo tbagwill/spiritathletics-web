@@ -112,7 +112,7 @@ export default function Forms() {
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Important Notice</h3>
               <p className="text-gray-700">
-                All forms marked as "Required" must be completed and submitted before your athlete can participate in practices or competitions. 
+                All forms marked as &quot;Required&quot; must be completed and submitted before your athlete can participate in practices or competitions. 
                 Please ensure all information is accurate and up-to-date.
               </p>
             </div>
@@ -216,7 +216,7 @@ export default function Forms() {
                 3
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-4">Confirmation</h3>
-              <p className="text-gray-600">You'll receive confirmation once your forms have been processed and approved.</p>
+              <p className="text-gray-600">You&apos;ll receive confirmation once your forms have been processed and approved.</p>
             </div>
           </div>
         </div>
@@ -229,7 +229,7 @@ export default function Forms() {
             Need Help with Forms?
           </h2>
           <p className="text-xl text-gray-200 mb-8 leading-relaxed animate-fade-in-up delay-200">
-            If you have questions about any forms or need assistance completing them, don't hesitate to contact us.
+            If you have questions about any forms or need assistance completing them, don&apos;t hesitate to contact us.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-300">
             <a 
