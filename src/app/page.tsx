@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -18,10 +19,11 @@ export default function Home() {
               <span className="text-3xl mr-3 animate-bounce">📢</span>
               <div>
                 <h2 className="text-lg md:text-xl font-bold text-white mb-1">
-                  Important Announcements
+                  Tryouts are coming soon!
                 </h2>
                 <p className="text-white/90 text-sm md:text-base">
-                  Stay tuned for important updates about schedules, events, and team information!
+                  Tryouts for the 2025-2026 season from June 3rd - 7th. Placements announced June 8th. <br/>  
+                  <a href="/tryouts" className="text-blue-100 hover:text-blue-300">Click here for more information</a>
                 </p>
               </div>
             </div>
@@ -60,12 +62,12 @@ export default function Home() {
             for athletes of all levels, from non-competitive to Elite All-Star teams.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-500">
-            <button className="text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg animate-pulse-slow" style={{ background: 'linear-gradient(135deg, #0000FE, #0000CC)' }}>
+            <Link href="/programs" className="text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg animate-pulse-slow inline-block text-center" style={{ background: 'linear-gradient(135deg, #0000FE, #0000CC)' }}>
               View Programs
-            </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white transition-all duration-300 backdrop-blur-sm" style={{ '--hover-text-color': '#0000FE' } as React.CSSProperties}>
+            </Link>
+            <Link href="/contact" className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white transition-all duration-300 backdrop-blur-sm inline-block text-center hover:text-blue-600">
               Contact Us
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -135,12 +137,12 @@ export default function Home() {
             Discover the perfect program for your athlete and become part of the Spirit Athletics family.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg" style={{ background: 'linear-gradient(135deg, #0000FE, #0000CC)' }}>
+            <Link href="/programs" className="text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg inline-block text-center" style={{ background: 'linear-gradient(135deg, #0000FE, #0000CC)' }}>
               Explore Programs
-            </button>
-            <button className="border-2 text-black px-8 py-4 rounded-full font-semibold transition-all duration-300" style={{ borderColor: '#0000FE', '--hover-bg': '#0000FE' } as React.CSSProperties}>
+            </Link>
+            <Link href="/contact" className="border-2 text-black px-8 py-4 rounded-full font-semibold transition-all duration-300 inline-block text-center hover:bg-blue-600 hover:text-white" style={{ borderColor: '#0000FE' }}>
               Schedule a Visit
-            </button>
+            </Link>
           </div>
         </div>
       </section>

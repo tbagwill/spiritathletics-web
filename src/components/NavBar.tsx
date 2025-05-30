@@ -16,6 +16,7 @@ const NavBar = () => {
   };
 
   const navLinks = [
+    { href: '/tryouts', label: 'Tryouts', special: true },
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/programs', label: 'Programs' },
@@ -51,11 +52,17 @@ const NavBar = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group"
+                  className={
+                    link.special
+                      ? "text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 shadow-lg animate-pulse-slow border-2 border-blue-400"
+                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group"
+                  }
                   style={{ '--hover-color': '#0000FE' } as React.CSSProperties}
                 >
                   {link.label}
-                  <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-blue-800 group-hover:w-full group-hover:left-0 transition-all duration-300" style={{ background: 'linear-gradient(to right, #0000FE, #0000CC)' }}></span>
+                  {!link.special && (
+                    <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-blue-800 group-hover:w-full group-hover:left-0 transition-all duration-300" style={{ background: 'linear-gradient(to right, #0000FE, #0000CC)' }}></span>
+                  )}
                 </Link>
               ))}
             </div>
@@ -114,7 +121,11 @@ const NavBar = () => {
               key={link.href}
               href={link.href}
               onClick={closeMenu}
-              className="text-gray-700 hover:text-blue-600 hover:bg-blue-50 block px-3 py-3 rounded-lg text-base font-medium transition-colors duration-200"
+              className={
+                link.special
+                  ? "text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 block px-3 py-3 rounded-lg text-base font-bold transition-colors duration-200 shadow-lg border-2 border-blue-400"
+                  : "text-gray-700 hover:text-blue-600 hover:bg-blue-50 block px-3 py-3 rounded-lg text-base font-medium transition-colors duration-200"
+              }
               style={{ '--hover-color': '#0000FE' } as React.CSSProperties}
             >
               {link.label}
