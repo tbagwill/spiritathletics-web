@@ -1,73 +1,31 @@
 export default function Forms() {
   const formCategories = [
     {
-      title: "Enrollment Forms",
-      description: "Required forms for new athletes joining Spirit Athletics",
+      title: "Required Forms",
+      description: "Essential forms that must be completed for all athletes",
       forms: [
-        {
-          name: "New Athlete Registration Form",
-          description: "Complete athlete information and program selection",
-          filename: "new-athlete-registration.pdf",
-          required: true
-        },
-        {
-          name: "Medical Information Form",
-          description: "Health history and emergency contact information",
-          filename: "medical-information.pdf",
-          required: true
-        },
         {
           name: "Liability Waiver",
-          description: "Required waiver for all participants",
+          description: "Required waiver for all participants - must be completed before participation",
           filename: "liability-waiver.pdf",
+          required: true
+        },
+        {
+          name: "Full Registration Form",
+          description: "Complete athlete registration including all necessary information and program selection",
+          filename: "full-registration-form.pdf",
           required: true
         }
       ]
     },
     {
-      title: "Competition Forms",
-      description: "Forms required for athletes participating in competitions",
+      title: "Program Information",
+      description: "Essential information for the 2025-26 season",
       forms: [
         {
-          name: "Competition Registration",
-          description: "Register your athlete for upcoming competitions",
-          filename: "competition-registration.pdf",
-          required: false
-        },
-        {
-          name: "Travel Permission Form",
-          description: "Required for competitions requiring travel",
-          filename: "travel-permission.pdf",
-          required: false
-        },
-        {
-          name: "Competition Medical Form",
-          description: "Additional medical clearance for competition",
-          filename: "competition-medical.pdf",
-          required: false
-        }
-      ]
-    },
-    {
-      title: "Administrative Forms",
-      description: "General administrative and policy documents",
-      forms: [
-        {
-          name: "Payment Plan Agreement",
-          description: "Set up monthly payment plans for tuition",
-          filename: "payment-plan-agreement.pdf",
-          required: false
-        },
-        {
-          name: "Uniform Order Form",
-          description: "Order team uniforms and practice wear",
-          filename: "uniform-order.pdf",
-          required: false
-        },
-        {
-          name: "Photo/Video Release",
-          description: "Permission for photos and videos for promotional use",
-          filename: "photo-video-release.pdf",
+          name: "Program Information Document",
+          description: "Comprehensive guide covering rules, conduct, programs, teams, and all high-level information for the 2025-26 season",
+          filename: "program-information-2025-26.pdf",
           required: false
         }
       ]
@@ -112,8 +70,8 @@ export default function Forms() {
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Important Notice</h3>
               <p className="text-gray-700">
-                All forms marked as &quot;Required&quot; must be completed and submitted before your athlete can participate in practices or competitions. 
-                Please ensure all information is accurate and up-to-date.
+                All required forms must be completed and submitted before your athlete can participate in practices or competitions. 
+                Please ensure all information is accurate and up-to-date. The Program Information Document contains essential details for the upcoming 2025-26 season.
               </p>
             </div>
           </div>
@@ -135,7 +93,7 @@ export default function Forms() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className={`grid gap-8 ${category.forms.length === 1 ? 'grid-cols-1 max-w-md mx-auto' : category.forms.length === 2 ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
               {category.forms.map((form, formIndex) => (
                 <div key={formIndex} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 animate-fade-in-up" style={{ animationDelay: `${(formIndex + 1) * 100}ms` }}>
                   <div className="flex items-start justify-between mb-4">

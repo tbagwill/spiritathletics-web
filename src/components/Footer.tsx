@@ -13,7 +13,7 @@ const Footer = () => {
               Spirit Athletics
             </h3>
             <p className="text-gray-300 text-sm leading-relaxed mb-4">
-              Formerly High Desert Cheer, we provide competitive cheerleading programs 
+              We provide competitive cheerleading programs 
               for athletes of all levels, from non-competitive to Elite All-Star teams.
             </p>
             <div className="flex space-x-2">
@@ -110,7 +110,7 @@ const Footer = () => {
             </p>
             <p className="text-gray-400 text-sm mt-2 md:mt-0 flex items-center">
               <span className="w-2 h-2 rounded-full mr-2" style={{ background: 'linear-gradient(to right, #0000FE, #FFFFFF)' }}></span>
-              Formerly High Desert Cheer
+              Building Champions Since 1998
             </p>
           </div>
         </div>

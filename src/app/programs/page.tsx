@@ -4,7 +4,7 @@ export default function Programs() {
   const programs = [
     {
       id: 'non-competitive',
-      title: 'Non-Competitive',
+      title: 'Non-Competitive/Performance Teams',
       subtitle: 'Building Foundations',
       description: 'Perfect for beginners and young athletes looking to learn the fundamentals of cheerleading in a supportive, non-competitive environment.',
       features: ['Basic tumbling skills', 'Fundamental stunts', 'Dance and choreography', 'Team building'],
@@ -36,8 +36,8 @@ export default function Programs() {
       id: 'prep',
       title: 'Prep',
       subtitle: 'Competitive Excellence',
-      description: 'Intermediate level competitive program focusing on skill advancement and regional competition participation.',
-      features: ['Advanced tumbling', 'Complex stunting', 'Regional competitions', 'Performance excellence'],
+      description: 'Beginner/intermediate level competitive program focusing on skill advancement and regional competition participation.',
+      features: ['Beginner/intermediate tumbling', 'Complex stunting', 'Regional competitions', 'Performance excellence'],
       ageRange: 'Ages 5-18',
       commitment: '1-2x per week',
       icon: (
@@ -52,7 +52,7 @@ export default function Programs() {
       title: 'Elite All-Star',
       subtitle: 'Championship Level',
       description: 'Our premier competitive program for advanced athletes seeking to compete at the highest levels including nationals.',
-      features: ['Elite-level skills', 'National competitions', 'Advanced choreography', 'Championship training'],
+      features: ['Advanced-level skills', 'National competitions', 'Elite choreography', 'Championship training'],
       ageRange: 'Ages 5-18',
       commitment: '2-3x per week',
       icon: (
@@ -190,14 +190,14 @@ export default function Programs() {
                     <th className="px-6 py-4 text-left text-white font-semibold">Program</th>
                     <th className="px-6 py-4 text-center text-white font-semibold">Age Range</th>
                     <th className="px-6 py-4 text-center text-white font-semibold">Practice Schedule</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold">Competition Level</th>
+                    <th className="px-6 py-4 text-center text-white font-semibold">Travel Required</th>
                     <th className="px-6 py-4 text-center text-white font-semibold">Focus Areas</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-800">Non-Competitive</div>
+                      <div className="font-semibold text-gray-800">Non-Competitive/Performance Teams</div>
                       <div className="text-sm text-gray-600">Building Foundations</div>
                     </td>
                     <td className="px-6 py-4 text-center text-gray-600">4-16 years</td>
@@ -212,7 +212,7 @@ export default function Programs() {
                     </td>
                     <td className="px-6 py-4 text-center text-gray-600">4-14 years</td>
                     <td className="px-6 py-4 text-center text-gray-600">Once per week</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Local</td>
+                    <td className="px-6 py-4 text-center text-gray-600">Local Travel Only</td>
                     <td className="px-6 py-4 text-center text-gray-600">Skill Building</td>
                   </tr>
                   <tr className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
@@ -222,8 +222,8 @@ export default function Programs() {
                     </td>
                     <td className="px-6 py-4 text-center text-gray-600">5-18 years</td>
                     <td className="px-6 py-4 text-center text-gray-600">1-2x per week</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Regional</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Advanced Skills</td>
+                    <td className="px-6 py-4 text-center text-gray-600">Limited Travel</td>
+                    <td className="px-6 py-4 text-center text-gray-600">Beginner/Intermediate Skills</td>
                   </tr>
                   <tr className="hover:bg-blue-50 transition-colors">
                     <td className="px-6 py-4">
@@ -232,8 +232,8 @@ export default function Programs() {
                     </td>
                     <td className="px-6 py-4 text-center text-gray-600">5-18 years</td>
                     <td className="px-6 py-4 text-center text-gray-600">2-3x per week</td>
-                    <td className="px-6 py-4 text-center text-gray-600">National</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Elite Performance</td>
+                    <td className="px-6 py-4 text-center text-gray-600">Full Travel</td>
+                    <td className="px-6 py-4 text-center text-gray-600">Advanced Performance</td>
                   </tr>
                 </tbody>
               </table>

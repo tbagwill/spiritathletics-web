@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Spirit Athletics - Competitive Cheerleading Programs",
-  description: "Formerly High Desert Cheer, Spirit Athletics provides competitive cheerleading programs for athletes of all levels, from non-competitive to Elite All-Star teams.",
-  keywords: "cheerleading, competitive cheer, all-star cheer, youth athletics, Spirit Athletics, High Desert Cheer",
+  description: "Spirit Athletics provides competitive cheerleading programs for athletes of all levels, from non-competitive to Elite All-Star teams.",
+  keywords: "cheerleading, competitive cheer, all-star cheer, youth athletics, Spirit Athletics, Hesperia cheerleading",
   authors: [{ name: "Spirit Athletics" }],
   openGraph: {
     title: "Spirit Athletics - Competitive Cheerleading Programs",

@@ -56,7 +56,7 @@ export default function Home() {
             <span className="text-white drop-shadow-lg">Spirit Athletics</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-300">
-            Formerly High Desert Cheer, we provide competitive cheerleading programs 
+            We provide competitive cheerleading programs 
             for athletes of all levels, from non-competitive to Elite All-Star teams.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-500">

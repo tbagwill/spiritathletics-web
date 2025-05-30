@@ -35,7 +35,8 @@ export default function EliteAllStarProgram() {
             </h1>
             <p className="text-2xl text-white/90 mb-6 animate-fade-in-up delay-300">Championship Level</p>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-400">
-              Our premier competitive program for advanced athletes seeking to compete at the highest levels including nationals.
+              Our premier competitive program featuring advanced-level training and competition for elite athletes seeking to compete at the highest levels including nationals. 
+              Full travel required, including events on the East Coast.
             </p>
           </div>
         </div>
@@ -111,6 +112,27 @@ export default function EliteAllStarProgram() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Notification */}
+      <section className="py-12 px-4 bg-yellow-50 border-b border-yellow-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-start space-x-4 animate-fade-in-up">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#0000FE' }}>
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m-3-6h6" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Pricing Information</h3>
+              <p className="text-gray-700">
+                <strong>Pricing: TBA (To Be Announced)</strong><br />
+                We are currently developing our pricing models for the upcoming season and working to make this information available as soon as possible. 
+                Please contact us for the most current pricing details.
+              </p>
             </div>
           </div>
         </div>

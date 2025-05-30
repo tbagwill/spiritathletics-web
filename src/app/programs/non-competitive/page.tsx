@@ -31,7 +31,7 @@ export default function NonCompetitiveProgram() {
               </svg>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-4 animate-fade-in-up delay-200">
-              <span className="text-white">Non-Competitive</span>
+              <span className="text-white">Non-Competitive/Performance Teams</span>
             </h1>
             <p className="text-2xl text-white/90 mb-6 animate-fade-in-up delay-300">Building Foundations</p>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-400">
@@ -55,7 +55,7 @@ export default function NonCompetitiveProgram() {
               </h2>
               <div className="space-y-6 text-gray-700 leading-relaxed animate-fade-in-up delay-200">
                 <p className="text-lg">
-                  Our Non-Competitive program is designed for athletes ages 4-16 who are new to cheerleading or prefer 
+                  Our Non-Competitive/Performance Teams program is designed for athletes ages 4-16 who are new to cheerleading or prefer 
                   a non-competitive environment. This program focuses on creating a positive experience with the sport 
                   while building essential motor skills, coordination, and social development.
                 </p>
@@ -66,7 +66,8 @@ export default function NonCompetitiveProgram() {
                 </p>
                 <p>
                   The program culminates in fun showcase performances for families, giving athletes the opportunity to demonstrate 
-                  their new skills and build confidence in front of a supportive audience. This positive experience often serves 
+                  their new skills and build confidence in front of a supportive audience. All events are held within 10 miles of our practice facility, 
+                  requiring no travel for families. This positive experience often serves 
                   as a stepping stone for athletes who wish to continue their cheerleading journey in our competitive programs.
                 </p>
               </div>
@@ -126,6 +127,27 @@ export default function NonCompetitiveProgram() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Notification */}
+      <section className="py-12 px-4 bg-yellow-50 border-b border-yellow-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-start space-x-4 animate-fade-in-up">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#0000FE' }}>
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m-3-6h6" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Pricing Information</h3>
+              <p className="text-gray-700">
+                <strong>Pricing: TBA (To Be Announced)</strong><br />
+                We are currently developing our pricing models for the upcoming season and working to make this information available as soon as possible. 
+                Please contact us for the most current pricing details.
+              </p>
             </div>
           </div>
         </div>
