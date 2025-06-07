@@ -67,6 +67,12 @@ export default function Staff() {
       image: '/images/staff/aniya-placeholder.jpg'
     },
     {
+      name: 'Aliszia Orland',
+      title: 'Senior Coach',
+      description: 'Aliszia brings expertise and dedication to our coaching team. Her commitment to athlete development and positive coaching approach helps athletes achieve their goals.',
+      image: '/images/staff/aliszia-placeholder.jpg'
+    },
+    {
       name: 'Alejandra "Alli" Arreola',
       title: 'Front Desk',
       description: 'Alli is the friendly face that welcomes families to Spirit Athletics. Her organizational skills and warm personality make everyone feel at home.',
@@ -146,7 +152,7 @@ export default function Staff() {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {staffMembers.slice(3, 11).map((member, index) => (
+            {staffMembers.slice(3, 12).map((member, index) => (
               <div key={index} className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
                 <div className="relative mb-6">
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}>
@@ -177,7 +183,7 @@ export default function Staff() {
           </h2>
           
           <div className="flex justify-center">
-            {staffMembers.slice(11).map((member, index) => (
+            {staffMembers.slice(12).map((member, index) => (
               <div key={index} className="bg-gradient-to-br from-blue-50 to-gray-50 p-8 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up max-w-md">
                 <div className="relative mb-6">
                   <div className="w-40 h-40 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #000000, #333333)' }}>

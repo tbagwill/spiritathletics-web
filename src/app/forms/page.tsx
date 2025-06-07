@@ -25,7 +25,7 @@ export default function Forms() {
         {
           name: "Program Information Document",
           description: "Comprehensive guide covering rules, conduct, programs, teams, and all high-level information for the 2025-26 season",
-          filename: "program-information-2025-26.pdf",
+          filename: "Cheer Program Information_25-26.pdf",
           required: false
         }
       ]
