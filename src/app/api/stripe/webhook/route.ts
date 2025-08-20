@@ -204,6 +204,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       subtotalCents,
       totalCents,
       stripePaymentId: session.id,
+      paymentIntentId: session.payment_intent,
       status: 'PAID',
       lineItemsCount: cartItems.length
     });
@@ -255,21 +256,84 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
 async function handleChargeRefunded(charge: Stripe.Charge) {
   try {
-    // Find the order by Stripe payment ID
-    const order = await prisma.shopOrder.findFirst({
-      where: { stripePaymentId: charge.payment_intent as string },
+    console.log('🔄 Processing charge.refunded event for charge:', charge.id);
+    console.log('🔍 Payment intent ID:', charge.payment_intent);
+
+    if (!stripe) {
+      console.error('❌ Stripe not configured');
+      return;
+    }
+
+    if (!charge.payment_intent) {
+      console.error('❌ No payment intent found in charge');
+      return;
+    }
+
+    // Get the payment intent to find the checkout session
+    const paymentIntent = await stripe.paymentIntents.retrieve(charge.payment_intent as string, {
+      expand: ['invoice', 'latest_charge']
     });
 
+    console.log('🔍 Payment intent metadata:', paymentIntent.metadata);
+
+    let sessionId = null;
+
+    // Try to get session ID from payment intent metadata
+    if (paymentIntent.metadata?.checkout_session_id) {
+      sessionId = paymentIntent.metadata.checkout_session_id;
+      console.log('✅ Found session ID in payment intent metadata:', sessionId);
+    } else {
+      // Fallback: search for checkout sessions with this payment intent
+      console.log('🔍 Searching for checkout sessions with payment intent:', paymentIntent.id);
+      
+      const sessions = await stripe.checkout.sessions.list({
+        payment_intent: paymentIntent.id,
+        limit: 1
+      });
+
+      if (sessions.data.length > 0) {
+        sessionId = sessions.data[0].id;
+        console.log('✅ Found session ID via search:', sessionId);
+      }
+    }
+
+    if (!sessionId) {
+      console.error('❌ Could not find checkout session for payment intent:', paymentIntent.id);
+      return;
+    }
+
+    // Find the order by checkout session ID (primary method)
+    let order = await prisma.shopOrder.findFirst({
+      where: { stripePaymentId: sessionId },
+    });
+
+    // Fallback: try to find by payment intent ID (for legacy orders or edge cases)
+    if (!order) {
+      console.log('🔍 Trying fallback: searching by payment intent ID');
+      order = await prisma.shopOrder.findFirst({
+        where: { stripePaymentId: paymentIntent.id },
+      });
+    }
+
     if (order) {
+      // Check if already refunded to avoid duplicate processing
+      if (order.status === 'REFUNDED') {
+        console.log(`⚠️ Order ${order.id} already marked as REFUNDED`);
+        return;
+      }
+
       await prisma.shopOrder.update({
         where: { id: order.id },
         data: { status: 'REFUNDED' },
       });
 
-      console.log(`Order ${order.id} marked as refunded`);
+      console.log(`✅ Order ${order.id} marked as REFUNDED`);
+    } else {
+      console.error('❌ Order not found for session ID:', sessionId);
+      console.error('❌ Also not found for payment intent ID:', paymentIntent.id);
     }
   } catch (error) {
-    console.error('Error handling charge refund:', error);
+    console.error('❌ Error handling charge refund:', error);
     throw error;
   }
 }
