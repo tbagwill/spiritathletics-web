@@ -307,3 +307,5 @@ async function sendOrderConfirmationEmail(order: any) {
     // Don't throw here - order creation should still succeed even if email fails
   }
 }
+
+export const dynamic = 'force-dynamic';
