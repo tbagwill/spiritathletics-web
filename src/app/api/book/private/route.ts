@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     const title = 'Private Lesson';
     const when = formatPt(result.booking.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
     const location = process.env.ORG_ADDRESS || 'Spirit Athletics, 17537 Bear Valley Rd, Hesperia, CA 92345';
-    const cancelUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || ''}/cancel?token=${result.booking.cancellationToken}`;
+    const cancelUrl = `${process.env.BASE_PROD_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net'}/cancel?token=${result.booking.cancellationToken}`;
 
     const ics = buildICS({
       uid: result.booking.id,

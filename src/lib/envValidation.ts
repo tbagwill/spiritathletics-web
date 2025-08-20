@@ -17,7 +17,7 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET_KEY: z.string().optional(), // Should start with whsec_ (when you set up webhooks)
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(), // Should start with pk_test_ or pk_live_
   SHOP_SUPPORT_EMAIL: z.string().email().optional(),
-  SHOP_BASE_URL: z.string().url().optional(),
+  BASE_PROD_URL: z.string().url().optional(),
   
   // Organization
   ORG_ADDRESS: z.string().min(10),

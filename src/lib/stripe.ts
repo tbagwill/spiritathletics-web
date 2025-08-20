@@ -45,6 +45,6 @@ export function getStripeConfig() {
     publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET_KEY,
     supportEmail: process.env.SHOP_SUPPORT_EMAIL,
-    baseUrl: process.env.SHOP_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    baseUrl: process.env.BASE_PROD_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'https://spiritathletics.net',
   };
 }
