@@ -125,8 +125,7 @@ export async function PATCH(
       // First check if any sizes are referenced in orders
       const sizeIdsInOrders = await prisma.shopOrderItem.findMany({
         where: {
-          productId: id,
-          sizeId: { not: null }
+          productId: id
         },
         select: {
           sizeId: true
