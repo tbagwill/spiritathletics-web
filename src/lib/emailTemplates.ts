@@ -120,9 +120,9 @@ export function generateOrderConfirmationEmail(order: OrderEmailData): string {
             <div style="color: #1e40af; line-height: 1.6;">
               <div style="margin-bottom: 8px;">✅ Your preorder is confirmed and payment processed</div>
               <div style="margin-bottom: 8px;">📦 Orders will be placed when the campaign closes on <strong>${new Date(order.campaignEndDate).toLocaleDateString()}</strong></div>
-              <div style="margin-bottom: 8px;">🚚 Items will ship within 2-3 weeks after campaign end</div>
-              <div style="margin-bottom: 8px;">📱 You'll receive tracking info when your order ships</div>
-              <div>💬 Questions? Just reply to this email!</div>
+              <div style="margin-bottom: 8px;">🏭 Items will take 6-8 weeks for production and then will be shipped to our facility</div>
+              <div style="margin-bottom: 8px;">🏢 Items will be available for pickup at the gym</div>
+              <div>📱 You'll be notified when your order is ready for pickup</div>
             </div>
           </div>
 
@@ -131,9 +131,13 @@ export function generateOrderConfirmationEmail(order: OrderEmailData): string {
             <h4 style="margin: 0 0 8px 0; color: #92400e; font-size: 16px; font-weight: 600;">
               Important: This is a preorder
             </h4>
-            <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.5;">
+            <p style="margin: 0 0 12px 0; color: #92400e; font-size: 14px; line-height: 1.5;">
               We place bulk orders after the campaign closes to get the best pricing and ensure quality. 
-              Your items will be shipped directly to you once they arrive at our facility.
+              Items will be available for pickup at the gym once production is complete.
+            </p>
+            <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.5;">
+              <strong>Need to refund or change your order?</strong> Please visit us in the front office during operating hours. 
+              Our staff will assist you on-site to resolve any issues that may arise.
             </p>
           </div>
         </div>
@@ -143,13 +147,24 @@ export function generateOrderConfirmationEmail(order: OrderEmailData): string {
           <p style="margin: 0 0 16px 0; color: #1f2937; font-weight: 600; font-size: 16px;">
             Thanks for supporting Spirit Athletics!
           </p>
-          <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">
+          
+          <!-- No Reply Notice -->
+          <div style="background-color: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 16px; margin: 16px 0;">
+            <p style="margin: 0 0 8px 0; color: #dc2626; font-size: 14px; font-weight: 600;">
+              ⚠️ This is a no-reply email
+            </p>
+            <p style="margin: 0; color: #7f1d1d; font-size: 13px; line-height: 1.4;">
+              Please do not reply to this email. For any questions about your order, contact us at:
+            </p>
+          </div>
+          
+          <p style="margin: 16px 0 8px 0; color: #6b7280; font-size: 14px;">
             Questions about your order?
           </p>
           <p style="margin: 0; color: #6b7280; font-size: 14px;">
             Email us at 
-            <a href="mailto:shop@spiritathletics.net" style="color: #2563eb; text-decoration: none;">
-              shop@spiritathletics.net
+            <a href="mailto:${process.env.RECEIVABLE_EMAIL || 'frontdesk@spiritathletics.net'}" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+              ${process.env.RECEIVABLE_EMAIL || 'frontdesk@spiritathletics.net'}
             </a>
           </p>
           

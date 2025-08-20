@@ -56,9 +56,10 @@ export async function GET(req: NextRequest) {
       prisma.shopOrder.count({ where })
     ]);
 
-    // Calculate summary statistics
-    const revenue = orders.reduce((sum, order) => sum + order.totalCents, 0);
-    const itemCount = orders.reduce((sum, order) => 
+    // Calculate summary statistics (excluding refunded orders from revenue)
+    const paidOrders = orders.filter(order => order.status === 'PAID');
+    const revenue = paidOrders.reduce((sum, order) => sum + order.totalCents, 0);
+    const itemCount = paidOrders.reduce((sum, order) => 
       sum + order.lineItems.reduce((lineSum, item) => lineSum + item.quantity, 0), 0
     );
 
@@ -71,10 +72,10 @@ export async function GET(req: NextRequest) {
         hasMore: offset + limit < totalCount
       },
       summary: {
-        totalOrders: orders.length,
+        totalOrders: paidOrders.length, // Only count paid orders for revenue metrics
         totalRevenue: revenue,
         totalItems: itemCount,
-        averageOrderValue: orders.length > 0 ? revenue / orders.length : 0
+        averageOrderValue: paidOrders.length > 0 ? revenue / paidOrders.length : 0
       }
     });
   } catch (error) {

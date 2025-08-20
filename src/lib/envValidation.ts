@@ -11,6 +11,7 @@ const envSchema = z.object({
   // Email
   RESEND_API_KEY: z.string().startsWith('re_'),
   SENDER_EMAIL: z.string().email(),
+  RECEIVABLE_EMAIL: z.string().email().optional(), // Email address that can receive emails
   
   // Stripe (for pop-up shop)
   STRIPE_SECRET_KEY: z.string().optional(), // Should start with sk_test_ or sk_live_

@@ -212,7 +212,7 @@ export default function OrdersManager() {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">Paid Orders</dt>
                 <dd className="text-lg font-medium text-gray-900">{data.summary.totalOrders}</dd>
               </dl>
             </div>
@@ -248,7 +248,7 @@ export default function OrdersManager() {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Items Sold</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">Items Sold (Paid)</dt>
                 <dd className="text-lg font-medium text-gray-900">{data.summary.totalItems}</dd>
               </dl>
             </div>
