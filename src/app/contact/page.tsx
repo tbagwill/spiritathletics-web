@@ -215,14 +215,14 @@ export default function Contact() {
                   id="subject"
                   name="subject"
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 bg-white"
                 >
-                  <option value="">Select a subject</option>
-                  <option value="program-inquiry">Program Inquiry</option>
-                  <option value="tryout-information">Tryout Information</option>
-                  <option value="tumbling-classes">Tumbling Classes</option>
-                  <option value="general-question">General Question</option>
-                  <option value="other">Other</option>
+                  <option value="" className="text-gray-500 bg-white">Select a subject</option>
+                  <option value="program-inquiry" className="text-gray-900 bg-white">Program Inquiry</option>
+                  <option value="tryout-information" className="text-gray-900 bg-white">Tryout Information</option>
+                  <option value="tumbling-classes" className="text-gray-900 bg-white">Tumbling Classes</option>
+                  <option value="general-question" className="text-gray-900 bg-white">General Question</option>
+                  <option value="other" className="text-gray-900 bg-white">Other</option>
                 </select>
               </div>
 

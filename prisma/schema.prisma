@@ -1,0 +1,317 @@
+// Prisma schema for Spirit Athletics Booking
+// Provider: Vercel Postgres
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  COACH
+  CUSTOMER
+}
+
+enum ServiceType {
+  PRIVATE
+  CLASS
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum OccurrenceStatus {
+  SCHEDULED
+  CANCELLED
+}
+
+enum WeeklyRuleType {
+  WEEKLY
+}
+
+enum PrivateKind {
+  SOLO
+  SEMI_PRIVATE
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  FULFILLED
+  CANCELED
+}
+
+enum OrderStatus {
+  PAID
+  REFUNDED
+  CANCELED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  role          UserRole @default(CUSTOMER)
+  createdAt     DateTime @default(now())
+  passwordHash  String?
+
+  coachProfile CoachProfile?
+  bookings     Booking[]
+  auditLogs    AuditLog[] @relation("AuditLogActor")
+
+  // NextAuth
+  accounts Account[]
+  sessions Session[]
+}
+
+model CoachProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  bio         String?
+  specialties String[]
+  isActive    Boolean  @default(true)
+
+  services           Service[]
+  availabilityRules  AvailabilityRule[]
+  availabilityExceptions AvailabilityException[]
+  bookings           Booking[]
+  settings           CoachSettings?
+}
+
+model Service {
+  id               String       @id @default(cuid())
+  coachId          String?
+  coach            CoachProfile? @relation(fields: [coachId], references: [id])
+  type             ServiceType
+  title            String
+  description      String
+  durationMinutes  Int?
+  basePriceCents   Int
+  isActive         Boolean      @default(true)
+
+  classTemplates   ClassTemplate[]
+  bookings         Booking[]
+}
+
+model AvailabilityRule {
+  id                 String         @id @default(cuid())
+  coachId            String
+  coach              CoachProfile   @relation(fields: [coachId], references: [id])
+  ruleType           WeeklyRuleType
+  byDay              String[]
+  startTimeMinutes   Int
+  endTimeMinutes     Int
+  effectiveFrom      DateTime
+  effectiveTo        DateTime?
+  createdAt          DateTime       @default(now())
+}
+
+model AvailabilityException {
+  id          String       @id @default(cuid())
+  coachId     String
+  coach       CoachProfile @relation(fields: [coachId], references: [id])
+  date        DateTime
+  isAvailable Boolean
+  reason      String?
+  createdAt   DateTime     @default(now())
+}
+
+model ClassTemplate {
+  id               String   @id @default(cuid())
+  serviceId        String
+  service          Service  @relation(fields: [serviceId], references: [id])
+  weekday          Int
+  startTimeMinutes Int
+  capacity         Int
+  location         String?
+  isActive         Boolean  @default(true)
+  occurrences      ClassOccurrence[]
+}
+
+model ClassOccurrence {
+  id                  String           @id @default(cuid())
+  classTemplateId     String
+  classTemplate       ClassTemplate    @relation(fields: [classTemplateId], references: [id])
+  startDateTimeUTC    DateTime
+  capacity            Int
+  status              OccurrenceStatus @default(SCHEDULED)
+  bookings            Booking[]
+
+  @@unique([classTemplateId, startDateTimeUTC])
+}
+
+model Booking {
+  id                      String         @id @default(cuid())
+  type                    ServiceType
+  status                  BookingStatus  @default(CONFIRMED)
+  privateKind             PrivateKind?
+  numAthletes             Int            @default(1)
+  customerName            String
+  customerEmail           String
+  athleteName             String
+  notes                   String?
+
+  coachId                 String?
+  coach                   CoachProfile?  @relation(fields: [coachId], references: [id])
+  serviceId               String
+  service                 Service        @relation(fields: [serviceId], references: [id])
+  classOccurrenceId       String?
+  classOccurrence         ClassOccurrence? @relation(fields: [classOccurrenceId], references: [id])
+
+  startDateTimeUTC        DateTime
+  endDateTimeUTC          DateTime
+
+  priceCents              Int
+  perAthletePriceCents    Int?
+
+  cancellationToken       String         @unique
+  cancelledAt             DateTime?
+  createdAt               DateTime       @default(now())
+
+  customerUserId          String?
+  customerUser            User?          @relation(fields: [customerUserId], references: [id])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorUserId  String?
+  actorUser    User?    @relation("AuditLogActor", fields: [actorUserId], references: [id])
+  action       String
+  entity       String
+  entityId     String
+  meta         Json
+  createdAt    DateTime @default(now())
+}
+
+model CancellationPolicy {
+  id              String  @id @default(cuid())
+  minHoursNotice  Int
+}
+
+model CoachSettings {
+  id                     String   @id @default(cuid())
+  coachId                String   @unique
+  coach                  CoachProfile @relation(fields: [coachId], references: [id])
+  mustApproveRequests    Boolean  @default(false)
+  alertEmails            String[] @default([])
+  emailBookingConfirmed  Boolean  @default(true)
+  emailBookingCancelled  Boolean  @default(true)
+  dailyAgendaEmail       Boolean  @default(false)
+  canManageShop          Boolean  @default(false)
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Pop-Up Shop Models
+model ShopCampaign {
+  id            String         @id @default(cuid())
+  title         String
+  slug          String         @unique
+  description   String?
+  heroImageUrl  String?
+  startsAt      DateTime
+  endsAt        DateTime
+  status        CampaignStatus @default(DRAFT)
+  products      ShopProduct[]
+  orders        ShopOrder[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model ShopProduct {
+  id           String      @id @default(cuid())
+  campaignId   String
+  campaign     ShopCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String
+  basePrice    Int         // cents
+  description  String?
+  imageUrl     String?
+  sizes        ProductSize[]
+  orderItems   ShopOrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([campaignId, slug])
+}
+
+model ProductSize {
+  id         String        @id @default(cuid())
+  productId  String
+  product    ShopProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label      String        // e.g., "YS","YM","YL","S","M","L","XL","XXL","XXXL"
+  priceDelta Int           @default(0) // cents
+  orderItems ShopOrderItem[]
+
+  @@unique([productId, label])
+}
+
+model ShopOrder {
+  id              String         @id @default(cuid())
+  campaignId      String
+  campaign        ShopCampaign   @relation(fields: [campaignId], references: [id])
+  email           String
+  customerName    String?
+  lineItems       ShopOrderItem[]
+  subtotalCents   Int
+  totalCents      Int
+  stripePaymentId String?        // payment_intent or checkout session id
+  status          OrderStatus    @default(PAID)
+  createdAt       DateTime       @default(now())
+}
+
+model ShopOrderItem {
+  id          String      @id @default(cuid())
+  orderId     String
+  order       ShopOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     ShopProduct @relation(fields: [productId], references: [id])
+  sizeId      String
+  size        ProductSize @relation(fields: [sizeId], references: [id])
+  quantity    Int         @default(1)
+  unitPrice   Int         // cents actually charged
+  lineTotal   Int         // cents
+} 

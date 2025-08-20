@@ -3,6 +3,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import SessionProvider from "@/components/SessionProvider";
+import { CartProvider } from "@/contexts/CartContext";
+import FloatingCart from "@/components/FloatingCart";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,19 +31,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+  
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NavBar />
-        <main>{children}</main>
-        <Footer />
+        <SessionProvider session={session}>
+          <CartProvider>
+            <NavBar />
+            <main>{children}</main>
+            <Footer />
+            <FloatingCart />
+          </CartProvider>
+        </SessionProvider>
       </body>
     </html>
   );

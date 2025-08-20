@@ -4,35 +4,6 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Announcement Banner - Now at the top for immediate visibility */}
-      <section className="relative overflow-hidden py-4" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1, #000000)' }}>
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-4 -left-4 w-24 h-24 bg-white/10 rounded-full animate-bounce"></div>
-          <div className="absolute top-8 right-8 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-4 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-ping"></div>
-        </div>
-        
-        <div className="relative z-10 max-w-6xl mx-auto px-4">
-          <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20 animate-fade-in">
-            <div className="flex items-center justify-center text-center">
-              <span className="text-3xl mr-3 animate-bounce">📢</span>
-              <div>
-                <h2 className="text-lg md:text-xl font-bold text-white mb-1">
-                  Tryouts are coming soon!
-                </h2>
-                <p className="text-white/90 text-sm md:text-base">
-                  Tryouts for the 2025-2026 season from June 3rd - 7th. Placements announced June 8th. <br/>  
-                  <a href="/tryouts" className="text-blue-100 hover:text-blue-300">Click here for more information</a>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Animated border */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-pulse"></div>
-      </section>
 
       {/* Hero Section with Background Image */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
