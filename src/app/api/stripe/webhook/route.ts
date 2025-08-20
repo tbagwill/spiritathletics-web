@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       console.error('Available env vars:', {
         STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-        STRIPE_WEBHOOK_SECRET: !!process.env.STRIPE_WEBHOOK_SECRET,
+        STRIPE_WEBHOOK_SECRET_KEY: !!process.env.STRIPE_WEBHOOK_SECRET_KEY,
         NODE_ENV: process.env.NODE_ENV
       });
       return NextResponse.json(

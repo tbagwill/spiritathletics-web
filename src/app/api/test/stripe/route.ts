@@ -6,12 +6,12 @@ export async function GET() {
     // Check if environment variables are present
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_KEY;
     
     const envCheck = {
       STRIPE_SECRET_KEY: secretKey ? '✅ Present' : '❌ Missing',
       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: publishableKey ? '✅ Present' : '❌ Missing',
-      STRIPE_WEBHOOK_SECRET: webhookSecret ? '✅ Present' : '❌ Missing (optional for now)',
+      STRIPE_WEBHOOK_SECRET_KEY: webhookSecret ? '✅ Present' : '❌ Missing (optional for now)',
     };
 
     // Validate key formats

@@ -43,7 +43,7 @@ export function getStripeConfig() {
   
   return {
     publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET_KEY,
     supportEmail: process.env.SHOP_SUPPORT_EMAIL,
     baseUrl: process.env.SHOP_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   };
