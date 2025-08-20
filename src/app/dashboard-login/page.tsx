@@ -20,6 +20,7 @@ export default function DashboardLogin() {
       const res = await signIn('credentials', { email, password, redirect: false });
       if (res?.ok) {
         router.push('/dashboard');
+        router.refresh();
       } else if (res?.error) {
         setError('Invalid email or password');
       } else {

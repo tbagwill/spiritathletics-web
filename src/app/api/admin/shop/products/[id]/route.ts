@@ -122,19 +122,69 @@ export async function PATCH(
 
     // Handle sizes update if provided
     if (validatedData.sizes) {
-      // Delete existing sizes and create new ones (simpler than complex update logic)
-      await prisma.productSize.deleteMany({
+      // First check if any sizes are referenced in orders
+      const sizeIdsInOrders = await prisma.shopOrderItem.findMany({
+        where: {
+          productId: id,
+          sizeId: { not: null }
+        },
+        select: {
+          sizeId: true
+        },
+        distinct: ['sizeId']
+      });
+
+      const sizeIdsInUse = new Set(sizeIdsInOrders.map(item => item.sizeId).filter(Boolean));
+      
+      // Get existing sizes
+      const existingSizes = await prisma.productSize.findMany({
         where: { productId: id }
       });
 
-      updateData.sizes = {
-        create: validatedData.sizes.map(size => ({
-          label: size.label,
-          priceDelta: Math.round(size.priceDelta * 100)
-        }))
-      };
+      // Update existing sizes that are in use, delete others
+      const updatedSizeLabels = new Set(validatedData.sizes.map(s => s.label));
+      
+      // Delete sizes that are not in the new list AND not in use
+      const sizesToDelete = existingSizes.filter(
+        s => !updatedSizeLabels.has(s.label) && !sizeIdsInUse.has(s.id)
+      );
+      
+      if (sizesToDelete.length > 0) {
+        await prisma.productSize.deleteMany({
+          where: {
+            id: { in: sizesToDelete.map(s => s.id) }
+          }
+        });
+      }
+
+      // Update or create sizes
+      for (const newSize of validatedData.sizes) {
+        const existingSize = existingSizes.find(s => s.label === newSize.label);
+        
+        if (existingSize) {
+          // Update existing size
+          await prisma.productSize.update({
+            where: { id: existingSize.id },
+            data: {
+              priceDelta: Math.round(newSize.priceDelta * 100)
+            }
+          });
+        } else {
+          // Create new size
+          await prisma.productSize.create({
+            data: {
+              productId: id,
+              label: newSize.label,
+              priceDelta: Math.round(newSize.priceDelta * 100)
+            }
+          });
+        }
+      }
     }
 
+    // Remove sizes from updateData since we handled them separately
+    delete updateData.sizes;
+    
     const product = await prisma.shopProduct.update({
       where: { id },
       data: updateData,
@@ -189,8 +239,17 @@ export async function DELETE(
       );
     }
 
-    await prisma.shopProduct.delete({
-      where: { id }
+    // Delete in a transaction to handle all relationships
+    await prisma.$transaction(async (tx) => {
+      // First delete all product sizes
+      await tx.productSize.deleteMany({
+        where: { productId: id }
+      });
+      
+      // Then delete the product
+      await tx.shopProduct.delete({
+        where: { id }
+      });
     });
 
     return NextResponse.json({ success: true });

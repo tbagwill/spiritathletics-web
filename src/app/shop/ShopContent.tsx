@@ -84,76 +84,130 @@ export default function ShopContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
+      <>
+        {/* Admin Button - Always visible to shop admins */}
+        {isShopAdmin && (
+          <div className="fixed top-4 right-4 z-50">
+            <Link
+              href="/admin/shop"
+              className="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-lg transition-colors"
+              title="Shop Admin Dashboard"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Admin
+            </Link>
           </div>
-          <p className="text-gray-600 font-medium">Loading shop...</p>
+        )}
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
+            </div>
+            <p className="text-gray-600 font-medium">Loading shop...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-16">
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto">
-          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <>
+        {/* Admin Button - Always visible to shop admins */}
+        {isShopAdmin && (
+          <div className="fixed top-4 right-4 z-50">
+            <Link
+              href="/admin/shop"
+              className="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-lg transition-colors"
+              title="Shop Admin Dashboard"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Admin
+            </Link>
           </div>
-          <h2 className="text-lg font-semibold text-red-900 mb-2">Unable to Load Shop</h2>
-          <p className="text-red-700 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
-          >
-            Try Again
-          </button>
+        )}
+        <div className="text-center py-16">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-red-900 mb-2">Unable to Load Shop</h2>
+            <p className="text-red-700 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!campaign) {
     return (
-      <div className="text-center py-16">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
-            <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      <>
+        {/* Admin Button - Always visible to shop admins */}
+        {isShopAdmin && (
+          <div className="fixed top-4 right-4 z-50">
+            <Link
+              href="/admin/shop"
+              className="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-lg transition-colors"
+              title="Shop Admin Dashboard"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              No Pop-Up Currently Open
-            </h1>
-            <p className="text-lg text-gray-600 mb-6">
-              Our pop-up shop isn't currently running, but the next window is coming soon! 
-              We'll have exclusive Spirit Athletics apparel and merchandise available for a limited time.
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-blue-800 text-sm">
-                <strong>How it works:</strong> We open pop-up campaigns with limited-time ordering windows. 
-                Once the window closes, we place bulk orders and fulfill them within 2-3 weeks.
+              Admin
+            </Link>
+          </div>
+        )}
+        <div className="text-center py-16">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+              <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                No Pop-Up Currently Open
+              </h1>
+              <p className="text-lg text-gray-600 mb-6">
+                Our pop-up shop isn't currently running, but the next window is coming soon! 
+                We'll have exclusive Spirit Athletics apparel and merchandise available for a limited time.
               </p>
-            </div>
-            <div className="space-y-4">
-              <p className="text-gray-600">
-                Want to be notified when the next pop-up opens?
-              </p>
-              <Link 
-                href="/contact" 
-                className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
-              >
-                Contact Us for Updates
-              </Link>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-blue-800 text-sm">
+                  <strong>How it works:</strong> We open pop-up campaigns with limited-time ordering windows. 
+                  Once the window closes, we place bulk orders and fulfill them within 2-3 weeks.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Want to be notified when the next pop-up opens?
+                </p>
+                <Link 
+                  href="/contact" 
+                  className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                >
+                  Contact Us for Updates
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
