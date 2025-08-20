@@ -127,7 +127,13 @@ export async function POST(req: NextRequest) {
       cancel_url: `${baseUrl}/shop`,
       metadata: {
         campaignId: campaign.id,
-        cartItems: JSON.stringify(processedCartItems),
+        cartItems: JSON.stringify(processedCartItems.map(item => ({
+          p: item.productId.slice(-8), // Last 8 chars of product ID
+          s: item.sizeId.slice(-8),     // Last 8 chars of size ID  
+          q: item.quantity,
+          u: item.unitPrice,
+          t: item.lineTotal
+        }))),
         customerName: customerName || '',
       },
     });

@@ -106,9 +106,48 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     const campaignId = session.metadata.campaignId;
     
+    // Load campaign data first 
+    const campaign = await prisma.shopCampaign.findUnique({
+      where: { id: campaignId },
+      include: { products: { include: { sizes: true } } }
+    });
+
+    if (!campaign) {
+      throw new Error(`Campaign ${campaignId} not found`);
+    }
+
     let cartItems;
     try {
-      cartItems = JSON.parse(session.metadata.cartItems);
+      const rawCartItems = JSON.parse(session.metadata.cartItems);
+      
+      // Check if this is the compressed format (has 'p', 's', 'q' properties)
+      if (rawCartItems.length > 0 && rawCartItems[0].p) {
+        // Handle compressed format - reconstruct full IDs
+        cartItems = rawCartItems.map((item: any) => {
+          // Find product by matching the last 8 characters
+          const product = campaign.products.find(p => p.id.endsWith(item.p));
+          if (!product) {
+            throw new Error(`Product not found for suffix ${item.p}`);
+          }
+          
+          // Find size by matching the last 8 characters
+          const size = product.sizes.find(s => s.id.endsWith(item.s));
+          if (!size) {
+            throw new Error(`Size not found for suffix ${item.s}`);
+          }
+          
+          return {
+            productId: product.id,
+            sizeId: size.id,
+            quantity: item.q,
+            unitPrice: item.u,
+            lineTotal: item.t,
+          };
+        });
+      } else {
+        // Legacy format with full property names
+        cartItems = rawCartItems;
+      }
     } catch (error) {
       throw new Error('Invalid cart items in session metadata');
     }
@@ -117,16 +156,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     
     if (!customerEmail) {
       throw new Error('No customer email found in session');
-    }
-
-    // Verify the campaign still exists and is active
-    const campaign = await prisma.shopCampaign.findUnique({
-      where: { id: campaignId },
-      include: { products: { include: { sizes: true } } }
-    });
-
-    if (!campaign) {
-      throw new Error(`Campaign ${campaignId} not found`);
     }
 
     // Calculate totals from session line items
