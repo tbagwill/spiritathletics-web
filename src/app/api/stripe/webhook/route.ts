@@ -10,6 +10,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('🎯 Webhook received');
+    
     if (!stripe) {
       console.error('Stripe not configured');
       return NextResponse.json(
@@ -51,16 +53,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Handle the event
-    switch (event.type) {
-      case 'checkout.session.completed':
-        try {
-          await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
-        } catch (error) {
-          console.error('Error processing checkout.session.completed:', error);
-          throw error; // Re-throw to trigger webhook retry
-        }
-        break;
+              // Handle the event
+          console.log('🔍 Processing event type:', event.type);
+          switch (event.type) {
+            case 'checkout.session.completed':
+              console.log('✅ Processing checkout.session.completed event');
+              try {
+                await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+                console.log('✅ checkout.session.completed processed successfully');
+              } catch (error) {
+                console.error('❌ Error processing checkout.session.completed:', error);
+                throw error; // Re-throw to trigger webhook retry
+              }
+              break;
       case 'charge.succeeded':
         // Order already created by checkout.session.completed
         break;
@@ -90,8 +95,16 @@ export async function POST(req: NextRequest) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   try {
+    console.log('🔍 Processing checkout session:', session.id);
+    console.log('🔍 Session metadata:', session.metadata);
+    console.log('🔍 Customer email:', session.customer_email || session.customer_details?.email);
 
     if (!session.metadata?.campaignId || !session.metadata?.cartItems) {
+      console.error('❌ Missing required metadata:', {
+        campaignId: !!session.metadata?.campaignId,
+        cartItems: !!session.metadata?.cartItems,
+        allMetadata: session.metadata
+      });
       throw new Error('Missing required metadata in checkout session');
     }
 
@@ -101,8 +114,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     });
 
     if (existingOrder) {
+      console.log('⚠️ Order already exists for session:', session.id);
       return; // Order already exists
     }
+
+    console.log('✅ No existing order found, proceeding with creation');
 
     const campaignId = session.metadata.campaignId;
     
@@ -119,36 +135,48 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     let cartItems;
     try {
       const rawCartItems = JSON.parse(session.metadata.cartItems);
+      console.log('🔍 Raw cart items:', rawCartItems);
       
       // Check if this is the compressed format (has 'p', 's', 'q' properties)
       if (rawCartItems.length > 0 && rawCartItems[0].p) {
+        console.log('🔧 Using compressed format - reconstructing IDs');
         // Handle compressed format - reconstruct full IDs
         cartItems = rawCartItems.map((item: any) => {
+          console.log('🔍 Processing compressed item:', item);
           // Find product by matching the last 8 characters
           const product = campaign.products.find(p => p.id.endsWith(item.p));
           if (!product) {
+            console.error(`❌ Product not found for suffix ${item.p}`);
+            console.error('Available products:', campaign.products.map(p => ({ id: p.id, name: p.name })));
             throw new Error(`Product not found for suffix ${item.p}`);
           }
           
           // Find size by matching the last 8 characters
           const size = product.sizes.find(s => s.id.endsWith(item.s));
           if (!size) {
+            console.error(`❌ Size not found for suffix ${item.s}`);
+            console.error('Available sizes for product:', product.sizes.map(s => ({ id: s.id, label: s.label })));
             throw new Error(`Size not found for suffix ${item.s}`);
           }
           
-          return {
+          const reconstructedItem = {
             productId: product.id,
             sizeId: size.id,
             quantity: item.q,
             unitPrice: item.u,
             lineTotal: item.t,
           };
+          console.log('✅ Reconstructed item:', reconstructedItem);
+          return reconstructedItem;
         });
       } else {
+        console.log('🔧 Using legacy format');
         // Legacy format with full property names
         cartItems = rawCartItems;
       }
+      console.log('✅ Final cart items:', cartItems);
     } catch (error) {
+      console.error('❌ Error parsing cart items:', error);
       throw new Error('Invalid cart items in session metadata');
     }
     
@@ -163,6 +191,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const totalCents = session.amount_total || 0;
 
     // Create the order
+    console.log('🚀 Creating order with data:', {
+      campaignId,
+      email: customerEmail,
+      customerName: session.customer_details?.name || null,
+      subtotalCents,
+      totalCents,
+      stripePaymentId: session.id,
+      status: 'PAID',
+      lineItemsCount: cartItems.length
+    });
+
     const order = await prisma.shopOrder.create({
       data: {
         campaignId,
@@ -192,6 +231,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         campaign: true,
       }
     });
+
+    console.log('✅ Order created successfully:', order.id);
 
     // Send confirmation email
     await sendOrderConfirmationEmail(order);
