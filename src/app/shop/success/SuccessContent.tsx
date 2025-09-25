@@ -23,6 +23,7 @@ interface OrderDetails {
     product: {
       name: string;
       imageUrl: string | null;
+      imageUrls?: string[];
     };
     size: {
       label: string;
@@ -145,10 +146,10 @@ export default function SuccessContent() {
             
             {order.lineItems.map((item) => (
               <div key={item.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                {item.product.imageUrl && (
+                {((item.product.imageUrls && item.product.imageUrls[0]) || item.product.imageUrl) && (
                   <div className="relative w-16 h-16 rounded overflow-hidden flex-shrink-0">
                     <Image
-                      src={item.product.imageUrl}
+                      src={(item.product.imageUrls && item.product.imageUrls[0]) || (item.product.imageUrl as string)}
                       alt={item.product.name}
                       fill
                       className="object-cover"

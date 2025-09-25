@@ -23,7 +23,9 @@ interface ProductFormProps {
     slug: string;
     basePrice: number;
     description: string;
-    imageUrl: string;
+    imageUrl?: string;
+    imageUrls?: string[];
+    sizingGuideImageUrl?: string;
     sizes: ProductSize[];
   };
 }
@@ -41,6 +43,8 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
     basePrice: initialData?.basePrice || 0,
     description: initialData?.description || '',
     imageUrl: initialData?.imageUrl || '',
+    imageUrls: initialData?.imageUrls || (initialData?.imageUrl ? [initialData.imageUrl] : [] as string[]),
+    sizingGuideImageUrl: initialData?.sizingGuideImageUrl || '',
     sizes: initialData?.sizes || [{ label: 'S', priceDelta: 0 }] as ProductSize[],
   });
 
@@ -124,6 +128,21 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
 
   function handleChange(field: string, value: any) {
     setFormData(prev => ({ ...prev, [field]: value }));
+  }
+
+  function addImageUrl() {
+    setFormData(prev => ({ ...prev, imageUrls: [...prev.imageUrls, ''] }));
+  }
+
+  function updateImageUrl(index: number, value: string) {
+    const next = [...formData.imageUrls];
+    next[index] = value;
+    setFormData(prev => ({ ...prev, imageUrls: next }));
+  }
+
+  function removeImageUrl(index: number) {
+    const next = formData.imageUrls.filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, imageUrls: next }));
   }
 
   function handleSizeChange(index: number, field: 'label' | 'priceDelta', value: string | number) {
@@ -290,20 +309,60 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
               />
             </div>
 
-            {/* Product Image URL */}
+            {/* Product Images */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Image URL
+                Product Images (first is primary)
+              </label>
+              <div className="space-y-2">
+                {formData.imageUrls.map((url: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => updateImageUrl(idx, e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                      placeholder={idx === 0 ? 'Primary image URL' : 'Additional image URL'}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImageUrl(idx)}
+                      className="px-2 py-2 text-red-600 hover:bg-red-50 rounded"
+                      aria-label="Remove image"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={addImageUrl}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded"
+                  >
+                    + Add Image
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Include multiple image URLs. First image is used as preview in lists.
+                </p>
+              </div>
+            </div>
+
+            {/* Optional Sizing Guide */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sizing Guide Image URL (optional)
               </label>
               <input
                 type="url"
-                value={formData.imageUrl}
-                onChange={(e) => handleChange('imageUrl', e.target.value)}
+                value={formData.sizingGuideImageUrl}
+                onChange={(e) => handleChange('sizingGuideImageUrl', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
-                placeholder="https://example.com/product-image.jpg"
+                placeholder="https://example.com/sizing-guide.jpg"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Direct URL to product image (recommended: 400x400px or larger)
+                Wide image recommended. Displayed separately beneath product images if provided.
               </p>
             </div>
           </div>

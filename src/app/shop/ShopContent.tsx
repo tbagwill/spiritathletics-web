@@ -26,6 +26,8 @@ interface ShopProduct {
   basePrice: number;
   description: string | null;
   imageUrl: string | null;
+  imageUrls?: string[];
+  sizingGuideImageUrl?: string | null;
   sizes: ProductSize[];
 }
 
@@ -355,30 +357,52 @@ function ProductCard({
   function handleAddToCart() {
     if (!selectedSize || disabled) return;
 
+    const primaryImage = (product.imageUrls && product.imageUrls[0]) || product.imageUrl || undefined;
     addItem({
       productId: product.id,
       sizeId: selectedSize.id,
       productName: product.name,
       sizeName: selectedSize.label,
       price: currentPrice,
-      imageUrl: product.imageUrl || undefined
+      imageUrl: primaryImage
     });
     
     // FloatingCart will automatically show the new item
   }
 
+  const allImages = (product.imageUrls && product.imageUrls.length > 0)
+    ? product.imageUrls
+    : (product.imageUrl ? [product.imageUrl] : []);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [product.id]);
+
   const CardContent = (
     <div className={`bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-all duration-200 ${
       disabled ? 'opacity-60' : 'hover:shadow-lg hover:scale-105'
     }`}>
-      {product.imageUrl ? (
+      {allImages.length > 0 ? (
         <div className="relative h-48">
           <Image
-            src={product.imageUrl}
+            src={allImages[Math.min(activeIndex, allImages.length - 1)] as string}
             alt={product.name}
             fill
             className="object-cover"
           />
+          {allImages.length > 1 && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 bg-black/40 px-2 py-1 rounded-full">
+              {allImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => { e.preventDefault(); setActiveIndex(idx); }}
+                  className={`w-2 h-2 rounded-full ${idx === activeIndex ? 'bg-white' : 'bg-white/50'}`}
+                  aria-label={`Show image ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="h-48 bg-gray-100 flex items-center justify-center">
@@ -422,6 +446,20 @@ function ProductCard({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {/* Sizing Guide link */}
+        {product.sizingGuideImageUrl && (
+          <div className="mb-3">
+            <a
+              href={product.sizingGuideImageUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              View Sizing Guide
+            </a>
           </div>
         )}
 

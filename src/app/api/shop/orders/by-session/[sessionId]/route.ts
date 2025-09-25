@@ -30,6 +30,7 @@ export async function GET(
               select: {
                 name: true,
                 imageUrl: true,
+                imageUrls: true,
               }
             },
             size: {
@@ -64,6 +65,7 @@ export async function GET(
                 select: {
                   name: true,
                   imageUrl: true,
+                  imageUrls: true,
                 }
               },
               size: {

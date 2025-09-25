@@ -73,6 +73,8 @@ export default function EditProductForm({ productId }: EditProductFormProps) {
     basePrice: product.basePrice / 100, // Convert from cents
     description: product.description || '',
     imageUrl: product.imageUrl || '',
+    imageUrls: product.imageUrls || (product.imageUrl ? [product.imageUrl] : []),
+    sizingGuideImageUrl: product.sizingGuideImageUrl || '',
     sizes: product.sizes.map((size: any) => ({
       label: size.label,
       priceDelta: size.priceDelta / 100 // Convert from cents

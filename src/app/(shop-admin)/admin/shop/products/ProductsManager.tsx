@@ -23,6 +23,7 @@ interface Product {
   basePrice: number;
   description: string | null;
   imageUrl: string | null;
+  imageUrls?: string[];
   campaign: Campaign;
   sizes: ProductSize[];
   orderItems: any[];
@@ -244,9 +245,9 @@ export default function ProductsManager() {
             <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
               {/* Product Image */}
               <div className="relative h-48 bg-gray-100">
-                {product.imageUrl ? (
+                {(product.imageUrls?.[0] || product.imageUrl) ? (
                   <Image
-                    src={product.imageUrl}
+                    src={(product.imageUrls && product.imageUrls[0]) || (product.imageUrl as string)}
                     alt={product.name}
                     fill
                     className="object-cover"

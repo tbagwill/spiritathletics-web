@@ -270,6 +270,8 @@ model ShopProduct {
   basePrice    Int         // cents
   description  String?
   imageUrl     String?
+  imageUrls    String[]    @default([])
+  sizingGuideImageUrl String?
   sizes        ProductSize[]
   orderItems   ShopOrderItem[]
   createdAt    DateTime    @default(now())
