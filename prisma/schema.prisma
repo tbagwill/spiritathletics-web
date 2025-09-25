@@ -79,11 +79,12 @@ model CoachProfile {
   specialties String[]
   isActive    Boolean  @default(true)
 
-  services           Service[]
-  availabilityRules  AvailabilityRule[]
+  services               Service[]
+  availabilityRules      AvailabilityRule[]
   availabilityExceptions AvailabilityException[]
-  bookings           Booking[]
-  settings           CoachSettings?
+  bookings               Booking[]
+  settings               CoachSettings?
+  notificationPreference NotificationPreference?
 }
 
 model Service {
@@ -178,6 +179,19 @@ model Booking {
 
   customerUserId          String?
   customerUser            User?          @relation(fields: [customerUserId], references: [id])
+
+  // New fields for approval system
+  approvalStatus          ApprovalStatus @default(APPROVED)
+  approvalToken           String?        @unique
+  requestedAt             DateTime       @default(now())
+  approvedAt              DateTime?
+  deniedAt                DateTime?
+  denialReason            String?
+  autoExpireAt            DateTime?      // Auto-deny timestamp
+  reminderSentAt          DateTime?      // Track reminder emails
+
+  @@index([approvalStatus, coachId])
+  @@index([autoExpireAt])
 }
 
 model AuditLog {
@@ -206,6 +220,64 @@ model CoachSettings {
   emailBookingCancelled  Boolean  @default(true)
   dailyAgendaEmail       Boolean  @default(false)
   canManageShop          Boolean  @default(false)
+}
+
+model NotificationPreference {
+  id                String       @id @default(cuid())
+  coachId           String       @unique
+  coach             CoachProfile @relation(fields: [coachId], references: [id])
+  
+  emailOnRequest    Boolean      @default(true)
+  emailReminder     Boolean      @default(true)
+  reminderHours     Int          @default(6)  // Hours before auto-expire
+  dashboardBadge    Boolean      @default(true)
+  soundAlert        Boolean      @default(false)
+  dailySummary      Boolean      @default(true)
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model NotificationQueue {
+  id            String           @id @default(cuid())
+  type          NotificationType
+  recipientId   String
+  data          Json
+  status        QueueStatus      @default(PENDING)
+  attempts      Int              @default(0)
+  lastAttempt   DateTime?
+  processedAt   DateTime?
+  error         String?
+  scheduledFor  DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  
+  @@index([status, scheduledFor])
+  @@index([recipientId])
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  DENIED
+  EXPIRED
+  CANCELLED
+}
+
+enum NotificationType {
+  BOOKING_REQUEST
+  BOOKING_REMINDER
+  BOOKING_APPROVED
+  BOOKING_DENIED
+  BOOKING_EXPIRED
+  DAILY_SUMMARY
+}
+
+enum QueueStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
 }
 
 // NextAuth models
@@ -314,4 +386,76 @@ model ShopOrderItem {
   quantity    Int         @default(1)
   unitPrice   Int         // cents actually charged
   lineTotal   Int         // cents
+}
+
+// Performance Monitoring & Error Tracking Models
+model SystemMetric {
+  id          String     @id @default(cuid())
+  type        MetricType
+  name        String
+  value       Float
+  metadata    Json?
+  timestamp   DateTime   @default(now())
+  
+  @@index([type, timestamp])
+  @@index([name, timestamp])
+}
+
+model ErrorLog {
+  id          String     @id @default(cuid())
+  level       ErrorLevel
+  message     String
+  stack       String?
+  context     Json?
+  userId      String?
+  url         String?
+  userAgent   String?
+  timestamp   DateTime   @default(now())
+  resolved    Boolean    @default(false)
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  
+  @@index([level, timestamp])
+  @@index([resolved, timestamp])
+}
+
+model PerformanceLog {
+  id          String   @id @default(cuid())
+  route       String
+  method      String
+  statusCode  Int
+  duration    Int      // milliseconds
+  timestamp   DateTime @default(now())
+  
+  @@index([route, timestamp])
+  @@index([duration])
+}
+
+enum MetricType {
+  API_LATENCY
+  DATABASE_QUERY
+  MEMORY_USAGE
+  CACHE_HIT_RATE
+  BOOKING_RATE
+  ERROR_RATE
+}
+
+enum ErrorLevel {
+  DEBUG
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+// Image Upload Tracking
+model UploadedImage {
+  id          String   @id @default(cuid())
+  url         String
+  publicId    String?  // For CDN management
+  type        String   // 'product', 'campaign', 'profile', etc.
+  variants    Json?    // Store different size URLs
+  metadata    Json?    // Original name, size, dimensions, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 } 

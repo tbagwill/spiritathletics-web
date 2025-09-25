@@ -87,12 +87,15 @@ export default async function BookingsPage() {
             </div>
           </div>
         ) : (
-          <BookingsList bookings={bookings.map(booking => ({
-            ...booking,
-            startDateTimeUTC: booking.startDateTimeUTC.toISOString(),
-            endDateTimeUTC: booking.endDateTimeUTC.toISOString(),
-            classOccurrenceId: booking.classOccurrenceId || undefined
-          }))} />
+        <BookingsList bookings={bookings.map(booking => ({
+          ...booking,
+          startDateTimeUTC: booking.startDateTimeUTC.toISOString(),
+          endDateTimeUTC: booking.endDateTimeUTC.toISOString(),
+          classOccurrenceId: booking.classOccurrenceId || undefined,
+          approvalStatus: booking.approvalStatus || undefined,
+          approvalToken: booking.approvalToken || undefined,
+          autoExpireAt: booking.autoExpireAt?.toISOString() || undefined,
+        }))} />
         )}
       </div>
     </div>

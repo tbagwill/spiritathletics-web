@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const startTime = Date.now();
   const response = NextResponse.next();
 
   // Security headers
@@ -34,6 +35,22 @@ export function middleware(request: NextRequest) {
     // Log suspicious activity
     if (request.method !== 'GET' && request.method !== 'POST') {
       console.warn(`Suspicious HTTP method ${request.method} from ${ip} to ${request.nextUrl.pathname}`);
+    }
+
+    // Track API performance
+    const duration = Date.now() - startTime;
+    response.headers.set('X-Response-Time', `${duration}ms`);
+    
+    // Async tracking (don't block response)
+    if (duration > 500) { // Only track slower requests to avoid overwhelming the system
+      queueMicrotask(async () => {
+        try {
+          const { monitoring } = await import('@/lib/monitoring');
+          await monitoring.trackAPICall(request, response, duration);
+        } catch (error) {
+          console.error('Failed to track API call:', error);
+        }
+      });
     }
   }
 

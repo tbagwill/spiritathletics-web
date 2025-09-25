@@ -139,8 +139,8 @@ export default function Calendar() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">Season Start</h3>
-                  <p className="text-gray-600">Late August</p>
+                  <h3 className="font-bold text-gray-800">Choreography Season</h3>
+                  <p className="text-gray-600">September</p>
                 </div>
               </div>
               <p className="text-gray-600 text-sm">
@@ -157,7 +157,7 @@ export default function Calendar() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-800">Competition Season</h3>
-                  <p className="text-gray-600">October - March</p>
+                  <p className="text-gray-600">November - April</p>
                 </div>
               </div>
               <p className="text-gray-600 text-sm">

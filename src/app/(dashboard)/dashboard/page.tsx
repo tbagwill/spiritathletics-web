@@ -1,4 +1,5 @@
 import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import Link from 'next/link';
 
 function Tile({ href, title, icon, description }: { href: string; title: string; icon: React.ReactNode; description: string }) {
@@ -52,10 +53,20 @@ const IconGear = (
 		<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.07a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.07a3.1 3.1 0 0 1 1.51-1 1.65 1.65 0 0 0 .33-1.82l-.06-.06A2 2 0 1 1 7.02 3.4l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 20.6 7.02l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .66.39 1.26 1 1.51.33.14.69.22 1.06.22H22a2 2 0 1 1 0 4h-.07a3.1 3.1 0 0 1-1.06-.22 1.65 1.65 0 0 0-1.47.49z"/>
 	</svg>
 );
+const IconMonitoring = (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full" strokeWidth="1.8">
+		<path d="M3 3v18h18"/>
+		<path d="M7 12l3-3 3 3 5-5"/>
+		<circle cx="7" cy="12" r="1"/>
+		<circle cx="13" cy="9" r="1"/>
+		<circle cx="18" cy="7" r="1"/>
+	</svg>
+);
 
 export default async function DashboardHome() {
-	const session = await getServerSession();
+	const session = await getServerSession(authOptions);
 	const name = (session as any)?.user?.name || 'Coach';
+	const isAdmin = (session as any)?.user?.role === 'ADMIN';
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 animate-fade-in">
@@ -86,7 +97,7 @@ export default async function DashboardHome() {
 
 			{/* Content */}
 			<div className="max-w-7xl mx-auto px-6 py-12">
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up">
+				<div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} gap-6 animate-fade-in-up`}>
 					<div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
 						<Tile 
 							href="/dashboard/availability" 
@@ -119,6 +130,16 @@ export default async function DashboardHome() {
 							description="Configure notifications and account settings"
 						/>
 					</div>
+					{isAdmin && (
+						<div className="animate-fade-in" style={{ animationDelay: '500ms' }}>
+							<Tile 
+								href="/dashboard/monitoring" 
+								title="System Monitoring" 
+								icon={IconMonitoring}
+								description="Monitor application performance and system health"
+							/>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

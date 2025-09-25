@@ -7,6 +7,9 @@ interface Booking {
   id: string;
   type: string;
   status: string;
+  approvalStatus?: string;
+  approvalToken?: string;
+  autoExpireAt?: string;
   customerName: string;
   customerEmail: string;
   athleteName: string;
@@ -50,8 +53,9 @@ export default function BookingsList({ bookings }: BookingsListProps) {
     setTimeout(() => setToast(null), 5000);
   };
 
-  // Separate bookings into active and cancelled
-  const activeBookings = bookings.filter(booking => booking.status === 'CONFIRMED');
+  // Separate bookings into categories
+  const pendingApprovalBookings = bookings.filter(booking => booking.approvalStatus === 'PENDING');
+  const activeBookings = bookings.filter(booking => booking.status === 'CONFIRMED' && booking.approvalStatus !== 'PENDING');
   const cancelledBookings = bookings.filter(booking => booking.status === 'CANCELLED');
 
   const handleCancelClick = (booking: Booking) => {
@@ -99,6 +103,36 @@ export default function BookingsList({ bookings }: BookingsListProps) {
     setCancelDialog({ booking: null, isOpen: false, isSubmitting: false });
   };
 
+  const handleApprovalAction = async (booking: Booking, action: 'approve' | 'deny') => {
+    try {
+      const response = await fetch('/api/booking/approve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          action,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to ${action} booking`);
+      }
+
+      showToast(data.message || `Booking ${action === 'approve' ? 'approved' : 'denied'} successfully`, 'success');
+      
+      // Reload the page to refresh the bookings list
+      window.location.reload();
+
+    } catch (error: any) {
+      console.error(`${action} error:`, error);
+      showToast(error.message || `Failed to ${action} booking`, 'error');
+    }
+  };
+
   const now = new Date();
 
   // Function to render a booking card
@@ -128,6 +162,11 @@ export default function BookingsList({ bookings }: BookingsListProps) {
                 {booking.status === 'CANCELLED' && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                     Cancelled
+                  </span>
+                )}
+                {booking.approvalStatus === 'PENDING' && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 animate-pulse">
+                    ⏳ Pending Approval
                   </span>
                 )}
               </div>
@@ -189,8 +228,30 @@ export default function BookingsList({ bookings }: BookingsListProps) {
             </div>
           )}
 
-          {/* Action buttons - only for confirmed bookings */}
-          {!isPast && booking.status === 'CONFIRMED' && (
+          {/* Action buttons */}
+          {!isPast && booking.approvalStatus === 'PENDING' && (
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => handleApprovalAction(booking, 'approve')}
+                className="inline-flex items-center px-3 py-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all duration-200 text-sm font-medium"
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Approve
+              </button>
+              <button
+                onClick={() => handleApprovalAction(booking, 'deny')}
+                className="inline-flex items-center px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 text-sm font-medium"
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Deny
+              </button>
+            </div>
+          )}
+          {!isPast && booking.status === 'CONFIRMED' && booking.approvalStatus !== 'PENDING' && (
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => handleCancelClick(booking)}
@@ -304,6 +365,30 @@ export default function BookingsList({ bookings }: BookingsListProps) {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pending Approval Requests Section */}
+      {pendingApprovalBookings.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-lg border border-orange-200 overflow-hidden">
+          <div className="bg-orange-50 px-6 py-4 border-b border-orange-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                  Pending Approval Requests
+                </h2>
+                <p className="text-sm text-gray-600">Private lesson requests awaiting your approval</p>
+              </div>
+              <div className="text-sm text-gray-500">
+                {pendingApprovalBookings.length} {pendingApprovalBookings.length === 1 ? 'request' : 'requests'}
+              </div>
+            </div>
+          </div>
+          
+          <div className="divide-y divide-gray-100">
+            {pendingApprovalBookings.map((booking, index) => renderBookingCard(booking, index))}
           </div>
         </div>
       )}

@@ -25,6 +25,17 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Track error with monitoring service
+    import('@/lib/monitoring').then(({ trackError }) => {
+      trackError(error, {
+        componentStack: errorInfo.componentStack,
+        url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+        errorBoundary: true,
+        timestamp: new Date().toISOString()
+      }).catch(console.error);
+    }).catch(console.error);
   }
 
   render() {
