@@ -9,6 +9,8 @@ const ProductUpdateSchema = z.object({
   basePrice: z.number().min(0, 'Price must be non-negative').optional(),
   description: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
+  imageUrls: z.array(z.string().url()).optional(),
+  sizingChartUrl: z.string().url().optional().or(z.literal('')),
   sizes: z.array(z.object({
     id: z.string().optional(), // For updating existing sizes
     label: z.string().min(1, 'Size label is required'),
@@ -118,7 +120,14 @@ export async function PATCH(
     if (validatedData.slug !== undefined) updateData.slug = validatedData.slug;
     if (validatedData.basePrice !== undefined) updateData.basePrice = Math.round(validatedData.basePrice * 100);
     if (validatedData.description !== undefined) updateData.description = validatedData.description || null;
-    if (validatedData.imageUrl !== undefined) updateData.imageUrl = validatedData.imageUrl || null;
+    if (validatedData.imageUrls !== undefined) {
+      updateData.imageUrls = validatedData.imageUrls;
+      updateData.imageUrl = validatedData.imageUrls.length > 0 ? validatedData.imageUrls[0] : null;
+    }
+    if (validatedData.imageUrl !== undefined && validatedData.imageUrls === undefined) {
+      updateData.imageUrl = validatedData.imageUrl || null;
+    }
+    if (validatedData.sizingChartUrl !== undefined) updateData.sizingChartUrl = validatedData.sizingChartUrl || null;
 
     // Handle sizes update if provided
     if (validatedData.sizes) {

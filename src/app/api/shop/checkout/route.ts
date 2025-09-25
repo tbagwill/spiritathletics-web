@@ -91,13 +91,17 @@ export async function POST(req: NextRequest) {
       const unitPrice = product.basePrice + size.priceDelta;
       const lineTotal = unitPrice * item.quantity;
 
+      const image = (product as any).imageUrls && (product as any).imageUrls.length > 0
+        ? (product as any).imageUrls[0]
+        : product.imageUrl || undefined;
+
       lineItems.push({
         price_data: {
           currency: 'usd',
           product_data: {
             name: `${product.name} - ${size.label}`,
             description: product.description || undefined,
-            images: product.imageUrl ? [product.imageUrl] : undefined,
+            images: image ? [image] : undefined,
           },
           unit_amount: unitPrice,
         },

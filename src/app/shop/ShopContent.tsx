@@ -26,6 +26,8 @@ interface ShopProduct {
   basePrice: number;
   description: string | null;
   imageUrl: string | null;
+  imageUrls?: string[];
+  sizingChartUrl?: string | null;
   sizes: ProductSize[];
 }
 
@@ -361,25 +363,72 @@ function ProductCard({
       productName: product.name,
       sizeName: selectedSize.label,
       price: currentPrice,
-      imageUrl: product.imageUrl || undefined
+      imageUrl: ((product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : product.imageUrl) || undefined
     });
     
     // FloatingCart will automatically show the new item
   }
 
+  const images = (product.imageUrls && product.imageUrls.length > 0)
+    ? product.imageUrls
+    : (product.imageUrl ? [product.imageUrl] : []);
+  const [imgIndex, setImgIndex] = useState(0);
+  useEffect(() => { setImgIndex(0); }, [product.id]);
+  const primaryImage = images[imgIndex] || null;
+
   const CardContent = (
     <div className={`bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-all duration-200 ${
       disabled ? 'opacity-60' : 'hover:shadow-lg hover:scale-105'
     }`}>
-      {product.imageUrl ? (
-        <div className="relative h-48">
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover"
-          />
-        </div>
+      {primaryImage ? (
+        images.length > 1 ? (
+          <div className="relative h-48">
+            <Image
+              src={primaryImage}
+              alt={product.name}
+              fill
+              className="object-cover"
+            />
+            {/* Prev/Next controls */}
+            <button
+              type="button"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setImgIndex((imgIndex - 1 + images.length) % images.length); }}
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setImgIndex((imgIndex + 1) % images.length); }}
+              aria-label="Next image"
+            >
+              ›
+            </button>
+            {/* Dots */}
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`w-2 h-2 rounded-full ${i === imgIndex ? 'bg-white' : 'bg-white/60'}`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setImgIndex(i); }}
+                  aria-label={`Go to image ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="relative h-48">
+            <Image
+              src={primaryImage}
+              alt={product.name}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )
       ) : (
         <div className="h-48 bg-gray-100 flex items-center justify-center">
           <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -422,6 +471,15 @@ function ProductCard({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {/* Sizing Guide Link */}
+        {product.sizingChartUrl && (
+          <div className="mt-2">
+            <a href={product.sizingChartUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 underline">
+              View sizing guide
+            </a>
           </div>
         )}
 

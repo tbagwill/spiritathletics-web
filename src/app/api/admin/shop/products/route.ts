@@ -10,6 +10,8 @@ const ProductSchema = z.object({
   basePrice: z.number().min(0, 'Price must be non-negative'),
   description: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
+  imageUrls: z.array(z.string().url()).optional(),
+  sizingChartUrl: z.string().url().optional().or(z.literal('')),
   sizes: z.array(z.object({
     label: z.string().min(1, 'Size label is required'),
     priceDelta: z.number().default(0)
@@ -103,7 +105,11 @@ export async function POST(req: NextRequest) {
         slug: validatedData.slug,
         basePrice: basePriceCents,
         description: validatedData.description || null,
-        imageUrl: validatedData.imageUrl || null,
+        imageUrls: validatedData.imageUrls || [],
+        imageUrl: (validatedData.imageUrls && validatedData.imageUrls.length > 0)
+          ? validatedData.imageUrls[0]
+          : (validatedData.imageUrl || null),
+        sizingChartUrl: validatedData.sizingChartUrl || null,
         sizes: {
           create: validatedData.sizes.map(size => ({
             label: size.label,

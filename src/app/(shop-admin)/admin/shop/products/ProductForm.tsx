@@ -23,7 +23,8 @@ interface ProductFormProps {
     slug: string;
     basePrice: number;
     description: string;
-    imageUrl: string;
+    imageUrls?: string[];
+    sizingChartUrl?: string;
     sizes: ProductSize[];
   };
 }
@@ -40,7 +41,8 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
     slug: initialData?.slug || '',
     basePrice: initialData?.basePrice || 0,
     description: initialData?.description || '',
-    imageUrl: initialData?.imageUrl || '',
+    imageUrls: initialData?.imageUrls || [],
+    sizingChartUrl: initialData?.sizingChartUrl || '',
     sizes: initialData?.sizes || [{ label: 'S', priceDelta: 0 }] as ProductSize[],
   });
 
@@ -290,20 +292,37 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
               />
             </div>
 
-            {/* Product Image URL */}
+            {/* Product Images */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Image URL
+                Product Images (one URL per line)
+              </label>
+              <textarea
+                rows={4}
+                value={formData.imageUrls.join('\n')}
+                onChange={(e) => handleChange('imageUrls', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                placeholder="https://example.com/image-1.jpg\nhttps://example.com/image-2.jpg"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Add at least one image if available; first image will be used as the primary.
+              </p>
+            </div>
+
+            {/* Sizing Chart */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sizing Chart Image URL (optional)
               </label>
               <input
                 type="url"
-                value={formData.imageUrl}
-                onChange={(e) => handleChange('imageUrl', e.target.value)}
+                value={formData.sizingChartUrl}
+                onChange={(e) => handleChange('sizingChartUrl', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
-                placeholder="https://example.com/product-image.jpg"
+                placeholder="https://example.com/sizing-chart.jpg"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Direct URL to product image (recommended: 400x400px or larger)
+                This image will be shown as a sizing guide for this product.
               </p>
             </div>
           </div>
