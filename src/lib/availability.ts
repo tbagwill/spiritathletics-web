@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { addMinutes, isBefore, startOfDay } from 'date-fns';
-import { combineLocalDateAndMinutesPT, formatPt } from './time';
+import { combineLocalDateAndMinutesPT, formatPt, utcToPt } from './time';
 
 export const SLOT_MINUTES = 30;
 
@@ -10,6 +10,11 @@ export async function getAvailablePrivateSlots(params: {
   durationMinutes: number;
 }): Promise<{ startUTC: Date; endUTC: Date; display: string }[]> {
   const { coachId, localDate, durationMinutes } = params;
+  
+  // Get the day of week in PT timezone (not system local)
+  const ptDate = utcToPt(localDate);
+  const dayOfWeek = ptDate.getDay();
+  
   // Fetch rules, exceptions, and confirmed bookings for that date
   const [rules, exceptions, bookings] = await Promise.all([
     prisma.availabilityRule.findMany({ where: { coachId } }),
@@ -33,7 +38,6 @@ export async function getAvailablePrivateSlots(params: {
   ]);
 
   // Build allowed windows from weekly rules
-  const dayOfWeek = localDate.getDay();
   const allowedWindows: { startMin: number; endMin: number }[] = [];
   for (const r of rules) {
     if (r.ruleType !== 'WEEKLY') continue;

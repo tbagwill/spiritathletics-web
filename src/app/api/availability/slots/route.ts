@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getAvailablePrivateSlots } from '@/lib/availability';
+import { fromZonedTime } from 'date-fns-tz';
+
+const APP_TZ = 'America/Los_Angeles';
 
 // Ensure fresh data on every request
 export const dynamic = 'force-dynamic';
@@ -24,7 +27,8 @@ export async function GET(req: NextRequest) {
   
   try {
     const { coachId, date, duration } = parse.data;
-    const localDate = new Date(date + 'T00:00:00');
+    // Interpret the date string as PT midnight, not system local
+    const localDate = fromZonedTime(date + ' 00:00:00', APP_TZ);
     const slots = await getAvailablePrivateSlots({ coachId, localDate, durationMinutes: duration });
     
     // Add cache-control headers to prevent stale data
