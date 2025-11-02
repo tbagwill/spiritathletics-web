@@ -14,11 +14,13 @@ export default async function BookingsPage() {
   const now = new Date();
   const bookings = coach ? await prisma.booking.findMany({
     where: {
-      startDateTimeUTC: { gte: now },
-      status: { in: ['PENDING', 'CONFIRMED'] }, // Explicitly include pending and confirmed
       OR: [
-        { coachId: coach.id },
-        { service: { coachId: coach.id } },
+        // Show all PENDING bookings regardless of time
+        { status: 'PENDING', OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] },
+        // Show future CONFIRMED bookings
+        { status: 'CONFIRMED', startDateTimeUTC: { gte: now }, OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] },
+        // Show recent CANCELLED bookings (last 7 days)
+        { status: 'CANCELLED', cancelledAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] },
       ],
     },
     include: { service: { include: { coach: { include: { user: true } } } }, classOccurrence: true },

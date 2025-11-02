@@ -67,10 +67,10 @@ export default async function DashboardHome() {
 	
 	// Get coach profile and count pending bookings
 	const coach = userId ? await prisma.coachProfile.findUnique({ where: { userId } }) : null;
+	// Count PENDING bookings regardless of time (they should show until approved/declined)
 	const pendingCount = coach ? await prisma.booking.count({
 		where: {
 			status: 'PENDING',
-			startDateTimeUTC: { gte: new Date() },
 			OR: [
 				{ coachId: coach.id },
 				{ service: { coachId: coach.id } },
