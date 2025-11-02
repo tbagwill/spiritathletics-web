@@ -11,14 +11,17 @@ const SENDER = process.env.SENDER_EMAIL || 'booking@spiritathletics.net';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  const session = await getServerSession(authOptions as any);
+  const userId = (session as any)?.user?.id || (session as any)?.user?.sub;
+  
+  if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  const bookingId = params.id;
+  const resolvedParams = await params;
+  const bookingId = resolvedParams.id;
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -36,7 +39,7 @@ export async function POST(
 
       // Verify the session user is the coach for this booking
       const coachProfile = await tx.coachProfile.findUnique({
-        where: { userId: session.user.id },
+        where: { userId },
       });
 
       if (!coachProfile || coachProfile.id !== booking.coachId) {
