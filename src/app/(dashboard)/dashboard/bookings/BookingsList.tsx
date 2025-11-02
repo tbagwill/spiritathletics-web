@@ -384,41 +384,45 @@ export default function BookingsList({ bookings }: BookingsListProps) {
 
       {/* Active Bookings Section */}
       <div className="space-y-6">
-        {/* Pending Requests Section */}
-        {pendingBookings.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg border border-yellow-200 overflow-hidden">
-            <div className="bg-yellow-50 px-6 py-4 border-b border-yellow-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <span className="text-yellow-600">⏳</span>
-                    Pending Requests
-                  </h2>
-                  <p className="text-sm text-gray-600">Private lesson requests awaiting your approval</p>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {pendingBookings.length} {pendingBookings.length === 1 ? 'request' : 'requests'}
-                </div>
+        {/* Pending Requests Section - Always show */}
+        <div className="bg-white rounded-2xl shadow-lg border border-yellow-200 overflow-hidden">
+          <div className="bg-yellow-50 px-6 py-4 border-b border-yellow-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-yellow-600">⏳</span>
+                  Pending Requests
+                </h2>
+                <p className="text-sm text-gray-600">Private lesson requests awaiting your approval</p>
+              </div>
+              <div className="text-sm text-gray-500">
+                {pendingBookings.length} {pendingBookings.length === 1 ? 'request' : 'requests'}
               </div>
             </div>
-            
-            <div className="divide-y divide-gray-100">
-              {pendingBookings.length === 0 ? (
-                <div className="p-6 text-center text-gray-600">
-                  <p>No pending requests</p>
-                </div>
-              ) : (
-                pendingBookings.map((booking, index) => renderBookingCard(booking, index))
-              )}
-            </div>
           </div>
-        )}
+          
+          <div className="divide-y divide-gray-100">
+            {pendingBookings.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <div className="w-12 h-12 mx-auto mb-3 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="font-medium text-gray-700">No pending booking requests right now</p>
+              </div>
+            ) : (
+              pendingBookings.map((booking, index) => renderBookingCard(booking, index))
+            )}
+          </div>
+        </div>
       
+        {/* Confirmed/Active Bookings Section - Always show */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Active Bookings</h2>
+                <h2 className="text-lg font-bold text-gray-900">Upcoming Bookings</h2>
                 <p className="text-sm text-gray-600">Your confirmed upcoming classes and private lessons</p>
               </div>
               <div className="text-sm text-gray-500">
@@ -434,7 +438,7 @@ export default function BookingsList({ bookings }: BookingsListProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h6a2 2 0 012 2v4m-6 6v7m8-3v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4m8-3V8a2 2 0 00-2-2H8a2 2 0 00-2 2v6" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No active bookings</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming bookings yet</h3>
               <p className="text-gray-600">You don't have any confirmed classes or private lessons scheduled</p>
             </div>
           ) : (
@@ -444,26 +448,35 @@ export default function BookingsList({ bookings }: BookingsListProps) {
           )}
         </div>
 
-        {/* Cancelled Bookings Section */}
-        {cancelledBookings.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="bg-red-50 px-6 py-4 border-b border-red-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">Cancelled Bookings</h2>
-                  <p className="text-sm text-gray-600">Recently cancelled classes and private lessons</p>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {cancelledBookings.length} {cancelledBookings.length === 1 ? 'cancellation' : 'cancellations'}
-                </div>
+        {/* Cancelled Bookings Section - Always show */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-red-50 px-6 py-4 border-b border-red-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Cancelled Bookings</h2>
+                <p className="text-sm text-gray-600">Recently cancelled classes and private lessons</p>
+              </div>
+              <div className="text-sm text-gray-500">
+                {cancelledBookings.length} {cancelledBookings.length === 1 ? 'cancellation' : 'cancellations'}
               </div>
             </div>
-            
+          </div>
+          
+          {cancelledBookings.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              <div className="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <p className="font-medium text-gray-700">No cancelled bookings so far</p>
+            </div>
+          ) : (
             <div className="divide-y divide-gray-100">
               {cancelledBookings.map((booking, index) => renderBookingCard(booking, index))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );

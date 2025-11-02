@@ -15,6 +15,7 @@ export default async function BookingsPage() {
   const bookings = coach ? await prisma.booking.findMany({
     where: {
       startDateTimeUTC: { gte: now },
+      status: { in: ['PENDING', 'CONFIRMED'] }, // Explicitly include pending and confirmed
       OR: [
         { coachId: coach.id },
         { service: { coachId: coach.id } },

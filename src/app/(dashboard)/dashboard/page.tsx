@@ -1,10 +1,17 @@
 import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
-function Tile({ href, title, icon, description }: { href: string; title: string; icon: React.ReactNode; description: string }) {
+function Tile({ href, title, icon, description, badge }: { href: string; title: string; icon: React.ReactNode; description: string; badge?: number }) {
 	return (
 		<Link href={href} className="group w-full">
-			<div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 transition-all duration-200 hover:shadow-xl hover:scale-105 hover:border-blue-300 group">
+			<div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 transition-all duration-200 hover:shadow-xl hover:scale-105 hover:border-blue-300 group relative">
+				{badge && badge > 0 && (
+					<div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg animate-pulse">
+						{badge}
+					</div>
+				)}
 				<div className="flex items-center gap-4">
 					<div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center text-blue-600 group-hover:from-blue-100 group-hover:to-indigo-100 group-hover:text-blue-700 transition-all duration-200">
 						<div className="w-8 h-8 transition-transform duration-200 group-hover:scale-110">
@@ -54,8 +61,22 @@ const IconGear = (
 );
 
 export default async function DashboardHome() {
-	const session = await getServerSession();
+	const session = await getServerSession(authOptions);
+	const userId = (session as any)?.user?.id || (session as any)?.user?.sub;
 	const name = (session as any)?.user?.name || 'Coach';
+	
+	// Get coach profile and count pending bookings
+	const coach = userId ? await prisma.coachProfile.findUnique({ where: { userId } }) : null;
+	const pendingCount = coach ? await prisma.booking.count({
+		where: {
+			status: 'PENDING',
+			startDateTimeUTC: { gte: new Date() },
+			OR: [
+				{ coachId: coach.id },
+				{ service: { coachId: coach.id } },
+			],
+		},
+	}) : 0;
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 animate-fade-in">
@@ -109,6 +130,7 @@ export default async function DashboardHome() {
 							title="Upcoming Bookings" 
 							icon={IconCalendar}
 							description="View your upcoming classes and private lessons"
+							badge={pendingCount}
 						/>
 					</div>
 					<div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
