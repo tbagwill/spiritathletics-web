@@ -82,6 +82,7 @@ const NavBar = () => {
                       <Link href="/about" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">About</Link>
                       <Link href="/staff" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Staff</Link>
                       <Link href="/forms" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Forms</Link>
+                      <Link href="/sponsors" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Sponsors</Link>
                       <Link href="/contact" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Contact</Link>
                     </div>
                   </div>
@@ -169,6 +170,7 @@ const NavBar = () => {
               <Link href="/about" onClick={closeMenu} className="block px-3 py-2 rounded-lg text-gray-900 hover:text-blue-700 hover:bg-blue-50">About</Link>
               <Link href="/staff" onClick={closeMenu} className="block px-3 py-2 rounded-lg text-gray-900 hover:text-blue-700 hover:bg-blue-50">Staff</Link>
               <Link href="/forms" onClick={closeMenu} className="block px-3 py-2 rounded-lg text-gray-900 hover:text-blue-700 hover:bg-blue-50">Forms</Link>
+              <Link href="/sponsors" onClick={closeMenu} className="block px-3 py-2 rounded-lg text-gray-900 hover:text-blue-700 hover:bg-blue-50">Sponsors</Link>
               <Link href="/contact" onClick={closeMenu} className="block px-3 py-2 rounded-lg text-gray-900 hover:text-blue-700 hover:bg-blue-50">Contact</Link>
             </div>
           )}

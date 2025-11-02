@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { computePrivatePrice } from '@/lib/pricing';
 import { buildICS } from '@/lib/ics';
-import { buildCoachHtml, buildCustomerHtml, sendBookingEmails } from '@/lib/email';
+import { buildCoachHtml, buildCustomerHtml, sendBookingEmails, sendPendingRequestEmails } from '@/lib/email';
 import { formatPt } from '@/lib/time';
 
 import { rateLimitHit } from '@/lib/rateLimit';
@@ -43,15 +43,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // Comprehensive overlap check using safe Prisma query
-      // This checks for ANY booking that would conflict with the requested time slot
+      // Comprehensive overlap check - only check CONFIRMED bookings (pending don't block)
       const startUTC = new Date(startDateTimeUTC);
       const endUTC = new Date(endDateTimeUTC);
       
       const overlapCount = await tx.booking.count({
         where: {
           coachId,
-          status: 'CONFIRMED',
+          status: 'CONFIRMED', // Only confirmed bookings block slots
           OR: [
             // Case 1: Existing booking starts before our slot and ends after our start time
             {
@@ -95,12 +94,16 @@ export async function POST(req: NextRequest) {
       if (!service || service.type !== 'PRIVATE') throw new Error('Service not found');
       if (service.coachId !== coachId) throw new Error('Coach and service mismatch');
 
+      // Check if coach requires approval
+      const settings = await tx.coachSettings.findUnique({ where: { coachId } }).catch(() => null);
+      const requiresApproval = settings?.mustApproveRequests ?? false;
+
       const pricing = computePrivatePrice(selection as any);
       const cancellationToken = uuidv4();
       const booking = await tx.booking.create({
         data: {
           type: 'PRIVATE',
-          status: 'CONFIRMED',
+          status: requiresApproval ? 'PENDING' : 'CONFIRMED',
           privateKind: pricing.privateKind as any,
           numAthletes: pricing.numAthletes,
           customerName,
@@ -115,39 +118,58 @@ export async function POST(req: NextRequest) {
           cancellationToken,
         },
       });
-      return { booking, service };
+      return { booking, service, settings, requiresApproval };
     });
 
     const coachEmail = result.service.coach?.user?.email || null;
-    const settings = await prisma.coachSettings.findUnique({ where: { coachId: result.service.coachId! } }).catch(() => null);
-    const coachEmails = (settings?.emailBookingConfirmed === false) ? [] : [coachEmail, ...(settings?.alertEmails || [])];
+    const coachEmails = [coachEmail, ...(result.settings?.alertEmails || [])].filter((e): e is string => !!e);
     const coachName = result.service.coach?.user?.name || 'Coach';
     const title = 'Private Lesson';
     const when = formatPt(result.booking.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
     const location = process.env.ORG_ADDRESS || 'Spirit Athletics, 17537 Bear Valley Rd, Hesperia, CA 92345';
     const cancelUrl = `${process.env.BASE_PROD_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net'}/cancel?token=${result.booking.cancellationToken}`;
+    const dashboardUrl = `${process.env.BASE_PROD_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net'}/dashboard/bookings`;
 
-    const ics = buildICS({
-      uid: result.booking.id,
-      start: result.booking.startDateTimeUTC,
-      end: result.booking.endDateTimeUTC,
-      summary: `${title} — ${coachName}`,
-      location,
-      description: `Cancel: ${cancelUrl}`,
-      organizerEmail: process.env.SENDER_EMAIL || 'booking@spiritathletics.net',
-      method: 'REQUEST',
-    });
+    if (result.requiresApproval) {
+      // Send pending request emails (no calendar invite yet)
+      await sendPendingRequestEmails({
+        customerEmail,
+        coachEmails,
+        title,
+        when,
+        location,
+        customerName,
+        athleteName,
+        cancelUrl,
+        dashboardUrl,
+      });
+    } else {
+      // Send immediate confirmation with calendar invite
+      const ics = buildICS({
+        uid: result.booking.id,
+        start: result.booking.startDateTimeUTC,
+        end: result.booking.endDateTimeUTC,
+        summary: `${title} — ${coachName}`,
+        location,
+        description: `Cancel: ${cancelUrl}`,
+        organizerEmail: process.env.SENDER_EMAIL || 'booking@spiritathletics.net',
+        method: 'REQUEST',
+      });
 
-    await sendBookingEmails({
-      customerEmail,
-      coachEmails,
-      subject: `Booking Confirmed: ${title} (${when})`,
-      htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
-      htmlCoach: buildCoachHtml(title, when, customerName, athleteName),
-      icsContent: ics,
-    });
+      // Only send coach email if they have confirmation emails enabled
+      const finalCoachEmails = (result.settings?.emailBookingConfirmed === false) ? [] : coachEmails;
 
-    return NextResponse.json({ ok: true, bookingId: (result as any).booking.id });
+      await sendBookingEmails({
+        customerEmail,
+        coachEmails: finalCoachEmails,
+        subject: `Booking Confirmed: ${title} (${when})`,
+        htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
+        htmlCoach: buildCoachHtml(title, when, customerName, athleteName),
+        icsContent: ics,
+      });
+    }
+
+    return NextResponse.json({ ok: true, bookingId: (result as any).booking.id, requiresApproval: result.requiresApproval });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e.message ?? 'Booking failed' }, { status: 400 });
   }

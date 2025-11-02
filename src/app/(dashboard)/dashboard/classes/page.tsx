@@ -182,7 +182,7 @@ export default function ClassesManagerPage() {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] text-gray-900">
                 <form onSubmit={submit} className="space-y-6">
                   {error && (
                     <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 flex items-start gap-3">

@@ -176,32 +176,33 @@ export default function ShopContent() {
         )}
         <div className="text-center py-16">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
-              <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-8 mb-8 overflow-hidden">
+              <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 to-indigo-500 -mt-8 mb-6" />
+              <div className="w-20 h-20 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center ring-2 ring-blue-100">
                 <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 className="text-3xl font-bold text-blue-900 mb-2">
                 No Pop-Up Currently Open
               </h1>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="text-base sm:text-lg text-gray-700 mb-6">
                 Our pop-up shop isn't currently running, but the next window is coming soon! 
                 We'll have exclusive Spirit Athletics apparel and merchandise available for a limited time.
               </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="bg-blue-50/80 border border-blue-200 rounded-lg p-4 mb-6">
                 <p className="text-blue-800 text-sm">
                   <strong>How it works:</strong> We open pop-up campaigns with limited-time ordering windows. 
                   Once the window closes, we place bulk orders and fulfill them within 2-3 weeks.
                 </p>
               </div>
               <div className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-700">
                   Want to be notified when the next pop-up opens?
                 </p>
                 <Link 
                   href="/contact" 
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md"
                 >
                   Contact Us for Updates
                 </Link>

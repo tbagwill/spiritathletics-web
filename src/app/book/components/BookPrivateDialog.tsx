@@ -18,7 +18,7 @@ type Props = {
   startUTC: string;
   endUTC: string;
   onClose: () => void;
-  onSuccess?: () => void; // Callback to refresh availability and show toast
+  onSuccess?: (requiresApproval?: boolean) => void; // Callback to refresh availability and show toast
 };
 
 type FormValues = {
@@ -40,7 +40,6 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
     setError(null);
     try {
 
-
       const res = await fetch('/api/book/private', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,12 +58,12 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Booking failed');
       
-      // Close modal and trigger success callback
+      // Close modal and trigger success callback with approval status
       onClose();
       reset();
       setError(null);
       if (onSuccess) {
-        onSuccess();
+        onSuccess(data.requiresApproval);
       }
     } catch (e: any) {
       setError(e.message || 'Something went wrong.');

@@ -140,7 +140,7 @@ export default function PreferencesPage() {
                         <h3 className="font-semibold text-gray-900">Booking Approval</h3>
                       </div>
                       <p className="text-sm text-gray-700 mb-1">Require manual approval for private lesson bookings</p>
-                      <p className="text-xs text-blue-700 font-medium">Coming soon</p>
+                      <p className="text-xs text-gray-600">When enabled, private lesson requests will be marked as pending until you approve them</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 

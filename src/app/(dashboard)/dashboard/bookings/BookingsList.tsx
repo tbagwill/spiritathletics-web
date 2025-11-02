@@ -50,7 +50,8 @@ export default function BookingsList({ bookings }: BookingsListProps) {
     setTimeout(() => setToast(null), 5000);
   };
 
-  // Separate bookings into active and cancelled
+  // Separate bookings into pending, active, and cancelled
+  const pendingBookings = bookings.filter(booking => booking.status === 'PENDING');
   const activeBookings = bookings.filter(booking => booking.status === 'CONFIRMED');
   const cancelledBookings = bookings.filter(booking => booking.status === 'CANCELLED');
 
@@ -99,6 +100,50 @@ export default function BookingsList({ bookings }: BookingsListProps) {
     setCancelDialog({ booking: null, isOpen: false, isSubmitting: false });
   };
 
+  const handleApprove = async (booking: Booking) => {
+    try {
+      const response = await fetch(`/api/dashboard/bookings/${booking.id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to approve booking');
+      }
+
+      showToast('Booking approved and confirmed!', 'success');
+      // Reload the page to refresh the bookings list
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Approve error:', error);
+      showToast(error.message || 'Failed to approve booking', 'error');
+    }
+  };
+
+  const handleDecline = async (booking: Booking) => {
+    try {
+      const response = await fetch(`/api/dashboard/bookings/${booking.id}/decline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to decline booking');
+      }
+
+      showToast('Booking request declined', 'success');
+      // Reload the page to refresh the bookings list
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Decline error:', error);
+      showToast(error.message || 'Failed to decline booking', 'error');
+    }
+  };
+
   const now = new Date();
 
   // Function to render a booking card
@@ -128,6 +173,11 @@ export default function BookingsList({ bookings }: BookingsListProps) {
                 {booking.status === 'CANCELLED' && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                     Cancelled
+                  </span>
+                )}
+                {booking.status === 'PENDING' && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    ⏳ Pending Approval
                   </span>
                 )}
               </div>
@@ -189,7 +239,7 @@ export default function BookingsList({ bookings }: BookingsListProps) {
             </div>
           )}
 
-          {/* Action buttons - only for confirmed bookings */}
+          {/* Action buttons - for confirmed and pending bookings */}
           {!isPast && booking.status === 'CONFIRMED' && (
             <div className="flex justify-end pt-2">
               <button
@@ -200,6 +250,30 @@ export default function BookingsList({ bookings }: BookingsListProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
                 Cancel
+              </button>
+            </div>
+          )}
+          
+          {/* Pending request actions */}
+          {booking.status === 'PENDING' && (
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+              <button
+                onClick={() => handleApprove(booking)}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all duration-200 text-sm font-medium"
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Approve
+              </button>
+              <button
+                onClick={() => handleDecline(booking)}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 text-sm font-medium"
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Decline
               </button>
             </div>
           )}
@@ -310,6 +384,36 @@ export default function BookingsList({ bookings }: BookingsListProps) {
 
       {/* Active Bookings Section */}
       <div className="space-y-6">
+        {/* Pending Requests Section */}
+        {pendingBookings.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg border border-yellow-200 overflow-hidden">
+            <div className="bg-yellow-50 px-6 py-4 border-b border-yellow-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <span className="text-yellow-600">⏳</span>
+                    Pending Requests
+                  </h2>
+                  <p className="text-sm text-gray-600">Private lesson requests awaiting your approval</p>
+                </div>
+                <div className="text-sm text-gray-500">
+                  {pendingBookings.length} {pendingBookings.length === 1 ? 'request' : 'requests'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-gray-100">
+              {pendingBookings.length === 0 ? (
+                <div className="p-6 text-center text-gray-600">
+                  <p>No pending requests</p>
+                </div>
+              ) : (
+                pendingBookings.map((booking, index) => renderBookingCard(booking, index))
+              )}
+            </div>
+          </div>
+        )}
+      
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">

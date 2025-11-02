@@ -22,6 +22,7 @@ enum ServiceType {
 }
 
 enum BookingStatus {
+  PENDING
   CONFIRMED
   CANCELLED
 }

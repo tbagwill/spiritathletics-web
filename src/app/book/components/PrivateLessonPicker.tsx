@@ -192,11 +192,17 @@ export default function PrivateLessonPicker({ coaches }: Props) {
             startUTC={selectedSlot.startUTC}
             endUTC={selectedSlot.endUTC}
             onClose={() => setSelectedSlot(null)}
-            onSuccess={() => {
+            onSuccess={(requiresApproval) => {
               // Clear selected slot and refresh availability
               setSelectedSlot(null);
               fetchSlots();
-              showToast('Private lesson booked! Check your email for details.', 'success');
+              
+              // Show appropriate success message
+              if (requiresApproval) {
+                showToast('Request submitted! You\'ll receive an email once your coach approves it.', 'success');
+              } else {
+                showToast('Private lesson booked! Check your email for details.', 'success');
+              }
             }}
           />
         </div>
