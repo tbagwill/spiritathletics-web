@@ -63,30 +63,6 @@ export default async function BookingsPage() {
             <h3 className="text-lg font-medium text-gray-900 mb-2">Coach Profile Not Found</h3>
             <p className="text-gray-600">Unable to load your coach profile. Please contact support.</p>
           </div>
-        ) : bookings.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center animate-fade-in-up">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h6a2 2 0 012 2v4m-6 6v7m8-3v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4m8-3V8a2 2 0 00-2-2H8a2 2 0 00-2 2v6" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming bookings</h3>
-            <p className="text-gray-600 mb-6">You don't have any scheduled classes or private lessons yet</p>
-            <div className="flex justify-center gap-3">
-              <Link 
-                href="/dashboard/classes" 
-                className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-sm"
-              >
-                Manage Classes
-              </Link>
-              <Link 
-                href="/dashboard/availability" 
-                className="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-colors text-sm"
-              >
-                Set Availability
-              </Link>
-            </div>
-          </div>
         ) : (
           <BookingsList bookings={bookings.map(booking => ({
             ...booking,
