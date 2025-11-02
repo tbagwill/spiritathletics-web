@@ -5,13 +5,13 @@ import Link from 'next/link';
 
 function Tile({ href, title, icon, description, badge }: { href: string; title: string; icon: React.ReactNode; description: string; badge?: number }) {
 	return (
-		<Link href={href} className="group w-full relative">
+		<Link href={href} className="group w-full block relative">
 			{badge && badge > 0 && (
 				<div className="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
 					{badge}
 				</div>
 			)}
-			<div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 transition-all duration-200 hover:shadow-xl hover:scale-105 hover:border-blue-300 group">
+			<div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 transition-all duration-200 hover:shadow-xl hover:scale-105 hover:border-blue-300">
 				<div className="flex items-center gap-4">
 					<div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center text-blue-600 group-hover:from-blue-100 group-hover:to-indigo-100 group-hover:text-blue-700 transition-all duration-200">
 						<div className="w-8 h-8 transition-transform duration-200 group-hover:scale-110">
