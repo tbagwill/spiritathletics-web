@@ -171,6 +171,21 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, bookingId: (result as any).booking.id, requiresApproval: result.requiresApproval });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e.message ?? 'Booking failed' }, { status: 400 });
+    console.error('Private booking error:', e);
+    
+    // Check for database enum errors (migration not applied)
+    if (e.message?.includes('invalid input value for enum') || e.code === '22P02') {
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'Our system is currently being updated. Please try again in a few moments or contact us for assistance.' 
+      }, { status: 503 });
+    }
+    
+    // User-friendly error messages
+    const userMessage = e.message?.includes('overlap') || e.message?.includes('conflict')
+      ? 'This time slot is no longer available. Please select a different time.'
+      : 'We couldn\'t complete your booking. Please try again or contact us for assistance.';
+    
+    return NextResponse.json({ ok: false, error: userMessage }, { status: 400 });
   }
 } 
