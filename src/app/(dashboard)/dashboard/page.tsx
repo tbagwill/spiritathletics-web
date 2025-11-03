@@ -132,7 +132,7 @@ export default async function DashboardHome() {
 							title="Upcoming Bookings" 
 							icon={IconCalendar}
 							description="View your upcoming classes and private lessons"
-							badge={pendingCount}
+							{...(pendingCount > 0 && { badge: pendingCount })}
 						/>
 					</div>
 					<div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
