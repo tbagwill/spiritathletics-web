@@ -65,7 +65,7 @@ export default function Calendar() {
             {/* Google Calendar Embed - All Calendars Combined */}
             <div className="bg-white rounded-lg overflow-hidden shadow-lg" style={{ height: '600px' }}>
               <iframe 
-                src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&bgcolor=%23ffffff&showTitle=1&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=1&showTz=0&src=12e16a482f7905033cfc8863c82d9629c0a3de8dd98f782f7ab17b0bfc3ea21e%40group.calendar.google.com&src=4ee448b4a97db488525abe69399f46f74f7109e698765640b3bf62519d73d531%40group.calendar.google.com&src=d08f7bd81e0ced240a45d09e6cc9fc1eabd790b6973ba2a6d9a265ef1430a8f3%40group.calendar.google.com&src=685b6a5e78d6ec7d294e441ef00b6357dd7f08b4642e4375ae2386435bf41582%40group.calendar.google.com&color=%230000FE&color=%23DC2626&color=%2316A34A&color=%239333EA"
+                src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&bgcolor=%23ffffff&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=1&showTz=0&src=12e16a482f7905033cfc8863c82d9629c0a3de8dd98f782f7ab17b0bfc3ea21e%40group.calendar.google.com&color=%230B8043&src=4ee448b4a97db488525abe69399f46f74f7109e698765640b3bf62519d73d531%40group.calendar.google.com&color=%23D50000&src=d08f7bd81e0ced240a45d09e6cc9fc1eabd790b6973ba2a6d9a265ef1430a8f3%40group.calendar.google.com&color=%237CB342&src=685b6a5e78d6ec7d294e441ef00b6357dd7f08b4642e4375ae2386435bf41582%40group.calendar.google.com&color=%238E24AA"
                 style={{ border: 0 }}
                 width="100%" 
                 height="600" 
