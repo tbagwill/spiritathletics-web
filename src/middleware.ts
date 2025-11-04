@@ -16,14 +16,15 @@ export function middleware(request: NextRequest) {
   }
 
   // CSP header for enhanced security
+  // Allow Google Calendar embeds and related Google services
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://accounts.google.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' https://www.google.com",
-    "frame-src https://www.google.com https://calendar.google.com",
+    "connect-src 'self' https://www.google.com https://accounts.google.com",
+    "frame-src https://www.google.com https://calendar.google.com https://accounts.google.com",
   ].join('; ');
   response.headers.set('Content-Security-Policy', csp);
 
