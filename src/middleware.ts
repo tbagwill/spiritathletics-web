@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
     "connect-src 'self' https://www.google.com",
-    "frame-src https://www.google.com",
+    "frame-src https://www.google.com https://calendar.google.com",
   ].join('; ');
   response.headers.set('Content-Security-Policy', csp);
 
