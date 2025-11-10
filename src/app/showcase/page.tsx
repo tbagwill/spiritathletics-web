@@ -279,6 +279,90 @@ export default function ShowcasePage() {
             </div>
           </div>
 
+          {/* Event Guidelines & Code of Conduct */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-xl p-8 md:p-12 mb-8 border-l-8 border-purple-600">
+            <div className="flex items-center mb-6">
+              <span className="text-4xl mr-4">🤝</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Event Guidelines & Code of Conduct
+              </h2>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-md mb-4">
+              <p className="text-lg text-gray-700 mb-4 leading-relaxed">
+                The Spirit Athletics Fall Showcase is a celebration of our athletes' hard work, dedication, and talent. 
+                To ensure a positive, supportive, and stress-free environment for all participants, spectators, and staff, 
+                we ask that all attendees adhere to our event guidelines.
+              </p>
+            </div>
+
+            <div className="bg-purple-100 border-l-4 border-purple-600 p-6 rounded-lg">
+              <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center">
+                <span className="mr-2">⚠️</span> Expected Behavior
+              </h3>
+              <ul className="space-y-3 text-gray-800">
+                <li className="flex items-start">
+                  <span className="text-purple-600 font-bold mr-2">•</span>
+                  <span className="text-base"><strong>Respectful Conduct:</strong> Treat all athletes, staff, vendors, and fellow spectators with courtesy and respect</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-purple-600 font-bold mr-2">•</span>
+                  <span className="text-base"><strong>Positive Support:</strong> Encourage and support all performing teams in a positive manner</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-purple-600 font-bold mr-2">•</span>
+                  <span className="text-base"><strong>Staff Cooperation:</strong> Follow all instructions from Spirit Athletics staff and venue personnel</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-purple-600 font-bold mr-2">•</span>
+                  <span className="text-base"><strong>Venue Rules:</strong> Comply with all Granite Hills High School facility rules and regulations</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-red-100 border-l-4 border-red-600 p-6 rounded-lg mt-4">
+              <h3 className="text-xl font-bold text-red-900 mb-3 flex items-center">
+                <span className="mr-2">🚫</span> Zero Tolerance Policy
+              </h3>
+              <p className="text-base text-red-900 font-bold mb-3">
+                Any person causing aggressive behavior, disruptions, or failing to comply with staff instructions will be subject to immediate removal from the event.
+              </p>
+              <p className="text-base text-gray-800 mb-3">
+                This includes, but is not limited to:
+              </p>
+              <ul className="space-y-2 text-gray-800 ml-4">
+                <li className="flex items-start">
+                  <span className="text-red-600 font-bold mr-2">•</span>
+                  <span className="text-sm">Verbal or physical altercations of any kind</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-600 font-bold mr-2">•</span>
+                  <span className="text-sm">Aggressive or threatening behavior toward staff, athletes, or attendees</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-600 font-bold mr-2">•</span>
+                  <span className="text-sm">Refusal to follow staff instructions or venue policies</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-600 font-bold mr-2">•</span>
+                  <span className="text-sm">Disruptive behavior that interferes with performances or other attendees' enjoyment</span>
+                </li>
+              </ul>
+              <p className="text-base text-gray-800 mt-4">
+                <strong>Please note:</strong> Removal from the event is at the sole discretion of Spirit Athletics staff. 
+                No refunds will be issued for individuals removed for violating event policies.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 mt-4 border border-purple-200">
+              <p className="text-base text-gray-800 text-center leading-relaxed">
+                <strong className="text-purple-900">Our Commitment:</strong> We are dedicated to creating a supportive, 
+                welcoming atmosphere where athletes can perform their best and families can celebrate together. 
+                Your cooperation in maintaining a positive environment is greatly appreciated and essential to our success.
+              </p>
+            </div>
+          </div>
+
           {/* Final Reminder */}
           <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
