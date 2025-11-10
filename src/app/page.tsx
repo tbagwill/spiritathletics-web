@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import ShowcasePopup from '@/components/ShowcasePopup';
 
 export default function Home() {
   return (
     <div className="min-h-screen">
+      <ShowcasePopup />
 
       {/* Hero Section with Background Image */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
@@ -46,6 +48,48 @@ export default function Home() {
         <div className="absolute top-20 left-10 w-4 h-4 rounded-full animate-float" style={{ backgroundColor: '#0000FE' }}></div>
         <div className="absolute top-40 right-20 w-6 h-6 bg-white rounded-full animate-float-delayed"></div>
         <div className="absolute bottom-20 left-20 w-3 h-3 bg-gray-400 rounded-full animate-float-slow"></div>
+      </section>
+
+      {/* Showcase Alert Banner */}
+      <section className="bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 py-8 px-4 border-y-4 border-yellow-500 shadow-lg">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-900 text-yellow-400 rounded-full p-4 animate-pulse-slow">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+              </div>
+              <div>
+                <div className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold inline-block mb-1 animate-pulse">
+                  THIS WEEK! 🔥
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Fall Showcase 2025 - Don't Miss Out!
+                </h3>
+                <p className="text-gray-800 font-semibold">
+                  📍 Granite Hills High School • 🕐 Event Starts 1:00 PM
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link 
+                href="/showcase"
+                className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-6 py-4 rounded-xl font-bold hover:from-blue-800 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 shadow-xl text-center whitespace-nowrap"
+              >
+                📋 Event Details
+              </Link>
+              <a 
+                href="https://buytickets.at/spiritathletics/1936402"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-4 rounded-xl font-bold hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105 shadow-xl text-center whitespace-nowrap"
+              >
+                🎫 Get Tickets
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Quick Info Cards */}
