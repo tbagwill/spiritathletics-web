@@ -64,14 +64,6 @@ const NavBar = () => {
                 />
               </Link>
 
-              {/* Showcase - Special Event Link */}
-              <Link
-                href="/showcase"
-                className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 hover:from-yellow-500 hover:to-yellow-600 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 animate-pulse-slow"
-              >
-                ⭐ Fall Showcase
-              </Link>
-
               {/* About dropdown (hover) */}
               <div
                 className="relative"
@@ -161,15 +153,6 @@ const NavBar = () => {
             className="block text-gray-900 hover:text-blue-700 hover:bg-blue-50 px-3 py-3 rounded-lg text-base font-medium transition-colors duration-200"
           >
             Home
-          </Link>
-
-          {/* Showcase - Special Event Link */}
-          <Link
-            href="/showcase"
-            onClick={closeMenu}
-            className="block bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 hover:from-yellow-500 hover:to-yellow-600 px-3 py-3 rounded-lg text-base font-bold transition-all duration-200 shadow-md"
-          >
-            ⭐ Fall Showcase - This Week!
           </Link>
 
           {/* About expandable */}
