@@ -10,6 +10,7 @@ const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false); // mobile accordion
   const [isAboutHoverOpen, setIsAboutHoverOpen] = useState(false); // desktop hover
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -18,6 +19,21 @@ const NavBar = () => {
   const closeMenu = () => {
     setIsMenuOpen(false);
     setIsAboutOpen(false);
+  };
+
+  const handleMouseEnter = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+    setIsAboutHoverOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setIsAboutHoverOpen(false);
+    }, 150);
+    setHoverTimeout(timeout);
   };
 
   // Exclude Home here; we'll render it first explicitly
@@ -67,8 +83,8 @@ const NavBar = () => {
               {/* About dropdown (hover) */}
               <div
                 className="relative"
-                onMouseEnter={() => setIsAboutHoverOpen(true)}
-                onMouseLeave={() => setIsAboutHoverOpen(false)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
               >
                 <Link
                   href="/about"
@@ -76,17 +92,19 @@ const NavBar = () => {
                 >
                   About
                 </Link>
-                {isAboutHoverOpen && (
-                  <div className="absolute left-0 mt-2 w-56 bg-white border border-blue-100 rounded-lg shadow-lg z-10">
+                <div 
+                  className={`absolute left-0 mt-0 pt-2 w-56 transition-all duration-200 ${isAboutHoverOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+                >
+                  <div className="bg-white border border-blue-100 rounded-lg shadow-lg">
                     <div className="py-2">
-                      <Link href="/about" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">About</Link>
-                      <Link href="/staff" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Staff</Link>
-                      <Link href="/forms" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Forms</Link>
-                      <Link href="/sponsors" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Sponsors</Link>
-                      <Link href="/contact" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50">Contact</Link>
+                      <Link href="/about" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors duration-150">About</Link>
+                      <Link href="/staff" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors duration-150">Staff</Link>
+                      <Link href="/forms" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors duration-150">Forms</Link>
+                      <Link href="/sponsors" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors duration-150">Sponsors</Link>
+                      <Link href="/contact" className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors duration-150">Contact</Link>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
 
               {mainLinks.map((link: { href: string; label: string }) => (

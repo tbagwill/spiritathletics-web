@@ -21,7 +21,7 @@ export default function Staff() {
     {
       name: 'Candice Vargas',
       title: 'Senior Coach, Social Media',
-      description: 'Candice combines her coaching expertise with social media management, helping showcase our athletes&apos; achievements and keeping our community connected.',
+      description: 'Candice combines her coaching expertise with social media management, helping showcase our athletes\' achievements and keeping our community connected.',
       image: '/images/staff/candice-placeholder.jpg'
     },
     {
@@ -29,12 +29,6 @@ export default function Staff() {
       title: 'Senior Coach, Digital Media',
       description: 'Tyler brings technical expertise to our coaching staff while managing our digital presence. His innovative approach helps modernize our training methods.',
       image: '/images/staff/tyler-placeholder.jpg'
-    },
-    {
-      name: 'Angel Martinez',
-      title: 'Senior Coach',
-      description: 'Angel is dedicated to helping athletes reach their full potential through skilled coaching and mentorship. Her positive energy motivates athletes to excel.',
-      image: '/images/staff/angel-placeholder.jpg'
     },
     {
       name: 'Rhyan Chollier',
@@ -45,7 +39,7 @@ export default function Staff() {
     {
       name: 'Bethany Snow',
       title: 'Senior Coach',
-      description: 'Bethany&apos;s coaching philosophy focuses on building confidence and skills. She creates a supportive environment where athletes can grow and succeed.',
+      description: 'Bethany\'s coaching philosophy focuses on building confidence and skills. She creates a supportive environment where athletes can grow and succeed.',
       image: '/images/staff/bethany-placeholder.jpg'
     },
     {
@@ -63,7 +57,7 @@ export default function Staff() {
     {
       name: 'Aniya Willis',
       title: 'Senior Coach',
-      description: 'Aniya&apos;s positive attitude and coaching skills inspire athletes to reach new heights. She is dedicated to fostering growth and teamwork.',
+      description: 'Aniya\'s positive attitude and coaching skills inspire athletes to reach new heights. She is dedicated to fostering growth and teamwork.',
       image: '/images/staff/aniya-placeholder.jpg'
     },
     {
@@ -152,7 +146,7 @@ export default function Staff() {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {staffMembers.slice(3, 12).map((member, index) => (
+            {staffMembers.slice(3, 11).map((member, index) => (
               <div key={index} className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
                 <div className="relative mb-6">
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}>
@@ -183,7 +177,7 @@ export default function Staff() {
           </h2>
           
           <div className="flex justify-center">
-            {staffMembers.slice(12).map((member, index) => (
+            {staffMembers.slice(11).map((member, index) => (
               <div key={index} className="bg-gradient-to-br from-blue-50 to-gray-50 p-8 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up max-w-md">
                 <div className="relative mb-6">
                   <div className="w-40 h-40 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #000000, #333333)' }}>
@@ -200,26 +194,6 @@ export default function Staff() {
                 <p className="text-gray-600 leading-relaxed">{member.description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Join Our Team */}
-      <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1, #000000)' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6 animate-fade-in-up">
-            Join Our Team
-          </h2>
-          <p className="text-xl text-gray-200 mb-8 leading-relaxed animate-fade-in-up delay-200">
-            Are you passionate about cheerleading and working with young athletes? We&apos;re always looking for dedicated individuals to join our Spirit Athletics family.
-          </p>
-          <div className="flex justify-center animate-fade-in-up delay-300">
-            <a 
-              href="mailto:hdcspirit@aol.com?subject=Interest in Joining Spirit Athletics Team"
-              className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-black transition-all duration-300"
-            >
-              Contact Us
-            </a>
           </div>
         </div>
       </section>
