@@ -78,6 +78,27 @@ export default function Forms() {
         </div>
       </section>
 
+      {/* Submission Info */}
+      <section className="py-8 px-4 bg-blue-50 border-b border-blue-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-start space-x-4 animate-fade-in-up">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-600">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Where to Submit Your Forms</h3>
+              <p className="text-gray-700">
+                <strong>Option 1:</strong> Email your e-signed forms to <a href="mailto:admin@spiritathletics.net" className="text-blue-600 hover:underline font-semibold">admin@spiritathletics.net</a>
+                <br />
+                <strong>Option 2:</strong> Bring a signed physical copy to the front desk during business hours.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Forms Categories */}
       {formCategories.map((category, categoryIndex) => (
         <section key={categoryIndex} className={`py-20 px-4 ${categoryIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
@@ -112,27 +133,18 @@ export default function Forms() {
                   <h3 className="text-xl font-bold text-gray-800 mb-3">{form.name}</h3>
                   <p className="text-gray-600 mb-6 leading-relaxed">{form.description}</p>
                   
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <a 
-                      href={`/documents/${form.filename}`}
-                      className="flex-1 inline-flex items-center justify-center px-4 py-3 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105"
-                      style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Download
-                    </a>
-                    <button className="flex-1 inline-flex items-center justify-center px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-blue-500 hover:text-blue-500 transition-all duration-300">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      Preview
-                    </button>
-                  </div>
+                  <a 
+                    href={`/documents/${form.filename}`}
+                    className="w-full inline-flex items-center justify-center px-4 py-3 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105"
+                    style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download PDF
+                  </a>
                 </div>
               ))}
             </div>
@@ -165,7 +177,7 @@ export default function Forms() {
                 2
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-4">Submit Forms</h3>
-              <p className="text-gray-600">Email completed forms to hdcspirit@aol.com or bring them to the front desk during business hours.</p>
+              <p className="text-gray-600">Email your e-signed forms to <strong>admin@spiritathletics.net</strong> or bring a signed physical copy to the front desk during business hours.</p>
             </div>
 
             {/* Step 3 */}
@@ -191,7 +203,7 @@ export default function Forms() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-300">
             <a 
-              href="mailto:hdcspirit@aol.com?subject=Forms Help Request"
+              href="mailto:admin@spiritathletics.net?subject=Forms Help Request"
               className="bg-white text-black px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               Email for Help
