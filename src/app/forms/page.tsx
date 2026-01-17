@@ -90,7 +90,7 @@ export default function Forms() {
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Where to Submit Your Forms</h3>
               <p className="text-gray-700">
-                <strong>Option 1:</strong> Email your e-signed forms to <a href="mailto:admin@spiritathletics.net" className="text-blue-600 hover:underline font-semibold">admin@spiritathletics.net</a>
+                <strong>Option 1:</strong> Email your e-signed forms to <a href="mailto:frontdesk@spiritathletics.net" className="text-blue-600 hover:underline font-semibold">frontdesk@spiritathletics.net</a>
                 <br />
                 <strong>Option 2:</strong> Bring a signed physical copy to the front desk during business hours.
               </p>
@@ -177,7 +177,7 @@ export default function Forms() {
                 2
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-4">Submit Forms</h3>
-              <p className="text-gray-600">Email your e-signed forms to <strong>admin@spiritathletics.net</strong> or bring a signed physical copy to the front desk during business hours.</p>
+              <p className="text-gray-600">Email your e-signed forms to <strong>frontdesk@spiritathletics.net</strong> or bring a signed physical copy to the front desk during business hours.</p>
             </div>
 
             {/* Step 3 */}
@@ -203,7 +203,7 @@ export default function Forms() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-300">
             <a 
-              href="mailto:admin@spiritathletics.net?subject=Forms Help Request"
+              href="mailto:frontdesk@spiritathletics.net?subject=Forms Help Request"
               className="bg-white text-black px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               Email for Help
