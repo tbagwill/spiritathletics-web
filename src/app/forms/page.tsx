@@ -7,7 +7,7 @@ export default function Forms() {
         {
           name: "Liability Waiver",
           description: "Required waiver for all participants - must be completed before participation",
-          filename: "liability-waiver.pdf",
+          filename: "SPIRIT ATHLETICS WAIVER-RELEASE.pdf",
           required: true
         },
         {
