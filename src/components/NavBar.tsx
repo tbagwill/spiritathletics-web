@@ -37,10 +37,10 @@ const NavBar = () => {
   };
 
   // Exclude Home here; we'll render it first explicitly
-  const mainLinks: { href: string; label: string }[] = [
+  const mainLinks: { href: string; label: string; highlight?: boolean }[] = [
     { href: '/programs', label: 'Programs' },
     { href: '/calendar', label: 'Calendar' },
-    { href: '/book/classes', label: 'Classes' },
+    { href: '/book', label: 'Book Online', highlight: true },
     { href: '/shop', label: 'Shop' },
     { href: '/parent-portal', label: 'Parent Portal' },
     { href: '/dashboard', label: 'Coaches Dashboard' },
@@ -107,19 +107,30 @@ const NavBar = () => {
                 </div>
               </div>
 
-              {mainLinks.map((link: { href: string; label: string }) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={'text-gray-900 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group'}
-                  style={{ '--hover-color': '#1d4ed8' } as React.CSSProperties}
-                >
-                  {link.label}
-                  <span
-                    className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-blue-800 group-hover:w-full group-hover:left-0 transition-all duration-300"
-                    style={{ background: 'linear-gradient(to right, #0000FE, #0000CC)' }}
-                  />
-                </Link>
+              {mainLinks.map((link: { href: string; label: string; highlight?: boolean }) => (
+                link.highlight ? (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-200 hover:scale-105 shadow-sm"
+                    style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={'text-gray-900 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group'}
+                    style={{ '--hover-color': '#1d4ed8' } as React.CSSProperties}
+                  >
+                    {link.label}
+                    <span
+                      className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-blue-800 group-hover:w-full group-hover:left-0 transition-all duration-300"
+                      style={{ background: 'linear-gradient(to right, #0000FE, #0000CC)' }}
+                    />
+                  </Link>
+                )
               ))}
             </div>
             
@@ -193,13 +204,16 @@ const NavBar = () => {
             </div>
           )}
 
-          {mainLinks.map((link: { href: string; label: string }) => (
+          {mainLinks.map((link: { href: string; label: string; highlight?: boolean }) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={closeMenu}
-              className="block text-gray-900 hover:text-blue-700 hover:bg-blue-50 px-3 py-3 rounded-lg text-base font-medium transition-colors duration-200"
-              style={{ '--hover-color': '#1d4ed8' } as React.CSSProperties}
+              className={link.highlight
+                ? 'block px-3 py-3 rounded-lg text-base font-semibold text-white transition-colors duration-200'
+                : 'block text-gray-900 hover:text-blue-700 hover:bg-blue-50 px-3 py-3 rounded-lg text-base font-medium transition-colors duration-200'
+              }
+              style={link.highlight ? { background: 'linear-gradient(135deg, #0000FE, #4169E1)' } : { '--hover-color': '#1d4ed8' } as React.CSSProperties}
             >
               {link.label}
             </Link>

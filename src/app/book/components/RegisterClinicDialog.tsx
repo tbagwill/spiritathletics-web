@@ -1,76 +1,47 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 type Props = {
-  occurrenceId: string;
-  serviceId: string;
-  title: string;
-  startPtText: string;
+  clinicId: string;
+  clinicTitle: string;
+  clinicWhen: string;
   priceCents: number;
-  coachName?: string | null;
-  onSuccess?: () => void;
+  spotsLeft: number;
 };
 
 type FormValues = {
   customerName: string;
   customerEmail: string;
-  athleteName: string;
+  athleteFirstName: string;
 };
 
-export default function BookClassDialog({ occurrenceId, serviceId, title, startPtText, priceCents, coachName, onSuccess }: Props) {
+export default function RegisterClinicDialog({ clinicId, clinicTitle, clinicWhen, priceCents, spotsLeft }: Props) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) setError(null);
-  }, [open]);
-
   const { register, handleSubmit, reset } = useForm<FormValues>();
+
+  const priceText = `$${(priceCents / 100).toFixed(2)}`;
 
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true);
     setError(null);
     try {
-      // Try Stripe Checkout first
-      const res = await fetch('/api/book/class/checkout', {
+      const res = await fetch('/api/clinics/register/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          classOccurrenceId: occurrenceId,
-          serviceId,
+          clinicId,
           customerName: values.customerName,
           customerEmail: values.customerEmail,
-          athleteName: values.athleteName,
+          athleteFirstName: values.athleteFirstName,
         }),
       });
-
-      if (res.status === 503) {
-        // Stripe not configured — fall back to free booking
-        const fallback = await fetch('/api/book/class', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            classOccurrenceId: occurrenceId,
-            serviceId,
-            customerName: values.customerName,
-            customerEmail: values.customerEmail,
-            athleteName: values.athleteName,
-          }),
-        });
-        const fallbackData = await fallback.json();
-        if (!fallback.ok || !fallbackData.ok) throw new Error(fallbackData.error || 'Booking failed');
-        setOpen(false);
-        reset();
-        if (onSuccess) onSuccess();
-        return;
-      }
-
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Could not start checkout');
-      // Redirect to Stripe Checkout
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Registration failed');
       window.location.href = data.url;
     } catch (e: any) {
       setError(e.message || 'Something went wrong.');
@@ -78,16 +49,22 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
     }
   };
 
-  const priceText = `$${(priceCents / 100).toFixed(2)}`;
+  if (spotsLeft <= 0) {
+    return (
+      <button disabled className="w-full py-3 px-6 rounded-xl font-semibold text-gray-400 bg-gray-100 cursor-not-allowed">
+        Sold Out
+      </button>
+    );
+  }
 
   return (
     <>
       <button
-        className="text-white px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-md"
-        style={{ background: 'linear-gradient(135deg, #1d4ed8, #1e40af)' }}
-        onClick={() => setOpen(true)}
+        onClick={() => { setOpen(true); setError(null); reset(); }}
+        className="w-full py-3 px-6 rounded-xl text-white font-semibold transition-all duration-200 hover:scale-105 shadow-md"
+        style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
       >
-        Reserve Spot
+        Register Now — {priceText}
       </button>
 
       {open && (
@@ -97,15 +74,17 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
             {/* Header */}
             <div className="mb-5">
               <div className="flex items-start justify-between mb-1">
-                <h3 className="text-xl font-bold text-gray-900">Reserve Your Spot</h3>
+                <div>
+                  <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full mb-2 inline-block">Clinic Registration</span>
+                  <h3 className="text-xl font-bold text-gray-900">{clinicTitle}</h3>
+                </div>
                 <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors ml-2 mt-0.5">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-gray-500">{title}{coachName ? ` · Coach ${coachName}` : ''}</p>
-              <p className="text-sm text-gray-500">{startPtText}</p>
+              <p className="text-sm text-gray-500">{clinicWhen}</p>
             </div>
 
             {error && (
@@ -119,12 +98,12 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Your Name *</label>
+                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Your Name (Parent / Guardian) *</label>
                 <input
                   type="text"
                   {...register('customerName', { required: true })}
-                  placeholder="Parent / Guardian name"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  placeholder="Your full name"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
               <div>
@@ -133,25 +112,26 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                   type="email"
                   {...register('customerEmail', { required: true })}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-1.5 text-gray-700">Athlete First Name *</label>
                 <input
                   type="text"
-                  {...register('athleteName', { required: true })}
+                  {...register('athleteFirstName', { required: true })}
                   placeholder="Athlete's first name"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
 
               {/* Price Summary */}
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-blue-800">{title}</span>
-                  <span className="text-lg font-bold text-blue-900">{priceText}</span>
+                  <span className="text-sm font-medium text-purple-800">Clinic registration</span>
+                  <span className="text-lg font-bold text-purple-900">{priceText}</span>
                 </div>
+                <p className="text-xs text-purple-600 mt-1">{spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} remaining</p>
               </div>
 
               {/* Stripe notice */}
@@ -174,7 +154,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                   type="submit"
                   disabled={submitting}
                   className="px-6 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 disabled:opacity-60 flex items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #1d4ed8, #1e40af)' }}
+                  style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
                 >
                   {submitting ? (
                     <>
@@ -186,7 +166,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                     </>
                   ) : (
                     <>
-                      Pay {priceText}
+                      Register — {priceText}
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                       </svg>
@@ -195,7 +175,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                 </button>
               </div>
 
-              <p className="text-xs text-gray-400 text-center">You can cancel up to 4 hours before start time using the link in your confirmation email.</p>
+              <p className="text-xs text-gray-400 text-center">Your athlete's first name will be listed publicly as a registered participant.</p>
             </form>
           </div>
         </div>

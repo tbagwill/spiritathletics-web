@@ -61,6 +61,11 @@ const IconGear = (
 		<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.07a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.07a3.1 3.1 0 0 1 1.51-1 1.65 1.65 0 0 0 .33-1.82l-.06-.06A2 2 0 1 1 7.02 3.4l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 20.6 7.02l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .66.39 1.26 1 1.51.33.14.69.22 1.06.22H22a2 2 0 1 1 0 4h-.07a3.1 3.1 0 0 1-1.06-.22 1.65 1.65 0 0 0-1.47.49z"/>
 	</svg>
 );
+const IconClinic = (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full" strokeWidth="1.8">
+		<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+	</svg>
+);
 
 export default async function DashboardHome() {
 	const session = await getServerSession(authOptions);
@@ -135,15 +140,23 @@ export default async function DashboardHome() {
 							{...(pendingCount > 0 && { badge: pendingCount })}
 						/>
 					</div>
-					<div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
-						<Tile 
-							href="/dashboard/preferences" 
-							title="Preferences" 
-							icon={IconGear}
-							description="Configure notifications and account settings"
-						/>
-					</div>
+				<div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
+					<Tile 
+						href="/dashboard/preferences" 
+						title="Preferences" 
+						icon={IconGear}
+						description="Configure notifications and account settings"
+					/>
 				</div>
+				<div className="animate-fade-in" style={{ animationDelay: '500ms' }}>
+					<Tile 
+						href="/dashboard/clinics" 
+						title="Clinics &amp; Special Events" 
+						icon={IconClinic}
+						description="Create and manage featured clinics with online registration"
+					/>
+				</div>
+			</div>
 			</div>
 		</div>
 	);
