@@ -168,12 +168,18 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
       method: 'REQUEST',
     });
 
+    const totalCents = service.basePriceCents * athleteNamesList.length;
     await sendBookingEmails({
       customerEmail,
       coachEmails,
       subject: `Class Reserved & Paid: ${title} (${when})`,
-      htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
-      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames),
+      htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
+        athleteNames: allAthleteNames,
+        customerName,
+        paymentMethod: 'CARD',
+        priceCents: totalCents,
+      }),
+      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames, 'CARD'),
       icsContent: ics,
     });
   });
@@ -283,8 +289,13 @@ async function handlePrivateBookingCompleted(session: Stripe.Checkout.Session) {
         customerEmail,
         coachEmails: finalCoachEmails,
         subject: `Private Lesson Booked & Paid (${when})`,
-        htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
-        htmlCoach: buildCoachHtml(title, when, customerName, athleteName),
+        htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
+          athleteNames: athleteName,
+          customerName,
+          paymentMethod: 'CARD',
+          priceCents: pricing.priceCents,
+        }),
+        htmlCoach: buildCoachHtml(title, when, customerName, athleteName, 'CARD'),
         icsContent: ics,
       });
     }
@@ -335,61 +346,66 @@ async function handleClinicRegistrationCompleted(session: Stripe.Checkout.Sessio
     const location = clinic.location || process.env.ORG_ADDRESS || 'Spirit Athletics, 17537 Bear Valley Rd, Hesperia, CA 92345';
     const SENDER = process.env.SENDER_EMAIL || 'booking@spiritathletics.net';
     const athleteLabel = athleteFirstNames.join(', ');
+    const totalPaidCents = clinic.priceCents * athleteFirstNames.length;
 
     await resend.emails.send({
       from: `Spirit Athletics <${SENDER}>`,
       to: [customerEmail],
-      subject: `Clinic Registration Confirmed: ${clinic.title}`,
-      html: buildClinicConfirmationHtml(clinic.title, when, location, customerName, athleteLabel),
+      subject: `Clinic Registration Confirmed & Paid: ${clinic.title}`,
+      html: buildClinicConfirmationHtml(clinic.title, when, location, customerName, athleteLabel, totalPaidCents),
     });
   } catch (err) {
     console.error('Error sending clinic confirmation email:', err);
   }
 }
 
-function buildClinicConfirmationHtml(title: string, when: string, location: string, customerName: string, athleteFirstName: string): string {
+function buildClinicConfirmationHtml(title: string, when: string, location: string, customerName: string, athleteFirstName: string, totalPaidCents?: number): string {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
+  const priceText = totalPaidCents ? `$${(totalPaidCents / 100).toFixed(2)}` : null;
+  const isMultiple = athleteFirstName.includes(',');
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Clinic Registration Confirmed</title></head>
 <body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
-  <tr><td align="center" style="padding:40px 20px;">
-    <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
-      <tr><td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:40px 40px 32px;">
-        <h1 style="margin:0 0 8px 0;color:#ffffff;font-size:28px;font-weight:700;">&#127881; You're Registered!</h1>
-        <p style="margin:0;color:rgba(255,255,255,0.85);font-size:16px;">Hi ${escapeHtml(customerName)}, your spot is confirmed for ${escapeHtml(athleteFirstName)}!</p>
-      </td></tr>
-      <tr><td style="padding:32px 40px;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:8px;overflow:hidden;">
-          <tr><td style="padding:24px;">
-            <p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">&#127919; Clinic</p>
-            <p style="margin:0 0 16px 0;color:#ffffff;font-size:20px;font-weight:700;">${escapeHtml(title)}</p>
-            <p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">&#128197; Date &amp; Time</p>
-            <p style="margin:0 0 16px 0;color:#ffffff;font-size:18px;font-weight:600;">${escapeHtml(when)}</p>
-            <p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">&#128205; Location</p>
-            <p style="margin:0;color:#ffffff;font-size:16px;font-weight:500;">${escapeHtml(location)}</p>
-          </td></tr>
-        </table>
-      </td></tr>
-      <tr><td style="padding:0 40px 32px 40px;">
-        <div style="background-color:#f0f9ff;border-left:4px solid #7c3aed;padding:16px 20px;border-radius:6px;">
-          <p style="margin:0 0 8px 0;color:#4c1d95;font-size:14px;font-weight:700;">&#128204; Clinic Details</p>
-          <p style="margin:0;color:#4c1d95;font-size:14px;line-height:1.6;">
-            • Please arrive 5-10 minutes early<br>
-            • Athlete registered: <strong>${escapeHtml(athleteFirstName)}</strong><br>
-            • Bring water and a positive attitude!
-          </p>
-        </div>
-      </td></tr>
-      <tr><td style="padding:32px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
-        <p style="margin:0 0 8px 0;color:#64748b;font-size:14px;line-height:1.6;text-align:center;">
-          Questions? Contact us at <a href="mailto:info@spiritathletics.net" style="color:#7c3aed;text-decoration:none;font-weight:600;">info@spiritathletics.net</a>
-        </p>
-        <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">Spirit Athletics • 17537 Bear Valley Rd, Hesperia, CA 92345</p>
-      </td></tr>
-    </table>
-  </td></tr>
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+<tr><td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:40px 40px 32px;">
+<h1 style="margin:0 0 8px 0;color:#ffffff;font-size:28px;font-weight:700;">You're Registered!</h1>
+<p style="margin:0 0 12px 0;color:rgba(255,255,255,0.85);font-size:16px;">Hi ${escapeHtml(customerName)}, your spot${isMultiple ? 's are' : ' is'} confirmed!</p>
+<span style="display:inline-block;background-color:rgba(255,255,255,0.2);color:#ffffff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;">PAID${priceText ? ` — ${priceText}` : ''}</span>
+</td></tr>
+<tr><td style="padding:32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:8px;overflow:hidden;">
+<tr><td style="padding:24px;">
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Clinic</p>
+<p style="margin:0 0 16px 0;color:#ffffff;font-size:20px;font-weight:700;">${escapeHtml(title)}</p>
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Athlete${isMultiple ? 's' : ''}</p>
+<p style="margin:0 0 16px 0;color:#ffffff;font-size:18px;font-weight:600;">${escapeHtml(athleteFirstName)}</p>
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Date &amp; Time</p>
+<p style="margin:0 0 16px 0;color:#ffffff;font-size:18px;font-weight:600;">${escapeHtml(when)}</p>
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Location</p>
+<p style="margin:0;color:#ffffff;font-size:16px;font-weight:500;">${escapeHtml(location)}</p>
+</td></tr>
+</table>
+</td></tr>
+<tr><td style="padding:0 40px 32px 40px;">
+<div style="background-color:#f0f9ff;border-left:4px solid #7c3aed;padding:16px 20px;border-radius:6px;">
+<p style="margin:0 0 8px 0;color:#4c1d95;font-size:14px;font-weight:700;">Important Information</p>
+<p style="margin:0;color:#4c1d95;font-size:14px;line-height:1.6;">
+&bull; Please arrive 5-10 minutes early<br>
+&bull; Bring water and a positive attitude!
+</p>
+</div>
+</td></tr>
+<tr><td style="padding:32px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0 0 8px 0;color:#64748b;font-size:14px;line-height:1.6;text-align:center;">
+Questions? Contact us at <a href="mailto:info@spiritathletics.net" style="color:#7c3aed;text-decoration:none;font-weight:600;">info@spiritathletics.net</a>
+</p>
+<p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345</p>
+</td></tr>
+</table>
+</td></tr>
 </table>
 </body>
 </html>`;

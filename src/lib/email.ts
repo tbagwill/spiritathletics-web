@@ -37,238 +37,193 @@ export async function sendBookingEmails(params: {
 	}
 }
 
-export function buildCustomerHtml(title: string, when: string, location: string, cancelUrl?: string) {
+export type CustomerEmailOptions = {
+	athleteNames?: string;
+	customerName?: string;
+	paymentMethod?: 'CARD' | 'CASH';
+	priceCents?: number;
+};
+
+export function buildCustomerHtml(title: string, when: string, location: string, cancelUrl?: string, opts?: CustomerEmailOptions) {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
-	return `
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<meta charset="utf-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<title>Booking Confirmed</title>
-		</head>
-		<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-			<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
-				<tr>
-					<td align="center" style="padding:40px 20px;">
-						<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
-							<!-- Header Image -->
-							<tr>
-								<td style="padding:0;">
-									<img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics Bookings" width="600" style="display:block;width:100%;height:auto;border:0;">
-								</td>
-							</tr>
-							
-							<!-- Main Content -->
-							<tr>
-								<td style="padding:40px 40px 20px 40px;">
-									<h1 style="margin:0 0 12px 0;color:#1e293b;font-size:28px;font-weight:700;line-height:1.3;">
-										🎉 You're All Set!
-									</h1>
-									<p style="margin:0 0 24px 0;color:#64748b;font-size:16px;line-height:1.6;">
-										Your booking has been confirmed. We're excited to see you at Spirit Athletics!
-									</p>
-								</td>
-							</tr>
-							
-							<!-- Booking Details Card -->
-							<tr>
-								<td style="padding:0 40px 32px 40px;">
-									<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:8px;overflow:hidden;">
-										<tr>
-											<td style="padding:24px;">
-												<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-													<tr>
-														<td style="padding-bottom:16px;">
-															<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
-																Lesson Type
-															</p>
-															<p style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">
-																${escape(title)}
-															</p>
-														</td>
-													</tr>
-													<tr>
-														<td style="padding-bottom:16px;">
-															<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
-																📅 Date & Time
-															</p>
-															<p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">
-																${escape(when)}
-															</p>
-														</td>
-													</tr>
-													<tr>
-														<td>
-															<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
-																📍 Location
-															</p>
-															<p style="margin:0;color:#ffffff;font-size:16px;font-weight:500;">
-																${escape(location)}
-															</p>
-														</td>
-													</tr>
-												</table>
-											</td>
-										</tr>
-									</table>
-								</td>
-							</tr>
-							
-							<!-- Important Information -->
-							<tr>
-								<td style="padding:0 40px 32px 40px;">
-									<div style="background-color:#f0f9ff;border-left:4px solid #3b82f6;padding:16px 20px;border-radius:6px;">
-										<p style="margin:0 0 8px 0;color:#1e40af;font-size:14px;font-weight:700;">
-											📌 Important Information
-										</p>
-										<p style="margin:0;color:#1e40af;font-size:14px;line-height:1.6;">
-											• Please arrive 5-10 minutes early<br>
-											• Bring water and a positive attitude!<br>
-											• A calendar invite is attached to this email
-										</p>
-									</div>
-								</td>
-							</tr>
-							
-							${cancelUrl ? `
-							<!-- Cancellation Policy -->
-							<tr>
-								<td style="padding:0 40px 32px 40px;">
-									<div style="background-color:#fef2f2;border-left:4px solid #ef4444;padding:16px 20px;border-radius:6px;">
-										<p style="margin:0 0 8px 0;color:#991b1b;font-size:14px;font-weight:700;">
-											Cancellation Policy
-										</p>
-										<p style="margin:0 0 12px 0;color:#7f1d1d;font-size:14px;line-height:1.6;">
-											You can cancel up to <strong>4 hours before</strong> your session start time without penalty.
-										</p>
-										<a href="${cancelUrl}" style="display:inline-block;padding:10px 20px;background-color:#dc2626;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">
-											Cancel Booking
-										</a>
-									</div>
-								</td>
-							</tr>
-							` : ''}
-							
-							<!-- Footer -->
-							<tr>
-								<td style="padding:32px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
-									<p style="margin:0 0 8px 0;color:#64748b;font-size:14px;line-height:1.6;text-align:center;">
-										Questions? Contact us at <a href="mailto:info@spiritathletics.net" style="color:#667eea;text-decoration:none;font-weight:600;">info@spiritathletics.net</a>
-									</p>
-									<p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
-										Spirit Athletics • 17537 Bear Valley Rd, Hesperia, CA 92345
-									</p>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</table>
-		</body>
-		</html>
-	`;
+	const isCash = opts?.paymentMethod === 'CASH';
+	const priceText = opts?.priceCents ? `$${(opts.priceCents / 100).toFixed(2)}` : null;
+
+	const paymentBadge = isCash
+		? `<span style="display:inline-block;background-color:#fef3c7;color:#92400e;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;margin-top:8px;">CASH — Pay On-Site</span>`
+		: priceText
+			? `<span style="display:inline-block;background-color:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;margin-top:8px;">PAID — ${priceText}</span>`
+			: '';
+
+	return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Confirmed</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;">
+<img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics Bookings" width="600" style="display:block;width:100%;height:auto;border:0;">
+</td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 12px 0;color:#1e293b;font-size:28px;font-weight:700;line-height:1.3;">
+${isCash ? "You're Registered!" : "You're All Set!"}
+</h1>
+<p style="margin:0 0 8px 0;color:#64748b;font-size:16px;line-height:1.6;">
+${opts?.customerName ? `Hi ${escape(opts.customerName)}, ` : ''}${isCash ? 'Your spot is reserved! Please remember to bring cash when you arrive.' : 'Your booking has been confirmed. We\'re excited to see you at Spirit Athletics!'}
+</p>
+${paymentBadge}
+</td></tr>
+
+<tr><td style="padding:20px 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:8px;overflow:hidden;">
+<tr><td style="padding:24px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr><td style="padding-bottom:16px;">
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Session</p>
+<p style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">${escape(title)}</p>
+</td></tr>
+${opts?.athleteNames ? `<tr><td style="padding-bottom:16px;">
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Athlete${opts.athleteNames.includes(',') ? 's' : ''}</p>
+<p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">${escape(opts.athleteNames)}</p>
+</td></tr>` : ''}
+<tr><td style="padding-bottom:16px;">
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Date &amp; Time</p>
+<p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">${escape(when)}</p>
+</td></tr>
+<tr><td>
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Location</p>
+<p style="margin:0;color:#ffffff;font-size:16px;font-weight:500;">${escape(location)}</p>
+</td></tr>
+${priceText ? `<tr><td style="padding-top:16px;">
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${isCash ? 'Amount Due (Cash)' : 'Amount Paid'}</p>
+<p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;">${priceText}</p>
+</td></tr>` : ''}
+</table>
+</td></tr>
+</table>
+</td></tr>
+
+${isCash ? `<tr><td style="padding:0 40px 32px 40px;">
+<div style="background-color:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:6px;">
+<p style="margin:0 0 8px 0;color:#92400e;font-size:14px;font-weight:700;">Remember to Bring Cash!</p>
+<p style="margin:0;color:#78350f;font-size:14px;line-height:1.6;">
+Please bring <strong>${priceText || 'the exact amount in'} cash</strong> when you arrive. If you do not have cash, the full card price (includes a $3 processing fee) will apply.
+</p>
+</div>
+</td></tr>` : ''}
+
+<tr><td style="padding:0 40px 32px 40px;">
+<div style="background-color:#f0f9ff;border-left:4px solid #3b82f6;padding:16px 20px;border-radius:6px;">
+<p style="margin:0 0 8px 0;color:#1e40af;font-size:14px;font-weight:700;">Important Information</p>
+<p style="margin:0;color:#1e40af;font-size:14px;line-height:1.6;">
+&bull; Please arrive 5-10 minutes early<br>
+&bull; Bring water and a positive attitude!<br>
+${!isCash ? '&bull; A calendar invite is attached to this email' : '&bull; Check in at the front desk when you arrive'}
+</p>
+</div>
+</td></tr>
+
+${cancelUrl ? `<tr><td style="padding:0 40px 32px 40px;">
+<div style="background-color:#fef2f2;border-left:4px solid #ef4444;padding:16px 20px;border-radius:6px;">
+<p style="margin:0 0 8px 0;color:#991b1b;font-size:14px;font-weight:700;">Cancellation Policy</p>
+<p style="margin:0 0 12px 0;color:#7f1d1d;font-size:14px;line-height:1.6;">
+You can cancel up to <strong>4 hours before</strong> your session start time without penalty.
+</p>
+<a href="${cancelUrl}" style="display:inline-block;padding:10px 20px;background-color:#dc2626;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">Cancel Booking</a>
+</div>
+</td></tr>` : ''}
+
+<tr><td style="padding:32px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0 0 8px 0;color:#64748b;font-size:14px;line-height:1.6;text-align:center;">
+Questions? Contact us at <a href="mailto:info@spiritathletics.net" style="color:#667eea;text-decoration:none;font-weight:600;">info@spiritathletics.net</a>
+</p>
+<p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
+Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345
+</p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
 }
 
-export function buildCoachHtml(title: string, when: string, customer: string, athlete: string) {
+export function buildCoachHtml(title: string, when: string, customer: string, athlete: string, paymentMethod?: 'CARD' | 'CASH') {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
-	return `
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<meta charset="utf-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<title>New Booking</title>
-		</head>
-		<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-			<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
-				<tr>
-					<td align="center" style="padding:40px 20px;">
-						<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
-							<!-- Header Image -->
-							<tr>
-								<td style="padding:0;">
-									<img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics Bookings" width="600" style="display:block;width:100%;height:auto;border:0;">
-								</td>
-							</tr>
-							
-							<!-- Main Content -->
-							<tr>
-								<td style="padding:40px 40px 20px 40px;">
-									<h1 style="margin:0 0 12px 0;color:#1e293b;font-size:28px;font-weight:700;line-height:1.3;">
-										📅 New Booking Confirmed
-									</h1>
-									<p style="margin:0 0 24px 0;color:#64748b;font-size:16px;line-height:1.6;">
-										A new session has been booked. The calendar invite is attached.
-									</p>
-								</td>
-							</tr>
-							
-							<!-- Session Details -->
-							<tr>
-								<td style="padding:0 40px 32px 40px;">
-									<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%);border-radius:8px;">
-										<tr>
-											<td style="padding:24px;">
-												<p style="margin:0 0 16px 0;color:rgba(255,255,255,0.9);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
-													Session Details
-												</p>
-												<p style="margin:0 0 8px 0;color:#ffffff;font-size:20px;font-weight:700;">
-													${escape(title)}
-												</p>
-												<p style="margin:0;color:rgba(255,255,255,0.95);font-size:16px;font-weight:500;">
-													📅 ${escape(when)}
-												</p>
-											</td>
-										</tr>
-									</table>
-								</td>
-							</tr>
-							
-							<!-- Client Information -->
-							<tr>
-								<td style="padding:0 40px 32px 40px;">
-									<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;border-radius:8px;border:2px solid #e2e8f0;">
-										<tr>
-											<td style="padding:20px;">
-												<p style="margin:0 0 12px 0;color:#475569;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
-													Client Information
-												</p>
-												<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-													<tr>
-														<td style="padding:8px 0;">
-															<p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Parent/Guardian:</p>
-															<p style="margin:4px 0 0 0;color:#1e293b;font-size:16px;font-weight:600;">${escape(customer)}</p>
-														</td>
-													</tr>
-													<tr>
-														<td style="padding:8px 0;">
-															<p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Athlete:</p>
-															<p style="margin:4px 0 0 0;color:#1e293b;font-size:16px;font-weight:600;">${escape(athlete)}</p>
-														</td>
-													</tr>
-												</table>
-											</td>
-										</tr>
-									</table>
-								</td>
-							</tr>
-							
-							<!-- Footer -->
-							<tr>
-								<td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
-									<p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
-										Spirit Athletics • 17537 Bear Valley Rd, Hesperia, CA 92345
-									</p>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</table>
-		</body>
-		</html>
-	`;
+	const isCash = paymentMethod === 'CASH';
+	const badge = isCash
+		? `<span style="display:inline-block;background-color:#fef3c7;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">CASH — Due On-Site</span>`
+		: `<span style="display:inline-block;background-color:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">PAID</span>`;
+	return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Booking</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;">
+<img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics Bookings" width="600" style="display:block;width:100%;height:auto;border:0;">
+</td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 12px 0;color:#1e293b;font-size:28px;font-weight:700;line-height:1.3;">New Booking ${badge}</h1>
+<p style="margin:0 0 24px 0;color:#64748b;font-size:16px;line-height:1.6;">
+A new session has been booked. The calendar invite is attached.
+</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%);border-radius:8px;">
+<tr><td style="padding:24px;">
+<p style="margin:0 0 16px 0;color:rgba(255,255,255,0.9);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Session Details</p>
+<p style="margin:0 0 8px 0;color:#ffffff;font-size:20px;font-weight:700;">${escape(title)}</p>
+<p style="margin:0;color:rgba(255,255,255,0.95);font-size:16px;font-weight:500;">${escape(when)}</p>
+</td></tr>
+</table>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;border-radius:8px;border:2px solid #e2e8f0;">
+<tr><td style="padding:20px;">
+<p style="margin:0 0 12px 0;color:#475569;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Client Information</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr><td style="padding:8px 0;">
+<p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Parent/Guardian:</p>
+<p style="margin:4px 0 0 0;color:#1e293b;font-size:16px;font-weight:600;">${escape(customer)}</p>
+</td></tr>
+<tr><td style="padding:8px 0;">
+<p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Athlete${athlete.includes(',') ? 's' : ''}:</p>
+<p style="margin:4px 0 0 0;color:#1e293b;font-size:16px;font-weight:600;">${escape(athlete)}</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</td></tr>
+
+<tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
+Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345
+</p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
 }
 
 // Pending request emails (no calendar invite)

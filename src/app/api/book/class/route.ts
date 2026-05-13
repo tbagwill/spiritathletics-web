@@ -94,12 +94,20 @@ export async function POST(req: NextRequest) {
       method: 'REQUEST',
     });
 
+    const totalCents = result.service.basePriceCents * numAthletes;
     await sendBookingEmails({
       customerEmail,
       coachEmails,
-      subject: `Class Reserved: ${title} (${when})`,
-      htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
-      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames),
+      subject: paymentMethod === 'CASH'
+        ? `Registration Confirmed (Cash): ${title} (${when})`
+        : `Class Reserved: ${title} (${when})`,
+      htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
+        athleteNames: allAthleteNames,
+        customerName,
+        paymentMethod,
+        priceCents: totalCents,
+      }),
+      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames, paymentMethod),
       icsContent: ics,
     });
 

@@ -163,9 +163,16 @@ export async function POST(req: NextRequest) {
       await sendBookingEmails({
         customerEmail,
         coachEmails: finalCoachEmails,
-        subject: `Booking Confirmed: ${title} (${when})`,
-        htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
-        htmlCoach: buildCoachHtml(title, when, customerName, athleteName),
+        subject: paymentMethod === 'CASH'
+          ? `Booking Confirmed (Cash): ${title} (${when})`
+          : `Booking Confirmed: ${title} (${when})`,
+        htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
+          athleteNames: athleteName,
+          customerName,
+          paymentMethod,
+          priceCents: result.booking.priceCents,
+        }),
+        htmlCoach: buildCoachHtml(title, when, customerName, athleteName, paymentMethod),
         icsContent: ics,
       });
     }
