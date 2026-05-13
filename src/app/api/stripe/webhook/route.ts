@@ -90,9 +90,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
 async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
   const meta = session.metadata!;
-  const { classOccurrenceId, serviceId, customerName, customerEmail, athleteName, notes } = meta;
+  const { classOccurrenceId, serviceId, customerName, customerEmail, notes } = meta;
 
-  // Idempotency: check if booking already created
+  // Support multi-athlete (new) and single-athlete (legacy) metadata
+  let athleteNamesList: string[];
+  if (meta.athleteNames) {
+    athleteNamesList = JSON.parse(meta.athleteNames);
+  } else {
+    athleteNamesList = [meta.athleteName];
+  }
+
   const existing = await prisma.booking.findFirst({ where: { stripeSessionId: session.id } });
   if (existing) return;
 
@@ -106,31 +113,37 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
     if (!occ || occ.status !== 'SCHEDULED') throw new Error('Class occurrence not available');
 
     const count = await tx.booking.count({ where: { classOccurrenceId, status: 'CONFIRMED' } });
-    if (count >= occ.capacity) throw new Error('Class is full');
+    if (count + athleteNamesList.length > occ.capacity) throw new Error('Class is full');
 
     const service = await tx.service.findUnique({ where: { id: serviceId } });
     if (!service) throw new Error('Service not found');
 
-    const cancellationToken = uuidv4();
-    await tx.booking.create({
-      data: {
-        type: 'CLASS',
-        status: 'CONFIRMED',
-        customerName,
-        customerEmail,
-        athleteName,
-        notes: notes || null,
-        serviceId,
-        classOccurrenceId,
-        startDateTimeUTC: occ.startDateTimeUTC,
-        endDateTimeUTC: new Date(occ.startDateTimeUTC.getTime() + (service.durationMinutes ?? 60) * 60000),
-        priceCents: service.basePriceCents,
-        cancellationToken,
-        stripeSessionId: session.id,
-        numAthletes: 1,
-      },
-    });
+    const bookings = [];
+    for (const athleteName of athleteNamesList) {
+      const cancellationToken = uuidv4();
+      const booking = await tx.booking.create({
+        data: {
+          type: 'CLASS',
+          status: 'CONFIRMED',
+          customerName,
+          customerEmail,
+          athleteName,
+          notes: notes || null,
+          serviceId,
+          classOccurrenceId,
+          startDateTimeUTC: occ.startDateTimeUTC,
+          endDateTimeUTC: new Date(occ.startDateTimeUTC.getTime() + (service.durationMinutes ?? 60) * 60000),
+          priceCents: service.basePriceCents,
+          paymentMethod: 'CARD',
+          cancellationToken,
+          stripeSessionId: session.id,
+          numAthletes: 1,
+        },
+      });
+      bookings.push(booking);
+    }
 
+    const firstBooking = bookings[0];
     const coachEmail = occ.classTemplate.service.coach?.user?.email || null;
     const coachId = occ.classTemplate.service.coachId;
     const settings = coachId
@@ -140,11 +153,12 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
     const when = formatPt(occ.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
     const location = process.env.ORG_ADDRESS || 'Spirit Athletics, 17537 Bear Valley Rd, Hesperia, CA 92345';
     const baseUrl = process.env.BASE_PROD_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
-    const cancelUrl = `${baseUrl}/cancel?token=${cancellationToken}`;
+    const cancelUrl = `${baseUrl}/cancel?token=${firstBooking.cancellationToken}`;
     const title = service.title;
+    const allAthleteNames = athleteNamesList.join(', ');
 
     const ics = buildICS({
-      uid: cancellationToken,
+      uid: firstBooking.cancellationToken,
       start: occ.startDateTimeUTC,
       end: new Date(occ.startDateTimeUTC.getTime() + (service.durationMinutes ?? 60) * 60000),
       summary: `${title} — ${occ.classTemplate.service.coach?.user?.name ?? 'Coach'}`,
@@ -159,7 +173,7 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
       coachEmails,
       subject: `Class Reserved & Paid: ${title} (${when})`,
       htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
-      htmlCoach: buildCoachHtml(title, when, customerName, athleteName),
+      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames),
       icsContent: ics,
     });
   });
@@ -281,7 +295,15 @@ async function handlePrivateBookingCompleted(session: Stripe.Checkout.Session) {
 
 async function handleClinicRegistrationCompleted(session: Stripe.Checkout.Session) {
   const meta = session.metadata!;
-  const { clinicId, customerName, customerEmail, athleteFirstName } = meta;
+  const { clinicId, customerName, customerEmail } = meta;
+
+  // Support multi-athlete (new) and single-athlete (legacy) metadata
+  let athleteFirstNames: string[];
+  if (meta.athleteFirstNames) {
+    athleteFirstNames = JSON.parse(meta.athleteFirstNames);
+  } else {
+    athleteFirstNames = [meta.athleteFirstName];
+  }
 
   const existing = await prisma.clinicRegistration.findFirst({ where: { stripeSessionId: session.id } });
   if (existing) return;
@@ -292,30 +314,33 @@ async function handleClinicRegistrationCompleted(session: Stripe.Checkout.Sessio
   const count = await prisma.clinicRegistration.count({
     where: { clinicId, status: 'CONFIRMED' },
   });
-  if (count >= clinic.capacity) throw new Error('Clinic is full');
+  if (count + athleteFirstNames.length > clinic.capacity) throw new Error('Clinic is full');
 
-  await prisma.clinicRegistration.create({
-    data: {
-      clinicId,
-      customerName,
-      customerEmail,
-      athleteFirstName,
-      stripeSessionId: session.id,
-      status: 'CONFIRMED',
-    },
-  });
+  for (const athleteFirstName of athleteFirstNames) {
+    await prisma.clinicRegistration.create({
+      data: {
+        clinicId,
+        customerName,
+        customerEmail,
+        athleteFirstName,
+        stripeSessionId: session.id,
+        paymentMethod: 'CARD',
+        status: 'CONFIRMED',
+      },
+    });
+  }
 
-  // Send confirmation email
   try {
     const when = formatPt(clinic.dateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
     const location = clinic.location || process.env.ORG_ADDRESS || 'Spirit Athletics, 17537 Bear Valley Rd, Hesperia, CA 92345';
     const SENDER = process.env.SENDER_EMAIL || 'booking@spiritathletics.net';
+    const athleteLabel = athleteFirstNames.join(', ');
 
     await resend.emails.send({
       from: `Spirit Athletics <${SENDER}>`,
       to: [customerEmail],
       subject: `Clinic Registration Confirmed: ${clinic.title}`,
-      html: buildClinicConfirmationHtml(clinic.title, when, location, customerName, athleteFirstName),
+      html: buildClinicConfirmationHtml(clinic.title, when, location, customerName, athleteLabel),
     });
   } catch (err) {
     console.error('Error sending clinic confirmation email:', err);

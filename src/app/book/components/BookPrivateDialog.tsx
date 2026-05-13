@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { CARD_FEE_CENTS } from '@/lib/pricing';
 
 export type PrivateSelection =
   | { kind: 'SOLO'; duration: 30 }
@@ -26,6 +27,8 @@ type FormValues = {
   athleteName: string;
 };
 
+type PaymentMethod = 'CARD' | 'CASH';
+
 const PRICE_MAP: Record<string, Record<number, number>> = {
   SOLO: { 30: 4000, 45: 5000, 60: 6000 },
   SEMI_PRIVATE: { 60: 7000 },
@@ -34,11 +37,20 @@ const PRICE_MAP: Record<string, Record<number, number>> = {
 export default function BookPrivateDialog({ coachId, serviceId, selection, startUTC, endUTC, priceCents, onClose, onSuccess }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CARD');
 
   const { register, handleSubmit, reset } = useForm<FormValues>();
 
-  const price = priceCents ?? PRICE_MAP[selection.kind]?.[selection.duration] ?? 0;
-  const priceText = `$${(price / 100).toFixed(2)}`;
+  const basePrice = priceCents ?? PRICE_MAP[selection.kind]?.[selection.duration] ?? 0;
+  const cardTotalCents = basePrice + CARD_FEE_CENTS;
+  const cashTotalCents = basePrice;
+  const displayTotal = paymentMethod === 'CASH' ? cashTotalCents : cardTotalCents;
+
+  const basePriceText = `$${(basePrice / 100).toFixed(2)}`;
+  const cardTotalText = `$${(cardTotalCents / 100).toFixed(2)}`;
+  const cashTotalText = `$${(cashTotalCents / 100).toFixed(2)}`;
+  const feeText = `$${(CARD_FEE_CENTS / 100).toFixed(2)}`;
+
   const kindLabel = selection.kind === 'SEMI_PRIVATE'
     ? 'Semi-Private (2 athletes · 60 min)'
     : `Solo · ${selection.duration} min`;
@@ -47,25 +59,27 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
     setSubmitting(true);
     setError(null);
     try {
-      // Try Stripe Checkout first
-      const res = await fetch('/api/book/private/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          coachId,
-          serviceId,
-          startDateTimeUTC: startUTC,
-          endDateTimeUTC: endUTC,
-          customerName: values.customerName,
-          customerEmail: values.customerEmail,
-          athleteName: values.athleteName,
-          selection,
-        }),
-      });
-
-      if (res.status === 503) {
-        // Stripe not configured — fall back to free booking
-        const fallback = await fetch('/api/book/private', {
+      if (paymentMethod === 'CASH') {
+        const res = await fetch('/api/book/private', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            coachId,
+            serviceId,
+            startDateTimeUTC: startUTC,
+            endDateTimeUTC: endUTC,
+            customerName: values.customerName,
+            customerEmail: values.customerEmail,
+            athleteName: values.athleteName,
+            selection,
+            paymentMethod: 'CASH',
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || 'Booking failed');
+        window.location.href = `/book/success?payment=cash`;
+      } else {
+        const res = await fetch('/api/book/private/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -79,17 +93,34 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
             selection,
           }),
         });
-        const fallbackData = await fallback.json();
-        if (!fallback.ok || !fallbackData.ok) throw new Error(fallbackData.error || 'Booking failed');
-        onClose();
-        reset();
-        if (onSuccess) onSuccess(fallbackData.requiresApproval);
-        return;
-      }
 
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Could not start checkout');
-      window.location.href = data.url;
+        if (res.status === 503) {
+          const fallback = await fetch('/api/book/private', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              coachId,
+              serviceId,
+              startDateTimeUTC: startUTC,
+              endDateTimeUTC: endUTC,
+              customerName: values.customerName,
+              customerEmail: values.customerEmail,
+              athleteName: values.athleteName,
+              selection,
+            }),
+          });
+          const fallbackData = await fallback.json();
+          if (!fallback.ok || !fallbackData.ok) throw new Error(fallbackData.error || 'Booking failed');
+          onClose();
+          reset();
+          if (onSuccess) onSuccess(fallbackData.requiresApproval);
+          return;
+        }
+
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || 'Could not start checkout');
+        window.location.href = data.url;
+      }
     } catch (e: any) {
       setError(e.message || 'Something went wrong.');
       setSubmitting(false);
@@ -151,20 +182,122 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
             />
           </div>
 
-          {/* Price Summary */}
-          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-blue-800">Private Lesson · {kindLabel}</span>
-              <span className="text-lg font-bold text-blue-900">{priceText}</span>
+          {/* Payment Method Selector */}
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">Payment Method</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('CARD')}
+                className={`relative flex flex-col items-center gap-1.5 p-3.5 rounded-xl border-2 transition-all duration-200 ${
+                  paymentMethod === 'CARD'
+                    ? 'border-blue-500 bg-blue-50 shadow-sm'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                {paymentMethod === 'CARD' && (
+                  <div className="absolute top-2 right-2">
+                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+                <svg className={`w-6 h-6 ${paymentMethod === 'CARD' ? 'text-blue-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span className={`text-sm font-semibold ${paymentMethod === 'CARD' ? 'text-blue-700' : 'text-gray-700'}`}>Pay Online</span>
+                <span className={`text-xs ${paymentMethod === 'CARD' ? 'text-blue-500' : 'text-gray-400'}`}>
+                  + {feeText} processing
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('CASH')}
+                className={`relative flex flex-col items-center gap-1.5 p-3.5 rounded-xl border-2 transition-all duration-200 ${
+                  paymentMethod === 'CASH'
+                    ? 'border-green-500 bg-green-50 shadow-sm'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                {paymentMethod === 'CASH' && (
+                  <div className="absolute top-2 right-2">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+                <svg className={`w-6 h-6 ${paymentMethod === 'CASH' ? 'text-green-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className={`text-sm font-semibold ${paymentMethod === 'CASH' ? 'text-green-700' : 'text-gray-700'}`}>Pay Cash</span>
+                <span className={`text-xs ${paymentMethod === 'CASH' ? 'text-green-600 font-semibold' : 'text-gray-400'}`}>
+                  No extra fee
+                </span>
+              </button>
             </div>
           </div>
 
-          {/* Stripe notice */}
+          {/* Price Summary */}
+          <div className={`rounded-xl p-4 border ${paymentMethod === 'CASH' ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100'}`}>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center text-sm">
+                <span className={paymentMethod === 'CASH' ? 'text-green-800' : 'text-blue-800'}>
+                  Private Lesson · {kindLabel}
+                </span>
+                <span className={`font-semibold ${paymentMethod === 'CASH' ? 'text-green-800' : 'text-blue-800'}`}>
+                  {basePriceText}
+                </span>
+              </div>
+              {paymentMethod === 'CARD' && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-blue-600">Card processing fee</span>
+                  <span className="text-blue-600">{feeText}</span>
+                </div>
+              )}
+              <div className="border-t border-current/10 pt-1.5 flex justify-between items-center">
+                <span className={`text-sm font-semibold ${paymentMethod === 'CASH' ? 'text-green-900' : 'text-blue-900'}`}>Total</span>
+                <span className={`text-lg font-bold ${paymentMethod === 'CASH' ? 'text-green-700' : 'text-blue-900'}`}>
+                  ${(displayTotal / 100).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Cash payment warning */}
+          {paymentMethod === 'CASH' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm">
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 mt-0.5 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="font-semibold text-amber-800">Remember to bring cash!</p>
+                  <p className="text-amber-700 mt-0.5">
+                    Please bring <strong>{cashTotalText} cash</strong> to pay when you arrive. If you do not bring cash, the full card price of <strong>{cardTotalText}</strong> will apply.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payment notice */}
           <div className="flex items-center gap-2 text-xs text-gray-500">
-            <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <span>You'll be securely redirected to Stripe to complete payment</span>
+            {paymentMethod === 'CASH' ? (
+              <>
+                <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>You&apos;ll be registered immediately and pay cash on-site</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>You&apos;ll be securely redirected to Stripe to complete payment</span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-1">
@@ -179,7 +312,11 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
               type="submit"
               disabled={submitting}
               className="px-6 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 disabled:opacity-60 flex items-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #1d4ed8, #1e40af)' }}
+              style={{
+                background: paymentMethod === 'CASH'
+                  ? 'linear-gradient(135deg, #16a34a, #15803d)'
+                  : 'linear-gradient(135deg, #1d4ed8, #1e40af)',
+              }}
             >
               {submitting ? (
                 <>
@@ -191,7 +328,7 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
                 </>
               ) : (
                 <>
-                  Pay {priceText}
+                  {paymentMethod === 'CASH' ? 'Book' : 'Pay'} — ${(displayTotal / 100).toFixed(2)}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>

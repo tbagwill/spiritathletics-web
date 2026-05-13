@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripe, getStripeConfig, isStripeConfigured } from '@/lib/stripe';
-import { computePrivatePrice } from '@/lib/pricing';
+import { computePrivatePrice, CARD_FEE_CENTS } from '@/lib/pricing';
 import { z } from 'zod';
 import { rateLimitHit } from '@/lib/rateLimit';
 
@@ -92,6 +92,16 @@ export async function POST(req: NextRequest) {
               description: `With ${coachName} on ${startUTC.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`,
             },
             unit_amount: pricing.priceCents,
+          },
+          quantity: 1,
+        },
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Card Processing Fee',
+            },
+            unit_amount: CARD_FEE_CENTS,
           },
           quantity: 1,
         },

@@ -5,9 +5,11 @@ import Link from 'next/link';
 
 export default function BookingSuccessContent() {
   const params = useSearchParams();
-  const type = params.get('type'); // 'clinic' or null (class/private)
+  const type = params.get('type');
+  const payment = params.get('payment');
 
   const isClinic = type === 'clinic';
+  const isCash = payment === 'cash';
 
   return (
     <div className="w-full max-w-lg">
@@ -17,9 +19,11 @@ export default function BookingSuccessContent() {
         <div
           className="px-8 pt-10 pb-8 text-center"
           style={{
-            background: isClinic
-              ? 'linear-gradient(135deg, #7c3aed, #4f46e5)'
-              : 'linear-gradient(135deg, #1d4ed8, #1e40af)',
+            background: isCash
+              ? 'linear-gradient(135deg, #16a34a, #15803d)'
+              : isClinic
+                ? 'linear-gradient(135deg, #7c3aed, #4f46e5)'
+                : 'linear-gradient(135deg, #1d4ed8, #1e40af)',
           }}
         >
           {/* Checkmark circle */}
@@ -29,15 +33,35 @@ export default function BookingSuccessContent() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            {isClinic ? 'You\'re Registered!' : 'Booking Confirmed!'}
+            {isClinic ? "You're Registered!" : 'Booking Confirmed!'}
           </h1>
           <p className="text-white/80 text-base">
-            Payment processed successfully
+            {isCash ? 'Registration complete — pay cash on-site' : 'Payment processed successfully'}
           </p>
         </div>
 
         {/* Content */}
         <div className="px-8 py-8 space-y-6">
+          {/* Cash payment reminder */}
+          {isCash && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-4.5 h-4.5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-amber-900 text-sm">Don&apos;t forget to bring cash!</h3>
+                  <p className="text-amber-800 text-sm mt-1">
+                    You selected the cash payment option. Please bring the exact amount in cash when you arrive.
+                    If you do not bring cash, the full card price will apply.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* What happens next */}
           <div className="bg-slate-50 rounded-2xl p-5">
             <h2 className="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">What happens next</h2>
@@ -51,7 +75,7 @@ export default function BookingSuccessContent() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-800">Confirmation email sent</p>
-                  <p className="text-xs text-gray-500">Check your inbox — you'll get a detailed confirmation with all the info you need{!isClinic ? ' and a calendar invite' : ''}.</p>
+                  <p className="text-xs text-gray-500">Check your inbox — you&apos;ll get a detailed confirmation with all the info you need{!isClinic ? ' and a calendar invite' : ''}.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -66,7 +90,20 @@ export default function BookingSuccessContent() {
                   <p className="text-xs text-gray-500">Spirit Athletics — 17537 Bear Valley Rd, Hesperia, CA 92345</p>
                 </div>
               </li>
-              {!isClinic && (
+              {isCash && (
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg className="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">Bring cash to pay on-site</p>
+                    <p className="text-xs text-gray-500">Have the cash amount ready when you check in. If you don&apos;t have cash, the full card price will be charged.</p>
+                  </div>
+                </li>
+              )}
+              {!isClinic && !isCash && (
                 <li className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-3.5 h-3.5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +144,7 @@ export default function BookingSuccessContent() {
         <a href="mailto:info@spiritathletics.net" className="text-blue-600 hover:underline font-medium">
           Contact us
         </a>{' '}
-        and we'll be happy to help.
+        and we&apos;ll be happy to help.
       </p>
     </div>
   );

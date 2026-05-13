@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripe, getStripeConfig, isStripeConfigured } from '@/lib/stripe';
+import { CARD_FEE_CENTS } from '@/lib/pricing';
 import { z } from 'zod';
 import { rateLimitHit } from '@/lib/rateLimit';
 
@@ -9,7 +10,7 @@ const BodySchema = z.object({
   serviceId: z.string().cuid(),
   customerName: z.string().min(1).max(100).trim(),
   customerEmail: z.string().email().max(255).toLowerCase(),
-  athleteName: z.string().min(1).max(100).trim(),
+  athleteNames: z.array(z.string().min(1).max(100).trim()).min(1).max(10),
   notes: z.string().max(1000).optional(),
 });
 
@@ -23,7 +24,8 @@ export async function POST(req: NextRequest) {
   if (!parse.success) {
     return NextResponse.json({ ok: false, error: 'Invalid input', issues: parse.error.format() }, { status: 400 });
   }
-  const { classOccurrenceId, serviceId, customerName, customerEmail, athleteName, notes } = parse.data;
+  const { classOccurrenceId, serviceId, customerName, customerEmail, athleteNames, notes } = parse.data;
+  const numAthletes = athleteNames.length;
 
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim();
   const key = `class-checkout:${ip}:${customerEmail}`;
@@ -32,7 +34,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Validate the occurrence and get pricing
     const occ = await prisma.classOccurrence.findUnique({
       where: { id: classOccurrenceId },
       include: {
@@ -48,8 +49,9 @@ export async function POST(req: NextRequest) {
     if (!occ || occ.status !== 'SCHEDULED') {
       return NextResponse.json({ ok: false, error: 'Class is not available' }, { status: 400 });
     }
-    if (occ.bookings.length >= occ.capacity) {
-      return NextResponse.json({ ok: false, error: 'Class is full' }, { status: 400 });
+    const spotsLeft = occ.capacity - occ.bookings.length;
+    if (numAthletes > spotsLeft) {
+      return NextResponse.json({ ok: false, error: `Only ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} remaining` }, { status: 400 });
     }
 
     const service = await prisma.service.findUnique({ where: { id: serviceId } });
@@ -73,6 +75,16 @@ export async function POST(req: NextRequest) {
             },
             unit_amount: service.basePriceCents,
           },
+          quantity: numAthletes,
+        },
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Card Processing Fee',
+            },
+            unit_amount: CARD_FEE_CENTS,
+          },
           quantity: 1,
         },
       ],
@@ -85,7 +97,8 @@ export async function POST(req: NextRequest) {
         serviceId,
         customerName,
         customerEmail,
-        athleteName,
+        athleteNames: JSON.stringify(athleteNames),
+        numAthletes: String(numAthletes),
         notes: notes || '',
       },
     });

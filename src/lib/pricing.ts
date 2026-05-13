@@ -1,3 +1,5 @@
+export const CARD_FEE_CENTS = 300;
+
 export type PrivateSelection =
   | { kind: 'SOLO'; duration: 30 }
   | { kind: 'SOLO'; duration: 45 }

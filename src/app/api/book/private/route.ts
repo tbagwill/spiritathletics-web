@@ -24,7 +24,7 @@ const BodySchema = z.object({
     z.object({ kind: z.literal('SOLO'), duration: z.literal(60) }),
     z.object({ kind: z.literal('SEMI_PRIVATE'), duration: z.literal(60) }),
   ]),
-
+  paymentMethod: z.enum(['CARD', 'CASH']).optional().default('CARD'),
 });
 
 export async function POST(req: NextRequest) {
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!parse.success) {
     return NextResponse.json({ ok: false, error: 'Invalid input', issues: parse.error.format() }, { status: 400 });
   }
-  const { coachId, serviceId, startDateTimeUTC, endDateTimeUTC, customerName, customerEmail, athleteName, selection } = parse.data;
+  const { coachId, serviceId, startDateTimeUTC, endDateTimeUTC, customerName, customerEmail, athleteName, selection, paymentMethod } = parse.data;
 
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim();
   const key = `private:${ip}:${customerEmail}`;
@@ -115,6 +115,7 @@ export async function POST(req: NextRequest) {
           endDateTimeUTC,
           priceCents: pricing.priceCents,
           perAthletePriceCents: pricing.perAthletePriceCents,
+          paymentMethod,
           cancellationToken,
         },
       });

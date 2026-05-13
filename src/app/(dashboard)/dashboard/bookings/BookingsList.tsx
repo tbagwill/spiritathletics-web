@@ -13,7 +13,8 @@ interface Booking {
   startDateTimeUTC: string;
   endDateTimeUTC: string;
   classOccurrenceId?: string;
-  priceCents: number; // Actual booking price
+  priceCents: number;
+  paymentMethod?: 'CARD' | 'CASH';
   service: {
     title: string;
     basePriceCents: number;
@@ -207,6 +208,11 @@ export default function BookingsList({ bookings }: BookingsListProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
               </svg>
               <span>${(booking.priceCents / 100).toFixed(2)}</span>
+              {booking.paymentMethod === 'CASH' ? (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">CASH — Due On-Site</span>
+              ) : (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">PAID</span>
+              )}
             </div>
 
             {/* Time badge on mobile */}

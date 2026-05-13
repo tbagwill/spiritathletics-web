@@ -118,7 +118,8 @@ model Booking {
   cancelledAt          DateTime?
   createdAt            DateTime         @default(now())
   customerUserId       String?
-  stripeSessionId      String?          // Stripe Checkout Session ID for payment reconciliation
+  stripeSessionId      String?
+  paymentMethod        PaymentMethod    @default(CARD)
   approvalStatus       ApprovalStatus   @default(APPROVED)
   approvalToken        String?          @unique
   approvedAt           DateTime?
@@ -381,6 +382,7 @@ model ClinicRegistration {
   customerEmail    String
   athleteFirstName String
   stripeSessionId  String?
+  paymentMethod    PaymentMethod @default(CARD)
   status           BookingStatus @default(CONFIRMED)
   cancelledAt      DateTime?
   createdAt        DateTime      @default(now())
@@ -430,6 +432,11 @@ enum OrderStatus {
   PAID
   REFUNDED
   CANCELED
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
 }
 
 enum ApprovalStatus {

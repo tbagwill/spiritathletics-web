@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripe, getStripeConfig, isStripeConfigured } from '@/lib/stripe';
+import { CARD_FEE_CENTS } from '@/lib/pricing';
 import { z } from 'zod';
 import { rateLimitHit } from '@/lib/rateLimit';
 import { formatPt } from '@/lib/time';
@@ -9,7 +10,7 @@ const BodySchema = z.object({
   clinicId: z.string().cuid(),
   customerName: z.string().min(1).max(100).trim(),
   customerEmail: z.string().email().max(255).toLowerCase(),
-  athleteFirstName: z.string().min(1).max(100).trim(),
+  athleteFirstNames: z.array(z.string().min(1).max(100).trim()).min(1).max(10),
 });
 
 export async function POST(req: NextRequest) {
@@ -22,7 +23,8 @@ export async function POST(req: NextRequest) {
   if (!parse.success) {
     return NextResponse.json({ ok: false, error: 'Invalid input', issues: parse.error.format() }, { status: 400 });
   }
-  const { clinicId, customerName, customerEmail, athleteFirstName } = parse.data;
+  const { clinicId, customerName, customerEmail, athleteFirstNames } = parse.data;
+  const numAthletes = athleteFirstNames.length;
 
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim();
   const key = `clinic-checkout:${ip}:${customerEmail}`;
@@ -44,12 +46,17 @@ export async function POST(req: NextRequest) {
     if (clinic.dateTimeUTC < new Date()) {
       return NextResponse.json({ ok: false, error: 'This clinic has already passed' }, { status: 400 });
     }
-    if (clinic.registrations.length >= clinic.capacity) {
-      return NextResponse.json({ ok: false, error: 'This clinic is full' }, { status: 400 });
+    const spotsLeft = clinic.capacity - clinic.registrations.length;
+    if (numAthletes > spotsLeft) {
+      return NextResponse.json({ ok: false, error: `Only ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} remaining` }, { status: 400 });
     }
 
     const when = formatPt(clinic.dateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
     const { baseUrl } = getStripeConfig();
+
+    const athleteLabel = numAthletes > 1
+      ? `${numAthletes} athletes: ${athleteFirstNames.join(', ')}`
+      : athleteFirstNames[0];
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -60,9 +67,19 @@ export async function POST(req: NextRequest) {
             currency: 'usd',
             product_data: {
               name: clinic.title,
-              description: `Clinic on ${when}${clinic.location ? ` at ${clinic.location}` : ''}`,
+              description: `Clinic on ${when}${clinic.location ? ` at ${clinic.location}` : ''} — ${athleteLabel}`,
             },
             unit_amount: clinic.priceCents,
+          },
+          quantity: numAthletes,
+        },
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Card Processing Fee',
+            },
+            unit_amount: CARD_FEE_CENTS,
           },
           quantity: 1,
         },
@@ -75,7 +92,8 @@ export async function POST(req: NextRequest) {
         clinicId,
         customerName,
         customerEmail,
-        athleteFirstName,
+        athleteFirstNames: JSON.stringify(athleteFirstNames),
+        numAthletes: String(numAthletes),
       },
     });
 

@@ -8,6 +8,7 @@ interface ClinicRegistration {
   athleteFirstName: string;
   customerName: string;
   customerEmail: string;
+  paymentMethod: 'CARD' | 'CASH';
   status: string;
   createdAt: string;
   stripeSessionId?: string | null;
@@ -314,7 +315,14 @@ export default function DashboardClinicsPage() {
                           {clinic.registrations.map((reg) => (
                             <div key={reg.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
                               <div>
-                                <p className="text-sm font-medium text-gray-800">{reg.athleteFirstName} <span className="text-gray-400 font-normal">(booked by {reg.customerName})</span></p>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-medium text-gray-800">{reg.athleteFirstName} <span className="text-gray-400 font-normal">(booked by {reg.customerName})</span></p>
+                                  {reg.paymentMethod === 'CASH' ? (
+                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">CASH</span>
+                                  ) : (
+                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">PAID</span>
+                                  )}
+                                </div>
                                 <p className="text-xs text-gray-500">{reg.customerEmail}</p>
                               </div>
                               <div className="text-xs text-gray-400">
