@@ -37,7 +37,7 @@ export async function GET(_req: NextRequest) {
     include: {
       registrations: {
         where: { status: 'CONFIRMED' },
-        select: { id: true, athleteFirstName: true, customerName: true, customerEmail: true, paymentMethod: true, createdAt: true },
+        select: { id: true, athleteFirstName: true, customerName: true, customerEmail: true, paymentMethod: true, stripeSessionId: true, createdAt: true },
       },
     },
   });

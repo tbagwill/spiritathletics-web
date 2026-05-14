@@ -87,10 +87,30 @@ export default function DashboardClinicsPage() {
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [removingRegId, setRemovingRegId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleRemoveRegistration = async (reg: ClinicRegistration, refund: boolean) => {
+    const action = refund ? 'refund and remove' : 'remove';
+    if (!confirm(`Are you sure you want to ${action} ${reg.athleteFirstName} (booked by ${reg.customerName})?`)) return;
+
+    setRemovingRegId(reg.id);
+    try {
+      const url = `/api/dashboard/clinics/registrations/${reg.id}${refund ? '?refund=true' : ''}`;
+      const res = await fetch(url, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      showToast(data.refunded ? 'Refunded & removed.' : 'Registration removed.');
+      load();
+    } catch (e: any) {
+      showToast(e.message || 'Something went wrong.');
+    } finally {
+      setRemovingRegId(null);
+    }
   };
 
   const load = async () => {
@@ -312,24 +332,44 @@ export default function DashboardClinicsPage() {
                         <p className="text-sm text-gray-400">No registrations yet.</p>
                       ) : (
                         <div className="space-y-2">
-                          {clinic.registrations.map((reg) => (
-                            <div key={reg.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="text-sm font-medium text-gray-800">{reg.athleteFirstName} <span className="text-gray-400 font-normal">(booked by {reg.customerName})</span></p>
-                                  {reg.paymentMethod === 'CASH' ? (
-                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">CASH</span>
-                                  ) : (
-                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">PAID</span>
-                                  )}
+                          {clinic.registrations.map((reg) => {
+                            const isRemoving = removingRegId === reg.id;
+                            const canRefund = reg.paymentMethod === 'CARD' && !!reg.stripeSessionId;
+                            return (
+                              <div key={reg.id} className={`flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 ${isRemoving ? 'opacity-50' : ''}`}>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium text-gray-800 truncate">{reg.athleteFirstName} <span className="text-gray-400 font-normal">(booked by {reg.customerName})</span></p>
+                                    {reg.paymentMethod === 'CASH' ? (
+                                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0">CASH</span>
+                                    ) : (
+                                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 shrink-0">PAID</span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-500">{reg.customerEmail}</p>
                                 </div>
-                                <p className="text-xs text-gray-500">{reg.customerEmail}</p>
+                                <div className="flex items-center gap-2 shrink-0 ml-3">
+                                  <span className="text-xs text-gray-400 hidden sm:inline">{new Date(reg.createdAt).toLocaleDateString()}</span>
+                                  {canRefund && (
+                                    <button
+                                      onClick={() => handleRemoveRegistration(reg, true)}
+                                      disabled={isRemoving}
+                                      className="px-2.5 py-1 rounded-lg text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                                    >
+                                      Refund &amp; Remove
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => handleRemoveRegistration(reg, false)}
+                                    disabled={isRemoving}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-400">
-                                {new Date(reg.createdAt).toLocaleDateString()}
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
