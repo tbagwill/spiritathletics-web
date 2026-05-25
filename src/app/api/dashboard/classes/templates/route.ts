@@ -15,20 +15,24 @@ const TemplateSchema = z.object({
   basePriceCents: z.number().int().min(0),
 });
 
-async function getCoach() {
+async function getCoachAndRole() {
   const session = await getServerSession(authOptions as any);
   const userId = (session as any)?.user?.id || (session as any)?.user?.sub;
-  if (!userId) return null;
-  return prisma.coachProfile.findUnique({ where: { userId } });
+  const role = (session as any)?.user?.role as string | undefined;
+  if (!userId) return { coach: null, role: undefined };
+  const coach = await prisma.coachProfile.findUnique({ where: { userId } });
+  return { coach, role };
 }
 
 export async function GET() {
   try {
-    const coach = await getCoach();
-    if (!coach) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    const { coach, role } = await getCoachAndRole();
+    const isAdmin = role === 'ADMIN';
+    if (!coach && !isAdmin) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+
     const templates = await prisma.classTemplate.findMany({
-      where: { service: { coachId: coach.id, type: 'CLASS' } },
-      include: { service: true },
+      where: coach ? { service: { coachId: coach.id, type: 'CLASS' } } : { service: { type: 'CLASS' } },
+      include: { service: { include: { coach: { include: { user: { select: { name: true } } } } } } },
       orderBy: { weekday: 'asc' },
     });
     return NextResponse.json({ ok: true, templates }, { headers: { 'Cache-Control': 'no-store' } });
@@ -39,8 +43,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const coach = await getCoach();
-    if (!coach) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    const { coach } = await getCoachAndRole();
+    if (!coach) return NextResponse.json({ ok: false, error: 'A coach profile is required to create classes' }, { status: 401 });
     const json = await req.json();
     const parsed = TemplateSchema.safeParse(json);
     if (!parsed.success) return NextResponse.json({ ok: false, error: 'Invalid input', issues: parsed.error.format() }, { status: 400 });

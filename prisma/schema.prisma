@@ -480,3 +480,22 @@ enum QueueStatus {
   FAILED
   CANCELLED
 }
+
+model Waiver {
+  id                String   @id @default(cuid())
+  athleteFirstName  String
+  athleteLastName   String
+  parentFirstName   String
+  parentLastName    String
+  parentEmail       String
+  signatureDataUrl  String
+  waiverVersion     String   @default("1.0")
+  signedAt          DateTime @default(now())
+  ipAddress         String?
+  userAgent         String?
+  pdfUrl            String?
+  createdAt         DateTime @default(now())
+
+  @@index([parentEmail])
+  @@index([athleteLastName, athleteFirstName])
+}

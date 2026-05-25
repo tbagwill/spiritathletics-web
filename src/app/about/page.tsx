@@ -240,8 +240,8 @@ export default function About() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
               </div>
-              <div className="text-3xl font-bold text-gray-800 mb-2"></div>
-              <div className="text-sm text-gray-600 font-medium">National Qualifications</div>
+              <div className="text-3xl font-bold text-gray-800 mb-2">40+</div>
+              <div className="text-sm text-gray-600 font-medium">State Championships</div>
             </div>
 
             <div className="text-center group animate-fade-in-up delay-300">
@@ -250,8 +250,8 @@ export default function About() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <div className="text-3xl font-bold text-gray-800 mb-2">3</div>
-              <div className="text-sm text-gray-600 font-medium">State Championships</div>
+              <div className="text-3xl font-bold text-gray-800 mb-2">5</div>
+              <div className="text-sm text-gray-600 font-medium">National Titles</div>
             </div>
 
             <div className="text-center group animate-fade-in-up delay-400">
@@ -260,46 +260,31 @@ export default function About() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <div className="text-3xl font-bold text-gray-800 mb-2">200+</div>
-              <div className="text-sm text-gray-600 font-medium">Athletes Trained</div>
+              <div className="text-3xl font-bold text-gray-800 mb-2">1,000+</div>
+              <div className="text-sm text-gray-600 font-medium">Athletes Trained Over 30 Years</div>
             </div>
           </div>
 
-          {/* Recent Achievements */}
+          {/* Achievement Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in-up delay-100">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">2024 Regional Champions</h3>
-                  <p className="text-sm text-gray-600">Elite All-Star Division</p>
+                  <h3 className="font-bold text-gray-800">Performance Awards</h3>
+                  <p className="text-sm text-gray-600">Outstanding Performance Recognition</p>
                 </div>
               </div>
               <p className="text-gray-600 text-sm">
-                Our Elite team dominated the regional competition, earning a perfect score and advancing to nationals.
+                Consistently recognized across competitions for exceptional athletic performances, difficulty, and execution that set Spirit teams apart from the field.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in-up delay-200">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}>
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-800">National Bid Winner</h3>
-                  <p className="text-sm text-gray-600">2023 Season</p>
-                </div>
-              </div>
-              <p className="text-gray-600 text-sm">
-                Earned an at-large bid to compete at the prestigious national championships in Orlando, Florida.
-              </p>
-            </div>
+
 
             <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in-up delay-300">
               <div className="flex items-center mb-4">
@@ -309,12 +294,12 @@ export default function About() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">State Championship</h3>
-                  <p className="text-sm text-gray-600">Prep Level Division</p>
+                  <h3 className="font-bold text-gray-800">D2 Summit National Titles</h3>
+                  <p className="text-sm text-gray-600">The Renowned D2 Summit</p>
                 </div>
               </div>
               <p className="text-gray-600 text-sm">
-                Our Prep team captured the state title with an outstanding performance showcasing technical excellence.
+                Spirit Athletics has claimed National Titles at the prestigious D2 Summit — one of the most competitive and celebrated events in all-star cheerleading.
               </p>
             </div>
 
@@ -322,16 +307,16 @@ export default function About() {
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ background: 'linear-gradient(135deg, #4169E1, #000000)' }}>
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">Sportsmanship Award</h3>
-                  <p className="text-sm text-gray-600">2023 Regional Competition</p>
+                  <h3 className="font-bold text-gray-800">Cheerleading Worlds Finalist</h3>
+                  <p className="text-sm text-gray-600">The Cheerleading Worlds, Orlando</p>
                 </div>
               </div>
               <p className="text-gray-600 text-sm">
-                Recognized for outstanding sportsmanship and team spirit throughout the competitive season.
+                Earned Finalist placement at the Cheerleading Worlds — the pinnacle of the sport — competing against the best programs from around the globe.
               </p>
             </div>
 
@@ -339,16 +324,33 @@ export default function About() {
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ background: 'linear-gradient(135deg, #0000FE, #000000)' }}>
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">Perfect Score</h3>
-                  <p className="text-sm text-gray-600">Novice Division</p>
+                  <h3 className="font-bold text-gray-800">NCA &amp; Cheersport Champions</h3>
+                  <p className="text-sm text-gray-600">National Championship Events</p>
                 </div>
               </div>
               <p className="text-gray-600 text-sm">
-                Our Novice team achieved a perfect score at their first competition, demonstrating exceptional skill development.
+                Championship titles at both NCA and Cheersport — two of the most distinguished national competitions in all-star cheer — reflect our consistent excellence on the biggest stages.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in-up delay-500">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-800">Dozens of Grand Champion Titles</h3>
+                  <p className="text-sm text-gray-600">Overall Grand Champion</p>
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm">
+                Spirit Athletics teams have claimed the coveted Grand Champion title dozens of times across local and regional events, a testament to our depth and consistency.
               </p>
             </div>
 

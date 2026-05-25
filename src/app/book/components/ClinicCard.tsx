@@ -1,4 +1,5 @@
 import { formatPt } from '@/lib/time';
+import ClinicDescription from './ClinicDescription';
 import RegisterClinicDialog from './RegisterClinicDialog';
 
 interface ClinicRegistration {
@@ -80,7 +81,7 @@ export default function ClinicCard({ clinic }: ClinicCardProps) {
           )}
         </div>
 
-        <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-3">{clinic.description}</p>
+        <ClinicDescription text={clinic.description} />
 
         {/* Capacity bar */}
         <div className="mb-4">

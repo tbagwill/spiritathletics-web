@@ -13,8 +13,9 @@ async function upsertUser(email: string, name: string, role: UserRole, passwordP
 }
 
 async function main() {
-  // Admin user (no password by default)
+  // Admin users
   await upsertUser('admin@spiritathletics.net', 'Admin', UserRole.ADMIN);
+  await upsertUser('frontdesk@spiritathletics.net', 'Front Desk', UserRole.ADMIN, 'SpiritOffice123!');
 
   // Coaches with specialties (using real emails where available)
   const coachesData = [
