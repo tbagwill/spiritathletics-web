@@ -55,10 +55,10 @@ export default function Tryouts() {
             <span className="text-white font-semibold text-base">🏆 2026–27 Season Placements</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-5 animate-fade-in-up delay-200">
-            <span className="text-white">Join Our</span>
+            <span className="text-white">Join The</span>
             <br />
             <span style={{ background: 'linear-gradient(45deg, #FFFFFF, #bfdbfe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Championship Team
+              Spirit Family
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed mb-3 animate-fade-in-up delay-300">

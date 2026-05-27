@@ -66,22 +66,29 @@ const IconClinic = (
 		<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
 	</svg>
 );
+const IconWaiver = (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full" strokeWidth="1.8">
+		<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round"/>
+	</svg>
+);
 
 export default async function DashboardHome() {
 	const session = await getServerSession(authOptions);
 	const userId = (session as any)?.user?.id || (session as any)?.user?.sub;
+	const userRole = (session as any)?.user?.role as string | undefined;
 	const name = (session as any)?.user?.name || 'Coach';
+	const isAdmin = userRole === 'ADMIN';
 	
 	// Get coach profile and count pending bookings
 	const coach = userId ? await prisma.coachProfile.findUnique({ where: { userId } }) : null;
-	// Count PENDING bookings regardless of time (they should show until approved/declined)
-	const pendingCount = coach ? await prisma.booking.count({
+	// ADMIN sees all pending bookings; coaches see only their own
+	const pendingCount = (coach || isAdmin) ? await prisma.booking.count({
 		where: {
 			status: 'PENDING',
-			OR: [
+			...(coach ? { OR: [
 				{ coachId: coach.id },
 				{ service: { coachId: coach.id } },
-			],
+			] } : {}),
 		},
 	}) : 0;
 	
@@ -148,15 +155,23 @@ export default async function DashboardHome() {
 						description="Configure notifications and account settings"
 					/>
 				</div>
-				<div className="animate-fade-in" style={{ animationDelay: '500ms' }}>
-					<Tile 
-						href="/dashboard/clinics" 
-						title="Clinics &amp; Special Events" 
-						icon={IconClinic}
-						description="Create and manage featured clinics with online registration"
-					/>
-				</div>
+			<div className="animate-fade-in" style={{ animationDelay: '500ms' }}>
+				<Tile 
+					href="/dashboard/clinics" 
+					title="Clinics &amp; Special Events" 
+					icon={IconClinic}
+					description="Create and manage featured clinics with online registration"
+				/>
 			</div>
+			<div className="animate-fade-in" style={{ animationDelay: '600ms' }}>
+				<Tile 
+					href="/dashboard/waivers" 
+					title="Athlete Waivers" 
+					icon={IconWaiver}
+					description="View and search signed liability waivers"
+				/>
+			</div>
+		</div>
 			</div>
 		</div>
 	);

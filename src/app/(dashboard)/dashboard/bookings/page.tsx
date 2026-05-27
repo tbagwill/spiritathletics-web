@@ -9,23 +9,27 @@ export const dynamic = 'force-dynamic';
 export default async function BookingsPage() {
   const session = await getServerSession(authOptions);
   const userId = (session as any)?.user?.id || (session as any)?.user?.sub;
+  const userRole = (session as any)?.user?.role as string | undefined;
   const coach = userId ? await prisma.coachProfile.findUnique({ where: { userId } }) : null;
+  const isAdmin = userRole === 'ADMIN';
 
   const now = new Date();
-  const bookings = coach ? await prisma.booking.findMany({
+
+  const coachFilter = coach
+    ? [{ coachId: coach.id }, { service: { coachId: coach.id } }]
+    : undefined;
+
+  const bookings = (coach || isAdmin) ? await prisma.booking.findMany({
     where: {
       OR: [
-        // Show all PENDING bookings regardless of time
-        { status: 'PENDING', OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] },
-        // Show future CONFIRMED bookings
-        { status: 'CONFIRMED', startDateTimeUTC: { gte: now }, OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] },
-        // Show recent CANCELLED bookings (last 7 days)
-        { status: 'CANCELLED', cancelledAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] },
+        { status: 'PENDING', ...(coachFilter ? { OR: coachFilter } : {}) },
+        { status: 'CONFIRMED', startDateTimeUTC: { gte: now }, ...(coachFilter ? { OR: coachFilter } : {}) },
+        { status: 'CANCELLED', cancelledAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, ...(coachFilter ? { OR: coachFilter } : {}) },
       ],
     },
     include: { service: { include: { coach: { include: { user: true } } } }, classOccurrence: true },
     orderBy: [{ status: 'asc' }, { startDateTimeUTC: 'asc' }],
-    take: 100,
+    take: 200,
   }) : [];
 
   return (
@@ -55,7 +59,7 @@ export default async function BookingsPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {!coach ? (
+        {!coach && !isAdmin ? (
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center animate-fade-in-up">
             <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
               <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
