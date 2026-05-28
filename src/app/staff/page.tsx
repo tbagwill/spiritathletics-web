@@ -3,73 +3,76 @@ export default function Staff() {
     {
       name: 'Patricia "Patti" Perniciaro',
       title: 'Head Coach, Owner',
-      description: 'Patti brings years of experience and passion to Spirit Athletics. As the founder and head coach, she leads our program with dedication to excellence and athlete development.',
       image: '/images/staff/patti-placeholder.jpg'
     },
     {
       name: 'Julie Bagwill',
       title: 'Co Owner',
-      description: 'Julie co-founded Spirit Athletics with a vision of creating a supportive environment where athletes can thrive. Her business expertise helps drive our program forward.',
       image: '/images/staff/julie-placeholder.jpg'
     },
     {
       name: 'John Migaiolo',
       title: 'Program Director',
-      description: 'John oversees all program operations, ensuring each athlete receives the best training experience. His organizational skills keep our programs running smoothly.',
       image: '/images/staff/john-placeholder.jpg'
     },
     {
       name: 'Candice Vargas',
       title: 'Senior Coach, Social Media',
-      description: 'Candice combines her coaching expertise with social media management, helping showcase our athletes\' achievements and keeping our community connected.',
       image: '/images/staff/candice-placeholder.jpg'
     },
     {
       name: 'Tyler Bagwill',
       title: 'Senior Coach, Digital Media',
-      description: 'Tyler brings technical expertise to our coaching staff while managing our digital presence. His innovative approach helps modernize our training methods.',
       image: '/images/staff/tyler-placeholder.jpg'
     },
     {
       name: 'Rhyan Chollier',
       title: 'Senior Coach',
-      description: 'Rhyan brings enthusiasm and expertise to every practice. Her commitment to athlete development makes her an invaluable part of our coaching team.',
       image: '/images/staff/rhyan-placeholder.jpg'
     },
     {
       name: 'Bethany Snow',
       title: 'Senior Coach',
-      description: 'Bethany\'s coaching philosophy focuses on building confidence and skills. She creates a supportive environment where athletes can grow and succeed.',
       image: '/images/staff/bethany-placeholder.jpg'
     },
     {
       name: 'Jessica Thomas',
       title: 'Senior Coach',
-      description: 'Jessica combines technical knowledge with a passion for cheerleading. Her dedication to excellence helps athletes achieve their competitive goals.',
       image: '/images/staff/jessica-placeholder.jpg'
     },
     {
       name: 'Natalie Falzone',
       title: 'Senior Coach',
-      description: 'Natalie brings energy and expertise to our coaching staff. Her commitment to athlete development helps create champions both on and off the mat.',
       image: '/images/staff/natalie-placeholder.jpg'
     },
     {
       name: 'Aniya Willis',
       title: 'Senior Coach',
-      description: 'Aniya\'s positive attitude and coaching skills inspire athletes to reach new heights. She is dedicated to fostering growth and teamwork.',
       image: '/images/staff/aniya-placeholder.jpg'
     },
     {
       name: 'Aliszia Orland',
       title: 'Senior Coach',
-      description: 'Aliszia brings expertise and dedication to our coaching team. Her commitment to athlete development and positive coaching approach helps athletes achieve their goals.',
       image: '/images/staff/aliszia-placeholder.jpg'
+    },
+    {
+      name: 'Olivia Hahn',
+      title: 'Coach',
+      image: '/images/staff/olivia-placeholder.jpg'
+    },
+    {
+      name: 'Kimberly Gonzales',
+      title: 'Junior Coach',
+      image: '/images/staff/kimberly-placeholder.jpg'
+    },
+    {
+      name: 'Isabella Rodrigues',
+      title: 'Junior Coach',
+      image: '/images/staff/isabella-placeholder.jpg'
     },
     {
       name: 'Alejandra "Alli" Arreola',
       title: 'Front Desk',
-      description: 'Alli is the friendly face that welcomes families to Spirit Athletics. Her organizational skills and warm personality make everyone feel at home.',
       image: '/images/staff/alli-placeholder.jpg'
     }
   ];
@@ -128,8 +131,7 @@ export default function Staff() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">{member.name}</h3>
-                <p className="text-lg font-semibold mb-4" style={{ color: '#0000FE' }}>{member.title}</p>
-                <p className="text-gray-600 leading-relaxed">{member.description}</p>
+                <p className="text-lg font-semibold" style={{ color: '#0000FE' }}>{member.title}</p>
               </div>
             ))}
           </div>
@@ -146,11 +148,10 @@ export default function Staff() {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {staffMembers.slice(3, 11).map((member, index) => (
+            {staffMembers.slice(3, 14).map((member, index) => (
               <div key={index} className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
                 <div className="relative mb-6">
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}>
-                    {/* Placeholder for profile image */}
                     <div className="w-full h-full flex items-center justify-center">
                       <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -159,8 +160,7 @@ export default function Staff() {
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">{member.name}</h3>
-                <p className="text-lg font-semibold mb-4" style={{ color: '#0000FE' }}>{member.title}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{member.description}</p>
+                <p className="text-lg font-semibold" style={{ color: '#0000FE' }}>{member.title}</p>
               </div>
             ))}
           </div>
@@ -177,11 +177,10 @@ export default function Staff() {
           </h2>
           
           <div className="flex justify-center">
-            {staffMembers.slice(11).map((member, index) => (
+            {staffMembers.slice(14).map((member, index) => (
               <div key={index} className="bg-gradient-to-br from-blue-50 to-gray-50 p-8 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up max-w-md">
                 <div className="relative mb-6">
                   <div className="w-40 h-40 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #000000, #333333)' }}>
-                    {/* Placeholder for profile image */}
                     <div className="w-full h-full flex items-center justify-center">
                       <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -190,8 +189,7 @@ export default function Staff() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">{member.name}</h3>
-                <p className="text-lg font-semibold mb-4" style={{ color: '#0000FE' }}>{member.title}</p>
-                <p className="text-gray-600 leading-relaxed">{member.description}</p>
+                <p className="text-lg font-semibold" style={{ color: '#0000FE' }}>{member.title}</p>
               </div>
             ))}
           </div>

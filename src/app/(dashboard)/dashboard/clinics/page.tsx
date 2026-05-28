@@ -88,6 +88,60 @@ export default function DashboardClinicsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [removingRegId, setRemovingRegId] = useState<string | null>(null);
+  const [printClinicId, setPrintClinicId] = useState<string | null>(null);
+
+  const handlePrintRoster = (clinic: Clinic) => {
+    const rows = clinic.registrations
+      .map(
+        (reg, i) =>
+          `<tr style="border-bottom:1px solid #e5e7eb;${i % 2 === 0 ? 'background:#f9fafb;' : ''}">
+            <td style="padding:6px 10px;color:#6b7280;">${i + 1}</td>
+            <td style="padding:6px 10px;font-weight:600;color:#111827;">${reg.athleteFirstName}</td>
+            <td style="padding:6px 10px;color:#374151;">${reg.customerName}</td>
+            <td style="padding:6px 10px;color:#374151;">${reg.customerEmail}</td>
+            <td style="padding:6px 10px;"><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;${reg.paymentMethod === 'CASH' ? 'background:#fef3c7;color:#b45309;' : 'background:#d1fae5;color:#047857;'}">${reg.paymentMethod === 'CASH' ? 'Cash' : 'Card'}</span></td>
+            <td style="padding:6px 10px;color:#6b7280;">${new Date(reg.createdAt).toLocaleDateString()}</td>
+          </tr>`
+      )
+      .join('');
+
+    const html = `<!DOCTYPE html>
+<html><head><title>${clinic.title} — Attendee Roster</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; color: #111827; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .meta { font-size: 13px; color: #4b5563; margin: 2px 0; }
+  .total { font-size: 13px; font-weight: 600; color: #374151; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  thead tr { border-bottom: 2px solid #d1d5db; }
+  th { padding: 6px 10px; text-align: left; font-weight: 600; color: #374151; }
+  @media print {
+    body { padding: 12px; }
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+    thead { display: table-header-group; }
+  }
+</style></head><body>
+<h1>${clinic.title}</h1>
+<p class="meta">${formatDateTime(clinic.dateTimeUTC)} · ${clinic.durationMinutes} min</p>
+${clinic.location ? `<p class="meta">${clinic.location}</p>` : ''}
+<p class="total">Total registered: ${clinic.registrations.length} / ${clinic.capacity}</p>
+${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;">No registrations yet.</p>' : `
+<table>
+  <thead><tr>
+    <th style="width:30px;">#</th><th>Athlete</th><th>Parent / Guardian</th><th>Email</th><th>Payment</th><th>Registered</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>`}
+</body></html>`;
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.print();
+  };
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -192,15 +246,6 @@ export default function DashboardClinicsPage() {
     }
   };
 
-  const handleToggleActive = async (clinic: Clinic) => {
-    await fetch(`/api/dashboard/clinics/${clinic.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: !clinic.isActive }),
-    });
-    load();
-  };
-
   const handleDelete = async (clinic: Clinic) => {
     if (!confirm(`Delete "${clinic.title}"? This will also remove all registrations.`)) return;
     await fetch(`/api/dashboard/clinics/${clinic.id}`, { method: 'DELETE' });
@@ -295,7 +340,7 @@ export default function DashboardClinicsPage() {
                         <p className="text-sm text-gray-500">{formatDateTime(clinic.dateTimeUTC)} · {clinic.durationMinutes} min</p>
                         <p className="text-sm text-gray-500">{spotsLeft} / {clinic.capacity} spots available · ${(clinic.priceCents / 100).toFixed(2)}</p>
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => setExpandedId(expandedId === clinic.id ? null : clinic.id)}
                           className="px-3 py-1.5 rounded-lg text-sm text-purple-700 bg-purple-50 hover:bg-purple-100 font-medium transition-colors"
@@ -303,22 +348,31 @@ export default function DashboardClinicsPage() {
                           {expandedId === clinic.id ? 'Hide' : `Registrants (${clinic.registrations.length})`}
                         </button>
                         <button
-                          onClick={() => openEdit(clinic)}
-                          className="px-3 py-1.5 rounded-lg text-sm text-blue-700 bg-blue-50 hover:bg-blue-100 font-medium transition-colors"
+                          onClick={() => setPrintClinicId(clinic.id)}
+                          title="Print roster"
+                          className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                         >
-                          Edit
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                          </svg>
                         </button>
                         <button
-                          onClick={() => handleToggleActive(clinic)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${clinic.isActive ? 'text-gray-600 bg-gray-100 hover:bg-gray-200' : 'text-green-700 bg-green-50 hover:bg-green-100'}`}
+                          onClick={() => openEdit(clinic)}
+                          title="Edit clinic"
+                          className="p-2 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
                         >
-                          {clinic.isActive ? 'Deactivate' : 'Activate'}
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
                         </button>
                         <button
                           onClick={() => handleDelete(clinic)}
-                          className="px-3 py-1.5 rounded-lg text-sm text-red-600 bg-red-50 hover:bg-red-100 font-medium transition-colors"
+                          title="Delete clinic"
+                          className="p-2 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
                         >
-                          Delete
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                         </button>
                       </div>
                     </div>
@@ -380,6 +434,94 @@ export default function DashboardClinicsPage() {
           </div>
         )}
       </div>
+
+      {/* Print Roster Preview Dialog */}
+      {printClinicId && (() => {
+        const clinic = clinics.find((c) => c.id === printClinicId);
+        if (!clinic) return null;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setPrintClinicId(null)} />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto z-10">
+              {/* Dialog header */}
+              <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <h2 className="text-xl font-bold text-gray-900">Attendee Roster</h2>
+                <button onClick={() => setPrintClinicId(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="px-6 py-5">
+                <div className="mb-5">
+                  <h3 className="text-2xl font-bold text-gray-900">{clinic.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{formatDateTime(clinic.dateTimeUTC)} · {clinic.durationMinutes} min</p>
+                  {clinic.location && <p className="text-sm text-gray-600">{clinic.location}</p>}
+                  <p className="text-sm font-semibold text-gray-700 mt-2">
+                    Total registered: {clinic.registrations.length} / {clinic.capacity}
+                  </p>
+                </div>
+
+                {clinic.registrations.length === 0 ? (
+                  <p className="text-gray-500 text-sm py-4">No registrations yet.</p>
+                ) : (
+                  <table className="w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="border-b-2 border-gray-300 text-left">
+                        <th className="py-2 pr-3 font-semibold text-gray-700 w-8">#</th>
+                        <th className="py-2 pr-3 font-semibold text-gray-700">Athlete</th>
+                        <th className="py-2 pr-3 font-semibold text-gray-700">Parent / Guardian</th>
+                        <th className="py-2 pr-3 font-semibold text-gray-700">Email</th>
+                        <th className="py-2 pr-3 font-semibold text-gray-700">Payment</th>
+                        <th className="py-2 font-semibold text-gray-700">Registered</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clinic.registrations.map((reg, i) => (
+                        <tr key={reg.id} className={`border-b border-gray-100 ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                          <td className="py-2 pr-3 text-gray-500">{i + 1}</td>
+                          <td className="py-2 pr-3 font-medium text-gray-900">{reg.athleteFirstName}</td>
+                          <td className="py-2 pr-3 text-gray-700">{reg.customerName}</td>
+                          <td className="py-2 pr-3 text-gray-700">{reg.customerEmail}</td>
+                          <td className="py-2 pr-3">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${reg.paymentMethod === 'CASH' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                              {reg.paymentMethod === 'CASH' ? 'Cash' : 'Card'}
+                            </span>
+                          </td>
+                          <td className="py-2 text-gray-500">{new Date(reg.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
+                <button
+                  type="button"
+                  onClick={() => setPrintClinicId(null)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePrintRoster(clinic)}
+                  className="px-6 py-2.5 rounded-xl text-white font-semibold flex items-center gap-2 hover:scale-105 transition-all"
+                  style={{ background: 'linear-gradient(135deg, #374151, #1f2937)' }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Print Roster
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Create / Edit Form Modal */}
       {formMode && (

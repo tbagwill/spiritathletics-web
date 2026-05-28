@@ -166,7 +166,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                   type="text"
                   {...register('customerName', { required: true })}
                   placeholder="Parent / Guardian name"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
                 />
               </div>
               <div>
@@ -175,7 +175,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                   type="email"
                   {...register('customerEmail', { required: true })}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
                 />
               </div>
 
@@ -204,7 +204,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                         value={name}
                         onChange={(e) => updateAthlete(i, e.target.value)}
                         placeholder={`Athlete ${i + 1} first name`}
-                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
                       />
                       {numAthletes > 1 && (
                         <button

@@ -160,7 +160,7 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
               type="text"
               {...register('customerName', { required: true })}
               placeholder="Parent / Guardian name"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
             />
           </div>
           <div>
@@ -169,7 +169,7 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
               type="email"
               {...register('customerEmail', { required: true })}
               placeholder="you@example.com"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
             />
           </div>
           <div>
@@ -178,7 +178,7 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
               type="text"
               {...register('athleteName', { required: true })}
               placeholder="Athlete's first name"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
             />
           </div>
 

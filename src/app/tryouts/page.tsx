@@ -28,9 +28,9 @@ export default function Tryouts() {
   ];
 
   const tryoutSessions = [
-    { group: 'Ages 4–6', time: '11:00 AM – 12:00 PM', note: 'Tiny division' },
-    { group: 'Ages 7–10', time: '12:00 PM – 2:00 PM' },
-    { group: 'Ages 11–18', time: '2:00 PM – 4:00 PM' },
+    { group: 'Ages 4–6', time: '1:00 PM – 2:00 PM', note: 'Tiny division' },
+    { group: 'Ages 6–9', time: '2:00 PM – 4:00 PM' },
+    { group: 'Ages 10–18', time: '4:00 PM – 6:00 PM' },
   ];
 
   const parentMeetings = [
@@ -127,11 +127,11 @@ export default function Tryouts() {
                   <h3 className="text-lg font-bold text-gray-900">Clinic + Tryout</h3>
                 </div>
               </div>
-              <div className="text-4xl font-extrabold text-blue-700 mb-3">$70</div>
+              <div className="text-4xl font-extrabold text-blue-700 mb-3">$65</div>
               <div className="space-y-1.5 text-sm text-gray-600">
                 <div className="flex justify-between py-1 border-b border-gray-100">
                   <span>Clinic Fee</span>
-                  <span className="font-semibold text-gray-800">$40</span>
+                  <span className="font-semibold text-gray-800">$35</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Tryout Fee</span>
