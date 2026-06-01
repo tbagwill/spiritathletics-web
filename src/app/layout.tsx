@@ -24,6 +24,13 @@ export const metadata: Metadata = {
   description: "Spirit Athletics provides competitive cheerleading programs for athletes of all levels, from non-competitive to Elite All-Star teams.",
   keywords: "cheerleading, competitive cheer, all-star cheer, youth athletics, Spirit Athletics, Hesperia cheerleading",
   authors: [{ name: "Spirit Athletics" }],
+  icons: {
+    icon: [
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/favicon.png", type: "image/png" },
+    ],
+    apple: "/icons/favicon.png",
+  },
   openGraph: {
     title: "Spirit Athletics - Competitive Cheerleading Programs",
     description: "Competitive cheerleading programs for athletes of all levels",
