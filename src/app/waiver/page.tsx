@@ -24,15 +24,17 @@ export default function WaiverPage() {
     day: 'numeric',
   });
 
-  const canSubmit =
+  const allFieldsFilled =
     athleteFirstName.trim() &&
     athleteLastName.trim() &&
     parentFirstName.trim() &&
     parentLastName.trim() &&
     parentEmail.trim() &&
-    signatureDataUrl &&
-    agreed &&
-    !submitting;
+    agreed;
+
+  const canSubmit = allFieldsFilled && signatureDataUrl && !submitting;
+
+  const needsSignature = Boolean(allFieldsFilled && !signatureDataUrl);
 
   const handleSignatureChange = useCallback((dataUrl: string | null) => {
     setSignatureDataUrl(dataUrl);
@@ -326,6 +328,11 @@ export default function WaiverPage() {
 
           {/* Submit */}
           <div className="text-center">
+            {needsSignature && (
+              <p className="text-sm text-amber-600 mb-3">
+                Please add your signature above before submitting.
+              </p>
+            )}
             <button
               type="submit"
               disabled={!canSubmit}
