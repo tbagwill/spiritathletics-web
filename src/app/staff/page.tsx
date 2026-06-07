@@ -61,14 +61,14 @@ export default function Staff() {
       image: '/images/staff/olivia-placeholder.jpg'
     },
     {
-      name: 'Kimberly Gonzales',
+      name: 'Kimberly Gonzalez',
       title: 'Junior Coach',
       image: '/images/staff/kimberly-placeholder.jpg'
     },
     {
-      name: 'Isabella Rodrigues',
+      name: 'Isabelle Vargas',
       title: 'Junior Coach',
-      image: '/images/staff/isabella-placeholder.jpg'
+      image: '/images/staff/isabelle-placeholder.jpg'
     },
     {
       name: 'Alejandra "Alli" Arreola',
