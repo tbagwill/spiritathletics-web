@@ -51,16 +51,17 @@ model Service {
 }
 
 model AvailabilityRule {
-  id               String         @id @default(cuid())
-  coachId          String
-  ruleType         WeeklyRuleType
-  byDay            String[]
-  startTimeMinutes Int
-  endTimeMinutes   Int
-  effectiveFrom    DateTime
-  effectiveTo      DateTime?
-  createdAt        DateTime       @default(now())
-  coach            CoachProfile   @relation(fields: [coachId], references: [id])
+  id                 String         @id @default(cuid())
+  coachId            String
+  ruleType           WeeklyRuleType
+  byDay              String[]
+  startTimeMinutes   Int
+  endTimeMinutes     Int
+  effectiveFrom      DateTime
+  effectiveTo        DateTime?
+  slotIntervalMinutes Int           @default(30)
+  createdAt          DateTime       @default(now())
+  coach              CoachProfile   @relation(fields: [coachId], references: [id])
 }
 
 model AvailabilityException {
@@ -81,6 +82,8 @@ model ClassTemplate {
   capacity         Int
   location         String?
   isActive         Boolean           @default(true)
+  startDate        DateTime?
+  endDate          DateTime?
   occurrences      ClassOccurrence[]
   service          Service           @relation(fields: [serviceId], references: [id])
 }
@@ -127,6 +130,7 @@ model Booking {
   denialReason         String?
   deniedAt             DateTime?
   reminderSentAt       DateTime?
+  isManualBlock        Boolean          @default(false)
   requestedAt          DateTime         @default(now())
   classOccurrence      ClassOccurrence? @relation(fields: [classOccurrenceId], references: [id])
   coach                CoachProfile?    @relation(fields: [coachId], references: [id])

@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { addWeeks, eachWeekOfInterval } from 'date-fns';
+import { addWeeks, eachWeekOfInterval, isAfter, isBefore } from 'date-fns';
 import { combineLocalDateAndMinutesPT } from './time';
 
 export async function generateOccurrencesNextWeeks(weeks = 8): Promise<number> {
@@ -8,22 +8,33 @@ export async function generateOccurrencesNextWeeks(weeks = 8): Promise<number> {
     include: { service: true },
   });
   const now = new Date();
-  const end = addWeeks(now, weeks);
+  const defaultEnd = addWeeks(now, weeks);
   let createdOrUpserted = 0;
 
   for (const tpl of templates) {
+    // Clamp generation window: start = max(now, tpl.startDate), end = min(defaultEnd, tpl.endDate)
+    const windowStart = tpl.startDate && isAfter(tpl.startDate, now) ? tpl.startDate : now;
+    const windowEnd = tpl.endDate && isBefore(tpl.endDate, defaultEnd) ? tpl.endDate : defaultEnd;
+
+    if (isAfter(windowStart, windowEnd)) continue; // template's date range is entirely in the past or future
+
     // Iterate each week, find the day corresponding to tpl.weekday in PT
-    const isoWeekStarts = eachWeekOfInterval({ start: now, end });
+    const isoWeekStarts = eachWeekOfInterval({ start: windowStart, end: windowEnd });
     for (const wkStart of isoWeekStarts) {
       const ptDate = toWeekday(wkStart, tpl.weekday);
       const startUTC = combineLocalDateAndMinutesPT(ptDate, tpl.startTimeMinutes);
+
+      // Skip occurrences outside the template's date range
+      if (tpl.startDate && isBefore(startUTC, tpl.startDate)) continue;
+      if (tpl.endDate && isAfter(startUTC, tpl.endDate)) continue;
+
       await prisma.classOccurrence.upsert({
         where: { classTemplateId_startDateTimeUTC: { classTemplateId: tpl.id, startDateTimeUTC: startUTC } },
-        update: { capacity: 10 },
+        update: { capacity: tpl.capacity },
         create: {
           classTemplateId: tpl.id,
           startDateTimeUTC: startUTC,
-          capacity: 10,
+          capacity: tpl.capacity,
           status: 'SCHEDULED',
         },
       });

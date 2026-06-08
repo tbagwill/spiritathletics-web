@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createAuditLog } from '@/lib/auditLog';
-import { sendBookingEmails } from '@/lib/email';
+import { sendBookingEmails, buildCancellationCustomerHtml, buildCancellationCoachHtml } from '@/lib/email';
 import { buildICS } from '@/lib/ics';
 import { formatPt } from '@/lib/time';
 
@@ -119,9 +119,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const when = formatPt(booking.startDateTimeUTC, "EEEE, MMMM d 'at' h:mm a 'PT'");
     const location = process.env.ORG_ADDRESS || 'Spirit Athletics';
     
-    // Build cancellation emails
-    const customerHtml = buildCancellationCustomerHtml(title, when, coach.user.name || 'Your coach');
-    const coachHtml = buildCancellationCoachHtml(title, when, booking.customerName, booking.athleteName);
+    // Build branded cancellation emails (cancelledByCoach = true)
+    const customerHtml = buildCancellationCustomerHtml(title, when, coach.user.name || 'Your coach', true);
+    const coachHtml = buildCancellationCoachHtml(title, when, booking.customerName, booking.athleteName, true);
     
     // Build cancellation ICS (METHOD:CANCEL)
     const icsContent = buildICS({
@@ -171,33 +171,3 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-// Email template for customer cancellation notification
-function buildCancellationCustomerHtml(title: string, when: string, coachName: string) {
-  return `
-    <div style="font-family:Arial,sans-serif;font-size:14px;color:#111">
-      <h2 style="margin:0 0 12px 0;color:#dc2626">Your booking has been cancelled</h2>
-      <p style="margin:0 0 4px 0"><strong>${escape(title)}</strong></p>
-      <p style="margin:0 0 4px 0">${escape(when)}</p>
-      <p style="margin:0 0 12px 0">Cancelled by: ${escape(coachName)}</p>
-      <p style="margin:0 0 8px 0">We apologize for any inconvenience this may cause.</p>
-      <p style="margin:0">If you have any questions, please don't hesitate to contact us.</p>
-    </div>
-  `;
-}
-
-// Email template for coach cancellation confirmation
-function buildCancellationCoachHtml(title: string, when: string, customer: string, athlete: string) {
-  return `
-    <div style="font-family:Arial,sans-serif;font-size:14px;color:#111">
-      <h2 style="margin:0 0 12px 0;color:#dc2626">Booking cancelled</h2>
-      <p style="margin:0 0 4px 0"><strong>${escape(title)}</strong></p>
-      <p style="margin:0 0 4px 0">${escape(when)}</p>
-      <p style="margin:0 0 8px 0">Customer: ${escape(customer)} • Athlete: ${escape(athlete)}</p>
-      <p style="margin:0">Cancellation notification has been sent to the customer.</p>
-    </div>
-  `;
-}
-
-function escape(s: string) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}

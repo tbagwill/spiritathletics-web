@@ -23,6 +23,9 @@ const envSchema = z.object({
   // Organization
   ORG_ADDRESS: z.string().min(10),
   NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
+
+  // Cron job secret (used to authenticate Vercel cron calls)
+  CRON_SECRET: z.string().min(16).optional(),
 });
 
 export function validateEnv() {

@@ -13,6 +13,9 @@ const TemplateSchema = z.object({
   startTimeMinutes: z.number().int().min(0).max(1440),
   durationMinutes: z.number().int().min(15).max(600),
   basePriceCents: z.number().int().min(0),
+  capacity: z.number().int().min(3).max(10).default(10),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
 });
 
 async function getCoachAndRole() {
@@ -68,9 +71,11 @@ export async function POST(req: NextRequest) {
         serviceId: service.id,
         weekday: data.weekday,
         startTimeMinutes: data.startTimeMinutes,
-        capacity: 10,
+        capacity: data.capacity,
         location: BUSINESS_ADDRESS,
         isActive: true,
+        startDate: data.startDate ? new Date(data.startDate) : null,
+        endDate: data.endDate ? new Date(data.endDate) : null,
       },
     });
 

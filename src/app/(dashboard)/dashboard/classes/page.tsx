@@ -10,6 +10,8 @@ type ClassTemplate = {
   weekday: number;
   startTimeMinutes: number;
   capacity: number;
+  startDate?: string | null;
+  endDate?: string | null;
   service: {
     title: string;
     basePriceCents: number;
@@ -32,6 +34,9 @@ export default function ClassesManagerPage() {
   const [start, setStart] = useState(16 * 60);
   const [duration, setDuration] = useState(60);
   const [price, setPrice] = useState(3000);
+  const [capacity, setCapacity] = useState(10);
+  const [classStartDate, setClassStartDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [classEndDate, setClassEndDate] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -56,12 +61,16 @@ export default function ClassesManagerPage() {
         body: JSON.stringify({
           title, description, weekday, startTimeMinutes: start,
           durationMinutes: duration, basePriceCents: price,
+          capacity,
+          startDate: classStartDate || null,
+          endDate: classEndDate || null,
         }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
         setTitle(''); setDescription(''); setWeekday(3); setStart(16*60);
-        setDuration(60); setPrice(3000);
+        setDuration(60); setPrice(3000); setCapacity(10);
+        setClassStartDate(new Date().toISOString().slice(0, 10)); setClassEndDate('');
         setShowAddForm(false);
         await load();
         showToast('Class added successfully!', 'success');
@@ -264,12 +273,48 @@ export default function ClassesManagerPage() {
                         placeholder="30.00"
                       />
                     </div>
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                      <h4 className="font-semibold text-gray-900 mb-2">Class Configuration</h4>
-                      <div className="text-sm space-y-1">
-                        <p><strong>Capacity:</strong> 10 athletes (fixed)</p>
-                        <p><strong>Location:</strong> Spirit Athletics</p>
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-900">
+                        Class Capacity <span className="text-gray-400 font-normal">(3–10 athletes)</span>
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min={3}
+                          max={10}
+                          step={1}
+                          value={capacity}
+                          onChange={(e) => setCapacity(parseInt(e.target.value))}
+                          className="flex-1"
+                        />
+                        <span className="w-20 text-center text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 py-2 rounded-lg">
+                          {capacity} athletes
+                        </span>
                       </div>
+                      <p className="text-xs text-gray-500 mt-1">Classes over 10 athletes require a clinic (separate event type).</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-900">Start Date</label>
+                      <input
+                        type="date"
+                        value={classStartDate}
+                        onChange={(e) => setClassStartDate(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-900">End Date <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <input
+                        type="date"
+                        value={classEndDate}
+                        onChange={(e) => setClassEndDate(e.target.value)}
+                        min={classStartDate}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900"
+                        placeholder="Leave empty to run indefinitely"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Leave empty to run this class indefinitely.</p>
                     </div>
                   </div>
 
@@ -352,6 +397,20 @@ export default function ClassesManagerPage() {
                           <span className="font-medium">Capacity:</span>
                           <span>{t.capacity} athletes maximum</span>
                         </div>
+                        
+                        {(t.startDate || t.endDate) && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="font-medium">Runs:</span>
+                            <span>
+                              {t.startDate ? new Date(t.startDate).toLocaleDateString() : 'Now'}
+                              {' – '}
+                              {t.endDate ? new Date(t.endDate).toLocaleDateString() : 'Ongoing'}
+                            </span>
+                          </div>
+                        )}
                         
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

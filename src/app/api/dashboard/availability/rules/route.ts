@@ -13,6 +13,7 @@ const RuleSchema = z.object({
   endTimeMinutes: z.number().int().min(0).max(1440),
   effectiveFrom: z.string().transform((s) => new Date(s)),
   effectiveTo: z.string().transform((s) => new Date(s)).optional().nullable(),
+  slotIntervalMinutes: z.union([z.literal(30), z.literal(60)]).optional().default(30),
 });
 
 async function requireCoachProfile() {
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
         endTimeMinutes: data.endTimeMinutes,
         effectiveFrom: data.effectiveFrom,
         effectiveTo: data.effectiveTo ?? null,
+        slotIntervalMinutes: data.slotIntervalMinutes,
       },
     });
     return NextResponse.json({ ok: true, rule: created }, { headers: { 'Cache-Control': 'no-store' } });

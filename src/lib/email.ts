@@ -809,6 +809,216 @@ export function buildPendingCancelledCoachHtml(title: string, when: string, cust
 	`;
 }
 
+export function buildCancellationCustomerHtml(title: string, when: string, coachName: string, cancelledByCoach = false) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
+  const reason = cancelledByCoach
+    ? `Your booking was cancelled by ${escape(coachName)}. We apologize for any inconvenience this may cause.`
+    : 'Your booking has been cancelled per your request.';
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Booking Cancelled</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;"><img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics" width="600" style="display:block;width:100%;height:auto;border:0;"></td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 12px 0;color:#dc2626;font-size:26px;font-weight:700;">Booking Cancelled</h1>
+<p style="margin:0;color:#64748b;font-size:16px;line-height:1.6;">${reason}</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#fef2f2;border-radius:8px;border:2px solid #fee2e2;">
+<tr><td style="padding:24px;">
+<p style="margin:0 0 6px 0;color:#9b1c1c;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Cancelled Session</p>
+<p style="margin:0 0 8px 0;color:#1e293b;font-size:20px;font-weight:700;">${escape(title)}</p>
+<p style="margin:0;color:#64748b;font-size:16px;">${escape(when)}</p>
+</td></tr>
+</table>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<p style="margin:0;color:#64748b;font-size:14px;line-height:1.6;">If you have any questions or would like to rebook, please visit us at <a href="${baseUrl}" style="color:#667eea;text-decoration:none;">spiritathletics.net</a>.</p>
+</td></tr>
+
+<tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+export function buildCancellationCoachHtml(title: string, when: string, customerName: string, athleteName: string, cancelledByCoach = false) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
+  const who = cancelledByCoach ? 'You cancelled this booking.' : 'The customer cancelled this booking.';
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Booking Cancelled</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;"><img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics" width="600" style="display:block;width:100%;height:auto;border:0;"></td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 8px 0;color:#dc2626;font-size:24px;font-weight:700;">[Coach Copy] Booking Cancelled</h1>
+<p style="margin:0;color:#64748b;font-size:16px;">${who}</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;border-radius:8px;border:2px solid #e2e8f0;">
+<tr><td style="padding:24px;">
+<p style="margin:0 0 8px 0;color:#1e293b;font-size:18px;font-weight:700;">${escape(title)}</p>
+<p style="margin:0 0 12px 0;color:#64748b;font-size:15px;">${escape(when)}</p>
+<p style="margin:0 0 4px 0;color:#475569;font-size:14px;"><strong>Customer:</strong> ${escape(customerName)}</p>
+<p style="margin:0;color:#475569;font-size:14px;"><strong>Athlete:</strong> ${escape(athleteName)}</p>
+</td></tr>
+</table>
+</td></tr>
+
+<tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+export type AgendaBooking = {
+  type: string;
+  title: string;
+  when: string;
+  customerName: string;
+  athleteName: string;
+  priceCents: number;
+  paymentMethod: string;
+  isManualBlock?: boolean;
+};
+
+export function buildCoachDailyAgendaHtml(coachName: string, dateLabel: string, bookings: AgendaBooking[]) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
+  const dashboardUrl = `${baseUrl}/dashboard/bookings`;
+
+  const bookingRows = bookings.map((b) => {
+    const isBlock = !!b.isManualBlock;
+    const badge = isBlock
+      ? `<span style="background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;">Reserved</span>`
+      : b.type === 'CLASS'
+        ? `<span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;">Class</span>`
+        : `<span style="background:#dbeafe;color:#1e40af;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;">Private</span>`;
+    const payBadge = b.paymentMethod === 'CASH'
+      ? `<span style="background:#fef3c7;color:#92400e;font-size:11px;padding:2px 6px;border-radius:8px;">Cash Due</span>`
+      : `<span style="background:#dcfce7;color:#166534;font-size:11px;padding:2px 6px;border-radius:8px;">Paid</span>`;
+    return `
+    <tr>
+      <td style="padding:14px 0;border-bottom:1px solid #e2e8f0;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td>
+              <p style="margin:0 0 4px 0;color:#1e293b;font-size:15px;font-weight:700;">${escape(b.when)} ${badge}</p>
+              <p style="margin:0 0 2px 0;color:#475569;font-size:14px;">${escape(b.title)}</p>
+              ${!isBlock ? `<p style="margin:0;color:#64748b;font-size:13px;">${escape(b.customerName)} &mdash; ${escape(b.athleteName)} &nbsp; ${payBadge}</p>` : ''}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Your Schedule for ${escape(dateLabel)}</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;">
+<img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics" width="600" style="display:block;width:100%;height:auto;border:0;">
+</td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 8px 0;color:#1e293b;font-size:26px;font-weight:700;">Good morning, ${escape(coachName)}!</h1>
+<p style="margin:0;color:#64748b;font-size:16px;">Here&apos;s your schedule for <strong>${escape(dateLabel)}</strong>.</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+${bookings.length === 0
+  ? `<p style="color:#64748b;font-size:15px;">You have no bookings scheduled for today. Enjoy your day!</p>`
+  : `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${bookingRows}</table>`}
+</td></tr>
+
+<tr><td style="padding:20px 40px 32px 40px;text-align:center;">
+<a href="${dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 32px;border-radius:8px;">View Full Schedule</a>
+</td></tr>
+
+<tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345</p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+export function buildClientReminderHtml(title: string, when: string, location: string, cancelUrl?: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Reminder: ${escape(title)}</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;">
+<img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics" width="600" style="display:block;width:100%;height:auto;border:0;">
+</td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 8px 0;color:#1e293b;font-size:26px;font-weight:700;">Reminder: You have a session today!</h1>
+<p style="margin:0;color:#64748b;font-size:16px;">Just a friendly reminder about your upcoming booking at Spirit Athletics.</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:8px;">
+<tr><td style="padding:24px;">
+<p style="margin:0 0 6px 0;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Session</p>
+<p style="margin:0 0 16px 0;color:#fff;font-size:20px;font-weight:700;">${escape(title)}</p>
+<p style="margin:0 0 6px 0;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Date &amp; Time</p>
+<p style="margin:0 0 16px 0;color:#fff;font-size:18px;font-weight:600;">${escape(when)}</p>
+<p style="margin:0 0 6px 0;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Location</p>
+<p style="margin:0;color:#fff;font-size:16px;">${escape(location)}</p>
+</td></tr>
+</table>
+</td></tr>
+
+${cancelUrl ? `<tr><td style="padding:0 40px 32px 40px;text-align:center;">
+<p style="margin:0 0 12px 0;color:#64748b;font-size:13px;">Need to cancel? Please do so at least 4 hours in advance.</p>
+<a href="${cancelUrl}" style="color:#ef4444;font-size:14px;text-decoration:underline;">Cancel this booking</a>
+</td></tr>` : ''}
+
+<tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345</p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
 function escape(s: string) {
 	return s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
 } 

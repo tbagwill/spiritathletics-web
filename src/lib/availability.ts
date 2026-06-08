@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { addMinutes, isBefore, startOfDay } from 'date-fns';
 import { combineLocalDateAndMinutesPT, formatPt, utcToPt } from './time';
 
+/** Default slot stride used for quick-book (no per-rule preference) */
 export const SLOT_MINUTES = 30;
 
 export async function getAvailablePrivateSlots(params: {
@@ -38,14 +39,18 @@ export async function getAvailablePrivateSlots(params: {
   ]);
 
   // Build allowed windows from weekly rules
-  const allowedWindows: { startMin: number; endMin: number }[] = [];
+  const allowedWindows: { startMin: number; endMin: number; slotIntervalMinutes: number }[] = [];
   for (const r of rules) {
     if (r.ruleType !== 'WEEKLY') continue;
     // r.byDay like ["MO","WE"] per spec; map dayOfWeek to code
     const code = ['SU','MO','TU','WE','TH','FR','SA'][dayOfWeek];
     const inRange = (!r.effectiveFrom || isBefore(r.effectiveFrom, addMinutes(localDate, 24 * 60))) && (!r.effectiveTo || r.effectiveTo >= localDate);
     if (r.byDay.includes(code) && inRange) {
-      allowedWindows.push({ startMin: r.startTimeMinutes, endMin: r.endTimeMinutes });
+      allowedWindows.push({
+        startMin: r.startTimeMinutes,
+        endMin: r.endTimeMinutes,
+        slotIntervalMinutes: r.slotIntervalMinutes ?? SLOT_MINUTES,
+      });
     }
   }
 
@@ -76,7 +81,7 @@ export async function getAvailablePrivateSlots(params: {
 
   for (const w of allowedWindows) {
     // Make sure the lesson can fully fit within the availability window
-    for (let m = w.startMin; m + durationMinutes <= w.endMin; m += SLOT_MINUTES) {
+    for (let m = w.startMin; m + durationMinutes <= w.endMin; m += w.slotIntervalMinutes) {
       const startUTC = combineLocalDateAndMinutesPT(localDate, m);
       const endUTC = addMinutes(startUTC, durationMinutes);
       
