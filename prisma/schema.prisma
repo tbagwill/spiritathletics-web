@@ -12,6 +12,7 @@ model User {
   name         String?
   email        String        @unique
   role         UserRole      @default(CUSTOMER)
+  isActive     Boolean       @default(true)
   createdAt    DateTime      @default(now())
   passwordHash String?
   accounts     Account[]

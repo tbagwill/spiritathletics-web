@@ -809,6 +809,42 @@ export function buildPendingCancelledCoachHtml(title: string, when: string, cust
 	`;
 }
 
+export function buildPasswordResetHtml(coachName: string, resetUrl: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Reset Your Password</title></head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;"><img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics" width="600" style="display:block;width:100%;height:auto;border:0;"></td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 8px 0;color:#1e293b;font-size:26px;font-weight:700;">Reset your password</h1>
+<p style="margin:0;color:#64748b;font-size:16px;line-height:1.6;">Hi ${escape(coachName)}, a password reset was requested for your Spirit Athletics dashboard account. Click the button below to choose a new password. This link expires in 1 hour.</p>
+</td></tr>
+
+<tr><td style="padding:8px 40px 32px 40px;text-align:center;">
+<a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 32px;border-radius:8px;">Reset Password</a>
+<p style="margin:20px 0 0 0;color:#94a3b8;font-size:13px;word-break:break-all;">Or paste this link into your browser:<br>${escape(resetUrl)}</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<p style="margin:0;color:#64748b;font-size:13px;line-height:1.6;">If you didn&apos;t expect this, you can safely ignore this email and your password will remain unchanged.</p>
+</td></tr>
+
+<tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
 export function buildCancellationCustomerHtml(title: string, when: string, coachName: string, cancelledByCoach = false) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
   const reason = cancelledByCoach

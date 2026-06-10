@@ -15,6 +15,7 @@ export const authOptions: any = {
           if (!credentials?.email || !credentials?.password) return null;
           const user = await prisma.user.findUnique({ where: { email: credentials.email } });
           if (!user || !user.passwordHash) return null;
+          if (user.isActive === false) return null;
           const ok = await compare(credentials.password, user.passwordHash);
           if (!ok) return null;
           if (user.role !== 'COACH' && user.role !== 'ADMIN') return null;
