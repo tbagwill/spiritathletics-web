@@ -4,7 +4,12 @@ import { buildICS } from '@/lib/ics';
 import { Resend } from 'resend';
 import { rateLimitHit } from '@/lib/rateLimit';
 import { logSecurityEvent } from '@/lib/auditLog';
-import { buildPendingCancelledCustomerHtml, buildPendingCancelledCoachHtml } from '@/lib/email';
+import {
+  buildPendingCancelledCustomerHtml,
+  buildPendingCancelledCoachHtml,
+  buildCancellationCustomerHtml,
+  buildCancellationCoachHtml,
+} from '@/lib/email';
 import { formatPt } from '@/lib/time';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -81,7 +86,7 @@ export async function GET(req: NextRequest) {
       // ignore email failures
     }
   } else {
-    // For confirmed bookings, send calendar cancellation
+    // For confirmed bookings, send branded calendar cancellation
     const ics = buildICS({
       uid: booking.id,
       start: booking.startDateTimeUTC,
@@ -93,25 +98,29 @@ export async function GET(req: NextRequest) {
       method: 'CANCEL',
     });
 
+    const coachName = booking.service.coach?.user?.name || 'Your coach';
+
     try {
       await resend.emails.send({
         from: `Spirit Athletics <${SENDER}>`,
         to: [booking.customerEmail],
         subject: `Booking Cancelled: ${title}`,
-        html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:#111"><p>Your booking has been cancelled.</p></div>`,
+        html: buildCancellationCustomerHtml(title, when, coachName, false),
         attachments: [{ filename: 'cancel.ics', content: ics, contentType: 'text/calendar' }],
       });
-      if (coachEmails.length > 0) {
+      // Only email coach if they have cancellation emails enabled
+      const sendCoachCopy = settings?.emailBookingCancelled !== false;
+      if (coachEmails.length > 0 && sendCoachCopy) {
         await resend.emails.send({
           from: `Spirit Athletics <${SENDER}>`,
           to: coachEmails,
           subject: `[Coach Copy] Booking Cancelled: ${title}`,
-          html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:#111"><p>A booking has been cancelled.</p></div>`,
+          html: buildCancellationCoachHtml(title, when, booking.customerName, booking.athleteName, false),
           attachments: [{ filename: 'cancel.ics', content: ics, contentType: 'text/calendar' }],
         });
       }
     } catch {
-      // ignore email failures for now
+      // ignore email failures
     }
   }
 

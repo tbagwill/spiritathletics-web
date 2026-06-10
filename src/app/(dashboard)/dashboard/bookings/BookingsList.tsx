@@ -15,6 +15,8 @@ interface Booking {
   classOccurrenceId?: string;
   priceCents: number;
   paymentMethod?: 'CARD' | 'CASH';
+  isManualBlock?: boolean;
+  notes?: string | null;
   service: {
     title: string;
     basePriceCents: number;
@@ -149,10 +151,31 @@ export default function BookingsList({ bookings }: BookingsListProps) {
 
   // Function to render a booking card
   const renderBookingCard = (booking: Booking, index: number) => {
+    const isManualBlock = !!booking.isManualBlock;
     const isClass = !!booking.classOccurrenceId;
     const when = formatPt(new Date(booking.startDateTimeUTC), "EEE, MMM d • h:mm a 'PT'");
-    const title = isClass ? booking.service.title : 'Private Lesson';
+    const title = isManualBlock ? 'Reserved Slot' : (isClass ? booking.service.title : 'Private Lesson');
     const isPast = new Date(booking.startDateTimeUTC) < now;
+
+    if (isManualBlock) {
+      return (
+        <div key={booking.id} className="p-4 sm:p-6 hover:bg-amber-50/50 transition-colors animate-fade-in border-l-4 border-amber-400" style={{ animationDelay: `${index * 100}ms` }}>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="w-3 h-3 rounded-full bg-amber-400 flex-shrink-0"></div>
+              <span className="text-base font-semibold text-gray-900">{title}</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                Manually Reserved
+              </span>
+            </div>
+            <div className="text-sm text-gray-600 text-right">
+              <p className="font-medium">{when}</p>
+              {booking.notes && <p className="text-xs text-gray-500 mt-0.5">{booking.notes}</p>}
+            </div>
+          </div>
+        </div>
+      );
+    }
     
     return (
       <div key={booking.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>

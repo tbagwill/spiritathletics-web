@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
     const coachEmail = result.occ.classTemplate.service.coach?.user?.email || null;
     const coachId = result.occ.classTemplate.service.coachId;
     const settings = coachId ? await prisma.coachSettings.findUnique({ where: { coachId } }).catch(() => null) : null;
-    const coachEmails = [coachEmail, ...(settings?.alertEmails || [])];
+    const sendCoachConfirmation = settings?.emailBookingConfirmed !== false;
+    const coachEmails = sendCoachConfirmation ? [coachEmail, ...(settings?.alertEmails || [])] : [];
     const when = formatPt(firstBooking.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
     const location = process.env.ORG_ADDRESS || 'Spirit Athletics, 17537 Bear Valley Rd, Hesperia, CA 92345';
     const cancelUrl = `${process.env.BASE_PROD_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net'}/cancel?token=${firstBooking.cancellationToken}`;

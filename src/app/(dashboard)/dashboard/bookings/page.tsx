@@ -74,7 +74,9 @@ export default async function BookingsPage() {
             ...booking,
             startDateTimeUTC: booking.startDateTimeUTC.toISOString(),
             endDateTimeUTC: booking.endDateTimeUTC.toISOString(),
-            classOccurrenceId: booking.classOccurrenceId || undefined
+            classOccurrenceId: booking.classOccurrenceId || undefined,
+            isManualBlock: booking.isManualBlock,
+            notes: booking.notes,
           }))} />
         )}
       </div>
