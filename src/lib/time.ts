@@ -3,6 +3,21 @@ import { addMinutes, set } from 'date-fns';
 
 export const APP_TZ = process.env.APP_TZ || 'America/Los_Angeles';
 
+/** Return today's date as a YYYY-MM-DD string in Pacific Time. */
+export function ptTodayString(): string {
+  return formatInTimeZone(new Date(), APP_TZ, 'yyyy-MM-dd');
+}
+
+/** Return the PT calendar date (YYYY-MM-DD) for a given UTC instant. */
+export function ptDateString(date: Date): string {
+  return formatInTimeZone(date, APP_TZ, 'yyyy-MM-dd');
+}
+
+/** Parse a YYYY-MM-DD date string as PT midnight, returning the UTC instant. */
+export function ptMidnightUtc(dateStr: string): Date {
+  return fromZonedTime(dateStr + ' 00:00:00', APP_TZ);
+}
+
 export function ptToUtc(date: Date): Date {
   // Interpret date as in PT and convert to UTC
   return fromZonedTime(date, APP_TZ);

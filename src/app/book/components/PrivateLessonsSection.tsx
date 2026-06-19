@@ -23,22 +23,23 @@ export default async function PrivateLessonsSection() {
         id: p.id,
         name: p.user?.name || 'Coach',
         serviceId: privateService.id,
+        specialties: p.specialties,
       };
     })
-    .filter(Boolean) as { id: string; name: string; serviceId: string }[];
+    .filter(Boolean) as { id: string; name: string; serviceId: string; specialties: string[] }[];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Quick Book: Day -> Time -> Coach */}
       <QuickBookSection />
 
       {/* Divider */}
-      <div className="relative flex items-center gap-4">
-        <div className="flex-1 border-t border-gray-200" />
-        <span className="text-sm font-medium text-gray-500 bg-gradient-to-br from-slate-50 to-blue-50 px-4 whitespace-nowrap">
+      <div className="relative flex items-center gap-4 py-1">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 to-slate-300" />
+        <span className="whitespace-nowrap rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 shadow-soft ring-1 ring-slate-200">
           Or search by coach
         </span>
-        <div className="flex-1 border-t border-gray-200" />
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-slate-300 to-slate-300" />
       </div>
 
       {/* Original coach-first picker */}

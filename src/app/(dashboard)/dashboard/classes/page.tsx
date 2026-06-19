@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import TimePicker from '@/components/TimePicker';
+import Stepper from '@/components/Stepper';
+import { ptTodayString } from '@/lib/time';
 
 const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
 
@@ -35,7 +38,7 @@ export default function ClassesManagerPage() {
   const [duration, setDuration] = useState(60);
   const [price, setPrice] = useState(3000);
   const [capacity, setCapacity] = useState(10);
-  const [classStartDate, setClassStartDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [classStartDate, setClassStartDate] = useState<string>(ptTodayString());
   const [classEndDate, setClassEndDate] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,7 +73,7 @@ export default function ClassesManagerPage() {
       if (res.ok && data.ok) {
         setTitle(''); setDescription(''); setWeekday(3); setStart(16*60);
         setDuration(60); setPrice(3000); setCapacity(10);
-        setClassStartDate(new Date().toISOString().slice(0, 10)); setClassEndDate('');
+        setClassStartDate(ptTodayString()); setClassEndDate('');
         setShowAddForm(false);
         await load();
         showToast('Class added successfully!', 'success');
@@ -234,20 +237,7 @@ export default function ClassesManagerPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2 text-gray-900">Start Time</label>
-                      <div className="space-y-2">
-                        <input 
-                          type="range" 
-                          min={0} 
-                          max={1440} 
-                          step={15} 
-                          value={start} 
-                          onChange={(e)=>setStart(parseInt(e.target.value) || 0)} 
-                          className="w-full"
-                        />
-                        <div className="text-center text-sm font-medium text-blue-600 bg-blue-50 py-2 rounded-lg">
-                          {minutesToLabel(start)}
-                        </div>
-                      </div>
+                      <TimePicker value={start} onChange={setStart} step={15} ariaLabel="Class start time" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2 text-gray-900">Duration (minutes)</label>
@@ -277,20 +267,7 @@ export default function ClassesManagerPage() {
                       <label className="block text-sm font-medium mb-2 text-gray-900">
                         Class Capacity <span className="text-gray-400 font-normal">(3–10 athletes)</span>
                       </label>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="range"
-                          min={3}
-                          max={10}
-                          step={1}
-                          value={capacity}
-                          onChange={(e) => setCapacity(parseInt(e.target.value))}
-                          className="flex-1"
-                        />
-                        <span className="w-20 text-center text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 py-2 rounded-lg">
-                          {capacity} athletes
-                        </span>
-                      </div>
+                      <Stepper value={capacity} onChange={setCapacity} min={3} max={10} unit="athletes" />
                       <p className="text-xs text-gray-500 mt-1">Classes over 10 athletes require a clinic (separate event type).</p>
                     </div>
 

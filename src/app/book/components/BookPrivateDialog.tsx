@@ -129,24 +129,35 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 z-10 max-h-[90vh] overflow-y-auto text-gray-900">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-md animate-fade-in-up overflow-hidden rounded-3xl bg-white text-slate-900 shadow-soft-lg">
         {/* Header */}
-        <div className="mb-5">
-          <div className="flex items-start justify-between mb-1">
-            <h3 className="text-xl font-bold text-gray-900">Book Private Lesson</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors ml-2 mt-0.5">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-700 px-6 py-5">
+          <div aria-hidden className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-inset ring-white/25">
+                <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Book Private Lesson</h3>
+                <p className="mt-0.5 text-sm text-blue-100">{kindLabel}</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="-mr-1 -mt-1 rounded-lg p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <p className="text-sm text-gray-500">{kindLabel}</p>
         </div>
 
+        <div className="max-h-[calc(90vh-92px)] overflow-y-auto p-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-3 mb-4 text-sm flex items-start gap-2">
-            <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+            <svg className="mt-0.5 h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
             {error}
@@ -155,36 +166,36 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Your Name *</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Your Name *</label>
             <input
               type="text"
               {...register('customerName', { required: true })}
               placeholder="Parent / Guardian name"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Email *</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Email *</label>
             <input
               type="email"
               {...register('customerEmail', { required: true })}
               placeholder="you@example.com"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Athlete First Name *</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Athlete First Name *</label>
             <input
               type="text"
               {...register('athleteName', { required: true })}
               placeholder="Athlete's first name"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
             />
           </div>
 
           {/* Payment Method Selector */}
           <div>
-            <label className="block text-sm font-semibold mb-2 text-gray-700">Payment Method</label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">Payment Method</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -337,8 +348,9 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
             </button>
           </div>
 
-          <p className="text-xs text-gray-400 text-center">You can cancel up to 4 hours before start time using the link in your confirmation email.</p>
+          <p className="text-center text-xs text-slate-400">You can cancel up to 4 hours before start time using the link in your confirmation email.</p>
         </form>
+        </div>
       </div>
     </div>
   );

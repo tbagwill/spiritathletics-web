@@ -4,6 +4,7 @@ import { stripe, getStripeConfig, isStripeConfigured } from '@/lib/stripe';
 import { computePrivatePrice, CARD_FEE_CENTS } from '@/lib/pricing';
 import { z } from 'zod';
 import { rateLimitHit } from '@/lib/rateLimit';
+import { formatPt } from '@/lib/time';
 
 const SelectionSchema = z.union([
   z.object({ kind: z.literal('SOLO'), duration: z.literal(30) }),
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
             currency: 'usd',
             product_data: {
               name: `Private Lesson — ${kindLabel}`,
-              description: `With ${coachName} on ${startUTC.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`,
+              description: `With ${coachName} on ${formatPt(startUTC, 'EEEE, MMMM d')}`,
             },
             unit_amount: pricing.priceCents,
           },

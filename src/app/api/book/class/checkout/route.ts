@@ -4,6 +4,7 @@ import { stripe, getStripeConfig, isStripeConfigured } from '@/lib/stripe';
 import { CARD_FEE_CENTS } from '@/lib/pricing';
 import { z } from 'zod';
 import { rateLimitHit } from '@/lib/rateLimit';
+import { formatPt } from '@/lib/time';
 
 const BodySchema = z.object({
   classOccurrenceId: z.string().cuid(),
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
             currency: 'usd',
             product_data: {
               name: service.title,
-              description: `Class with ${coachName} — ${new Date(occ.startDateTimeUTC).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`,
+              description: `Class with ${coachName} — ${formatPt(occ.startDateTimeUTC, 'EEEE, MMMM d')}`,
             },
             unit_amount: service.basePriceCents,
           },

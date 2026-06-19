@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { combineLocalDateAndMinutesPT } from '@/lib/time';
+import { combineLocalDateAndMinutesPT, ptMidnightUtc } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Convert PT date + minutes to UTC using the same helper as slot generation
-    const localDate = new Date(`${date}T00:00:00`);
+    const localDate = ptMidnightUtc(date);
     const startDateTimeUTC = combineLocalDateAndMinutesPT(localDate, startTimeMinutes);
     const endDateTimeUTC = combineLocalDateAndMinutesPT(localDate, endTimeMinutes);
 
