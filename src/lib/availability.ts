@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { addMinutes, isBefore, startOfDay } from 'date-fns';
-import { combineLocalDateAndMinutesPT, formatPt, utcToPt } from './time';
+import { addMinutes } from 'date-fns';
+import { combineLocalDateAndMinutesPT, formatPt, ptDateString, ptMidnightUtc, utcToPt } from './time';
 
 /** Default slot stride used for quick-book (no per-rule preference) */
 export const SLOT_MINUTES = 30;
@@ -19,7 +19,7 @@ export async function getAvailablePrivateSlots(params: {
   // Fetch rules, exceptions, and confirmed bookings for that date
   const [rules, exceptions, bookings] = await Promise.all([
     prisma.availabilityRule.findMany({ where: { coachId } }),
-    prisma.availabilityException.findMany({ where: { coachId, date: startOfDay(localDate) } }),
+    prisma.availabilityException.findMany({ where: { coachId, date: ptMidnightUtc(ptDateString(localDate)) } }),
     prisma.booking.findMany({
       where: {
         coachId,
@@ -44,7 +44,12 @@ export async function getAvailablePrivateSlots(params: {
     if (r.ruleType !== 'WEEKLY') continue;
     // r.byDay like ["MO","WE"] per spec; map dayOfWeek to code
     const code = ['SU','MO','TU','WE','TH','FR','SA'][dayOfWeek];
-    const inRange = (!r.effectiveFrom || isBefore(r.effectiveFrom, addMinutes(localDate, 24 * 60))) && (!r.effectiveTo || r.effectiveTo >= localDate);
+    // Compare PT calendar dates so effectiveTo is inclusive and boundaries are timezone-consistent.
+    // Stored dates (new Date("YYYY-MM-DD")) have a UTC date string equal to the intended calendar day.
+    const reqDateStr = ptDateString(localDate);
+    const fromDateStr = r.effectiveFrom ? r.effectiveFrom.toISOString().slice(0, 10) : null;
+    const toDateStr = r.effectiveTo ? r.effectiveTo.toISOString().slice(0, 10) : null;
+    const inRange = (!fromDateStr || reqDateStr >= fromDateStr) && (!toDateStr || reqDateStr <= toDateStr);
     if (r.byDay.includes(code) && inRange) {
       allowedWindows.push({
         startMin: r.startTimeMinutes,

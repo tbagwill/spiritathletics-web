@@ -78,25 +78,41 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await hash(DEFAULT_PASSWORD, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      role,
-      passwordHash,
-      isActive: true,
-      coachProfile: {
-        create: {
-          bio: bio ?? null,
-          specialties: specialties ?? [],
-          isActive: true,
-          settings: {
-            create: { canManageShop: canManageShop ?? false },
+  const user = await prisma.$transaction(async (tx) => {
+    const newUser = await tx.user.create({
+      data: {
+        name,
+        email,
+        role,
+        passwordHash,
+        isActive: true,
+        coachProfile: {
+          create: {
+            bio: bio ?? null,
+            specialties: specialties ?? [],
+            isActive: true,
+            settings: {
+              create: { canManageShop: canManageShop ?? false },
+            },
           },
         },
       },
-    },
-    include: { coachProfile: true },
+      include: { coachProfile: true },
+    });
+
+    // Create the PRIVATE service so the coach appears on public booking pages
+    await tx.service.create({
+      data: {
+        coachId: newUser.coachProfile!.id,
+        type: 'PRIVATE',
+        title: 'Private Lesson',
+        description: 'One-on-one skill development.',
+        basePriceCents: 0,
+        isActive: true,
+      },
+    });
+
+    return newUser;
   });
 
   await createAuditLog({

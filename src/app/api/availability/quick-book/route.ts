@@ -48,9 +48,9 @@ export async function GET() {
       .map((p) => {
         const svc = p.services[0];
         if (!svc) return null;
-        return { id: p.id, name: p.user?.name ?? 'Coach', serviceId: svc.id };
+        return { id: p.id, name: p.user?.name ?? 'Coach', serviceId: svc.id, specialties: p.specialties };
       })
-      .filter(Boolean) as { id: string; name: string; serviceId: string }[];
+      .filter(Boolean) as { id: string; name: string; serviceId: string; specialties: string[] }[];
 
     if (coaches.length === 0) {
       return NextResponse.json({ ok: true, days: [] });
@@ -60,7 +60,7 @@ export async function GET() {
 
     // Fan out: one getAvailablePrivateSlots call per coach per day
     type SlotResult = {
-      coach: { id: string; name: string; serviceId: string };
+      coach: { id: string; name: string; serviceId: string; specialties: string[] };
       date: Date;
       slots: { startUTC: Date; endUTC: Date; display: string }[];
     };
@@ -84,6 +84,7 @@ export async function GET() {
       id: string;
       name: string;
       serviceId: string;
+      specialties: string[];
       startUTC: string;
       endUTC: string;
     };
@@ -132,6 +133,7 @@ export async function GET() {
           id: coach.id,
           name: coach.name,
           serviceId: coach.serviceId,
+          specialties: coach.specialties,
           startUTC: slot.startUTC.toISOString(),
           endUTC: slot.endUTC.toISOString(),
         });

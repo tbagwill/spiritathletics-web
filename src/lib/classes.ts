@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
-import { addWeeks, eachWeekOfInterval, isAfter, isBefore } from 'date-fns';
+import { addDays, addWeeks, eachWeekOfInterval, isAfter, isBefore } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
-import { APP_TZ, combineLocalDateAndMinutesPT } from './time';
+import { APP_TZ, combineLocalDateAndMinutesPT, ptDateString } from './time';
 
 export async function generateOccurrencesNextWeeks(weeks = 8): Promise<number> {
   const templates = await prisma.classTemplate.findMany({
@@ -13,11 +13,20 @@ export async function generateOccurrencesNextWeeks(weeks = 8): Promise<number> {
   let createdOrUpserted = 0;
 
   for (const tpl of templates) {
-    // Clamp generation window: start = max(now, tpl.startDate), end = min(defaultEnd, tpl.endDate)
+    // Clamp generation window: start = max(now, tpl.startDate), end = min(defaultEnd, tpl.endDate).
+    // For endDate, extend the iteration window by 1 day so eachWeekOfInterval includes the week
+    // that contains the end date. The precise inclusive/exclusive boundary is enforced below using
+    // PT calendar-date string comparisons.
     const windowStart = tpl.startDate && isAfter(tpl.startDate, now) ? tpl.startDate : now;
-    const windowEnd = tpl.endDate && isBefore(tpl.endDate, defaultEnd) ? tpl.endDate : defaultEnd;
+    const rawEnd = tpl.endDate && isBefore(tpl.endDate, defaultEnd) ? tpl.endDate : defaultEnd;
+    const windowEnd = tpl.endDate ? addDays(rawEnd, 1) : rawEnd;
 
-    if (isAfter(windowStart, windowEnd)) continue; // template's date range is entirely in the past or future
+    if (isAfter(windowStart, windowEnd)) continue;
+
+    // Pre-compute the intended PT calendar boundary strings from stored UTC-midnight values.
+    // new Date("YYYY-MM-DD") stores UTC midnight; its UTC date string equals the intended day.
+    const startBound = tpl.startDate ? tpl.startDate.toISOString().slice(0, 10) : null;
+    const endBound = tpl.endDate ? tpl.endDate.toISOString().slice(0, 10) : null;
 
     // Iterate each week, find the day corresponding to tpl.weekday in PT
     const isoWeekStarts = eachWeekOfInterval({ start: windowStart, end: windowEnd });
@@ -25,9 +34,11 @@ export async function generateOccurrencesNextWeeks(weeks = 8): Promise<number> {
       const ptDate = toWeekday(wkStart, tpl.weekday);
       const startUTC = combineLocalDateAndMinutesPT(ptDate, tpl.startTimeMinutes);
 
-      // Skip occurrences outside the template's date range
-      if (tpl.startDate && isBefore(startUTC, tpl.startDate)) continue;
-      if (tpl.endDate && isAfter(startUTC, tpl.endDate)) continue;
+      // Inclusive PT-calendar-date boundary check: compare the occurrence's PT date against the
+      // stored boundary strings. This makes endDate inclusive of the full PT calendar day.
+      const occDateStr = ptDateString(startUTC);
+      if (startBound && occDateStr < startBound) continue;
+      if (endBound && occDateStr > endBound) continue;
 
       await prisma.classOccurrence.upsert({
         where: { classTemplateId_startDateTimeUTC: { classTemplateId: tpl.id, startDateTimeUTC: startUTC } },
