@@ -6,6 +6,7 @@ import { createAuditLog } from '@/lib/auditLog';
 import { sendBookingEmails, buildCancellationCustomerHtml, buildCancellationCoachHtml } from '@/lib/email';
 import { buildICS } from '@/lib/ics';
 import { formatPt } from '@/lib/time';
+import { refundBookingIfPaid } from '@/lib/refund';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,17 +16,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Get authenticated coach
     const session = await getServerSession(authOptions);
     const userId = (session as any)?.user?.id || (session as any)?.user?.sub;
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const coach = await prisma.coachProfile.findUnique({ 
-      where: { userId },
-      include: { user: true, settings: true }
-    });
-    
-    if (!coach) {
+    const [coach, actor] = await Promise.all([
+      prisma.coachProfile.findUnique({
+        where: { userId },
+        include: { user: true, settings: true },
+      }),
+      prisma.user.findUnique({ where: { id: userId }, select: { role: true, name: true, email: true } }),
+    ]);
+    const isAdmin = actor?.role === 'ADMIN';
+
+    if (!coach && !isAdmin) {
       return NextResponse.json({ error: 'Coach profile not found' }, { status: 404 });
     }
 
@@ -52,9 +57,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    // Verify the coach owns this booking
-    if (booking.coachId !== coach.id && booking.service.coachId !== coach.id) {
-      return NextResponse.json({ error: 'Not authorized to cancel this booking' }, { status: 403 });
+    if (!isAdmin) {
+      if (!coach || (booking.coachId !== coach.id && booking.service.coachId !== coach.id)) {
+        return NextResponse.json({ error: 'Not authorized to cancel this booking' }, { status: 403 });
+      }
     }
 
     // Check if booking is already cancelled
@@ -68,6 +74,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const isClass = !!booking.classOccurrenceId;
+
+    let refunded = false;
+    try {
+      const refund = await refundBookingIfPaid(booking);
+      refunded = refund.refunded;
+    } catch (err) {
+      console.error('Stripe refund failed on coach cancel:', err);
+      return NextResponse.json({
+        error: 'Card refund failed. The booking was not cancelled.',
+      }, { status: 500 });
+    }
 
     // Start transaction to cancel booking and handle related records
     await prisma.$transaction(async (tx) => {
@@ -109,7 +126,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           isClass,
           customerEmail: booking.customerEmail,
           startDateTime: booking.startDateTimeUTC,
-          reason: 'Cancelled by coach'
+          reason: isAdmin ? 'Cancelled by front desk' : 'Cancelled by coach'
         }
       });
     });
@@ -120,46 +137,48 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const location = process.env.ORG_ADDRESS || 'Spirit Athletics';
     
     // Build branded cancellation emails (cancelledByCoach = true)
-    const customerHtml = buildCancellationCustomerHtml(title, when, coach.user.name || 'Your coach', true);
-    const coachHtml = buildCancellationCoachHtml(title, when, booking.customerName, booking.athleteName, true);
+    const notifyCoach = booking.service.coach || coach;
+    const actorName = isAdmin
+      ? (actor?.name || 'Front desk')
+      : (coach?.user.name || 'Your coach');
+
+    const customerHtml = buildCancellationCustomerHtml(title, when, actorName, true, refunded, isClass ? 'CLASS' : 'PRIVATE');
+    const coachHtml = buildCancellationCoachHtml(title, when, booking.customerName, booking.athleteName, true, refunded, isClass ? 'CLASS' : 'PRIVATE');
     
-    // Build cancellation ICS (METHOD:CANCEL)
     const icsContent = buildICS({
       uid: `booking-${booking.id}@spiritathletics.net`,
       start: booking.startDateTimeUTC,
       end: booking.endDateTimeUTC,
       summary: `CANCELLED: ${title}`,
       location,
-      description: `This ${isClass ? 'class' : 'private lesson'} has been cancelled by your coach.`,
-      organizerEmail: coach.user.email,
+      description: `This ${isClass ? 'class' : 'private lesson'} has been cancelled.`,
+      organizerEmail: notifyCoach?.user.email || process.env.SENDER_EMAIL || 'booking@spiritathletics.net',
       method: 'CANCEL'
     });
 
-    // Send emails to customer and coach
     const coachEmails = [];
-    
-    // Add coach's primary email
-    if (coach.settings?.emailBookingCancelled && coach.user.email) {
-      coachEmails.push(coach.user.email);
+    if (notifyCoach?.settings?.emailBookingCancelled !== false && notifyCoach?.user.email) {
+      coachEmails.push(notifyCoach.user.email);
     }
-    
-    // Add coach's alert emails
-    if (coach.settings?.alertEmails) {
-      coachEmails.push(...coach.settings.alertEmails);
+    if (notifyCoach?.settings?.alertEmails) {
+      coachEmails.push(...notifyCoach.settings.alertEmails);
     }
 
     await sendBookingEmails({
       customerEmail: booking.customerEmail,
       coachEmails,
-      subject: `Your ${isClass ? 'class' : 'private lesson'} has been cancelled`,
+      subject: `${isClass ? '[Class]' : '[Private]'} Booking cancelled: ${title}`,
       htmlCustomer: customerHtml,
       htmlCoach: coachHtml,
       icsContent
     });
 
     return NextResponse.json({ 
-      success: true, 
-      message: `${isClass ? 'Class' : 'Private lesson'} cancelled successfully` 
+      success: true,
+      refunded,
+      message: refunded
+        ? `${isClass ? 'Class' : 'Private lesson'} cancelled and a card refund was issued.`
+        : `${isClass ? 'Class' : 'Private lesson'} cancelled successfully.`
     });
 
   } catch (error: any) {

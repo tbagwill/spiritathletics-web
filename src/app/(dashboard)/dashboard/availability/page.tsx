@@ -276,7 +276,7 @@ export default function AvailabilityPage() {
             {/* Slot Interval */}
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-700">Session Start Interval</label>
-              <p className="mb-3 text-xs text-slate-500">Controls how often slots are offered within this window. &quot;Every hour&quot; ensures sessions start only on the hour (e.g. 4:00, 5:00, 6:00) with no dead time.</p>
+              <p className="mb-3 text-xs text-slate-500">Controls how often slots are offered within this window. &quot;Every hour&quot; starts at your window start and repeats hourly (e.g. 4:30, 5:30, 6:30).</p>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { v: 30 as const, label: "Every 30 minutes" },

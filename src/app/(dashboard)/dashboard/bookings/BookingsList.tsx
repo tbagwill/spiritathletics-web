@@ -126,6 +126,11 @@ export default function BookingsList({ bookings }: BookingsListProps) {
   };
 
   const handleDecline = async (booking: Booking) => {
+    const refundNote = booking.paymentMethod === 'CARD'
+      ? ' If a card payment was already processed, a Stripe refund will be issued.'
+      : ' No card payment is on file.';
+    if (!confirm(`Decline this private lesson request for ${booking.athleteName}? The customer will be emailed.${refundNote}`)) return;
+
     try {
       const response = await fetch(`/api/dashboard/bookings/${booking.id}/decline`, {
         method: 'POST',
@@ -183,9 +188,14 @@ export default function BookingsList({ bookings }: BookingsListProps) {
         <div className="space-y-4">
           {/* Header: Title and badges */}
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className={`w-3 h-3 rounded-full ${isClass ? 'bg-green-500' : 'bg-blue-500'} flex-shrink-0`}></div>
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <div className="flex items-start gap-2 flex-wrap">
+              <div className={`w-3 h-3 rounded-full ${isClass ? 'bg-green-500' : 'bg-blue-500'} flex-shrink-0 mt-1.5`}></div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                {booking.service.coach?.user?.name && (
+                  <p className="text-sm text-gray-500 mt-0.5">Coach {booking.service.coach.user.name}</p>
+                )}
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   isClass 
@@ -377,7 +387,10 @@ export default function BookingsList({ bookings }: BookingsListProps) {
                   <div>
                     <p className="text-sm font-medium text-amber-900 mb-1">The customer will be notified</p>
                     <p className="text-xs text-amber-700">
-                      A cancellation email with calendar update will be sent to {cancelDialog.booking.customerEmail}
+                      A cancellation email will be sent to {cancelDialog.booking.customerEmail}.
+                      {cancelDialog.booking.paymentMethod === 'CARD'
+                        ? ' If a card payment was already processed, a Stripe refund will be issued.'
+                        : ' No card payment is on file, so no refund will be issued.'}
                     </p>
                   </div>
                 </div>

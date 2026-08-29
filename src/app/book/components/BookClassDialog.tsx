@@ -93,23 +93,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
         });
 
         if (res.status === 503) {
-          const fallback = await fetch('/api/book/class', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              classOccurrenceId: occurrenceId,
-              serviceId,
-              customerName: values.customerName,
-              customerEmail: values.customerEmail,
-              athleteNames: trimmedNames,
-            }),
-          });
-          const fallbackData = await fallback.json();
-          if (!fallback.ok || !fallbackData.ok) throw new Error(fallbackData.error || 'Booking failed');
-          setOpen(false);
-          reset();
-          if (onSuccess) onSuccess();
-          return;
+          throw new Error('Online payment is temporarily unavailable. Please choose Pay Cash or try again shortly.');
         }
 
         const data = await res.json();

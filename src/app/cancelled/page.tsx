@@ -21,8 +21,17 @@ export default function CancelledPage() {
         const res = await fetch(`/cancel?token=${encodeURIComponent(token)}`);
         const data = await res.json();
         if (res.ok && data.ok) {
-          setStatus('success');
-          setMessage('Your booking has been cancelled.');
+          if (data?.message?.includes('Already')) {
+            setStatus('already');
+            setMessage('This booking was already cancelled.');
+          } else {
+            setStatus('success');
+            setMessage(
+              data.refunded
+                ? 'Your booking has been cancelled. A refund has been issued to your card and should appear in 5–10 business days. A confirmation email is on the way.'
+                : 'Your booking has been cancelled. A confirmation email is on the way.'
+            );
+          }
         } else if (data?.message?.includes('4 hours')) {
           setStatus('blocked');
           setMessage('Cancellations must be at least 4 hours before start. Please call the front desk.');

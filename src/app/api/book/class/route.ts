@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { buildICS } from '@/lib/ics';
-import { buildCoachHtml, buildCustomerHtml, sendBookingEmails } from '@/lib/email';
+import { buildCoachHtml, buildCustomerHtml, sendBookingEmails, programSubjectPrefix } from '@/lib/email';
 import { formatPt } from '@/lib/time';
 import { rateLimitHit } from '@/lib/rateLimit';
 
@@ -14,7 +14,7 @@ const BodySchema = z.object({
   customerEmail: z.string().email().max(255).toLowerCase(),
   athleteNames: z.array(z.string().min(1).max(100).trim()).min(1).max(10),
   notes: z.string().max(1000).optional(),
-  paymentMethod: z.enum(['CARD', 'CASH']).optional().default('CARD'),
+  paymentMethod: z.enum(['CASH']).optional().default('CASH'),
 });
 
 export async function POST(req: NextRequest) {
@@ -24,6 +24,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invalid input', issues: parse.error.format() }, { status: 400 });
   }
   const { classOccurrenceId, serviceId, customerName, customerEmail, athleteNames, notes, paymentMethod } = parse.data;
+  if (paymentMethod !== 'CASH') {
+    return NextResponse.json({ ok: false, error: 'Card payments must be completed through checkout.' }, { status: 400 });
+  }
   const numAthletes = athleteNames.length;
 
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim();
@@ -57,6 +60,7 @@ export async function POST(req: NextRequest) {
             customerEmail,
             athleteName,
             notes,
+            coachId: service.coachId,
             serviceId,
             classOccurrenceId,
             startDateTimeUTC: occ.startDateTimeUTC,
@@ -99,16 +103,21 @@ export async function POST(req: NextRequest) {
     await sendBookingEmails({
       customerEmail,
       coachEmails,
-      subject: paymentMethod === 'CASH'
-        ? `Registration Confirmed (Cash): ${title} (${when})`
-        : `Class Reserved: ${title} (${when})`,
+      subject: `${programSubjectPrefix('CLASS')}${paymentMethod === 'CASH' ? 'Registration Confirmed (Cash)' : 'Registration Confirmed'}: ${title} (${when})`,
       htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
         athleteNames: allAthleteNames,
         customerName,
         paymentMethod,
         priceCents: totalCents,
+        coachName: result.occ.classTemplate.service.coach?.user?.name ?? 'Coach',
+        kind: 'CLASS',
       }),
-      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames, paymentMethod),
+      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames, {
+        paymentMethod,
+        customerEmail,
+        kind: 'CLASS',
+        priceCents: totalCents,
+      }),
       icsContent: ics,
     });
 

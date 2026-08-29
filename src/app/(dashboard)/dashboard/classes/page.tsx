@@ -17,9 +17,17 @@ type ClassTemplate = {
   endDate?: string | null;
   service: {
     title: string;
+    description?: string;
+    durationMinutes?: number | null;
     basePriceCents: number;
   };
 };
+
+function formatDateOnly(iso?: string | null) {
+  if (!iso) return null;
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString();
+}
 
 function minutesToLabel(m: number) {
   const h = Math.floor(m / 60) % 12 || 12;
@@ -40,6 +48,8 @@ export default function ClassesManagerPage() {
   const [capacity, setCapacity] = useState(10);
   const [classStartDate, setClassStartDate] = useState<string>(ptTodayString());
   const [classEndDate, setClassEndDate] = useState<string>("");
+  const [runIndefinitely, setRunIndefinitely] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -52,36 +62,71 @@ export default function ClassesManagerPage() {
   };
   useEffect(() => { load(); }, []);
 
+  const resetForm = () => {
+    setTitle(''); setDescription(''); setWeekday(3); setStart(16 * 60);
+    setDuration(60); setPrice(3000); setCapacity(10);
+    setClassStartDate(ptTodayString()); setClassEndDate('');
+    setRunIndefinitely(true);
+    setEditingId(null);
+    setError(null);
+  };
+
+  const openCreate = () => {
+    resetForm();
+    setShowAddForm(true);
+  };
+
+  const openEdit = (t: ClassTemplate) => {
+    setEditingId(t.id);
+    setTitle(t.service.title);
+    setDescription(t.service.description ?? '');
+    setWeekday(t.weekday);
+    setStart(t.startTimeMinutes);
+    setDuration(t.service.durationMinutes ?? 60);
+    setPrice(t.service.basePriceCents);
+    setCapacity(t.capacity);
+    setClassStartDate(t.startDate ? t.startDate.slice(0, 10) : ptTodayString());
+    const hasEnd = !!t.endDate;
+    setRunIndefinitely(!hasEnd);
+    setClassEndDate(hasEnd ? t.endDate!.slice(0, 10) : '');
+    setError(null);
+    setShowAddForm(true);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!title || !description) return setError('Title and description are required');
+    if (!runIndefinitely && !classEndDate) return setError('Pick an end date, or check "Run indefinitely".');
     setLoading(true);
     try {
-      const res = await fetch('/api/dashboard/classes/templates', {
-        method: 'POST',
+      const body = {
+        title, description, weekday, startTimeMinutes: start,
+        durationMinutes: duration, basePriceCents: price,
+        capacity,
+        startDate: classStartDate || null,
+        endDate: runIndefinitely ? null : (classEndDate || null),
+      };
+      const url = editingId
+        ? `/api/dashboard/classes/templates/${editingId}`
+        : '/api/dashboard/classes/templates';
+      const res = await fetch(url, {
+        method: editingId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title, description, weekday, startTimeMinutes: start,
-          durationMinutes: duration, basePriceCents: price,
-          capacity,
-          startDate: classStartDate || null,
-          endDate: classEndDate || null,
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        setTitle(''); setDescription(''); setWeekday(3); setStart(16*60);
-        setDuration(60); setPrice(3000); setCapacity(10);
-        setClassStartDate(ptTodayString()); setClassEndDate('');
+        const wasEdit = !!editingId;
+        resetForm();
         setShowAddForm(false);
         await load();
-        showToast('Class added successfully!', 'success');
+        showToast(wasEdit ? 'Class updated!' : 'Class added successfully!', 'success');
       } else {
-        setError(data.error || 'Failed to create class');
+        setError(data.error || (editingId ? 'Failed to update class' : 'Failed to create class'));
       }
     } catch {
-      setError('Failed to create class');
+      setError(editingId ? 'Failed to update class' : 'Failed to create class');
     } finally {
       setLoading(false);
     }
@@ -152,7 +197,7 @@ export default function ClassesManagerPage() {
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-3">
               <button
-                onClick={() => setShowAddForm(true)}
+                onClick={openCreate}
                 className="inline-flex items-center justify-center px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl text-sm sm:text-base"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,16 +221,16 @@ export default function ClassesManagerPage() {
         {/* Add Class Modal */}
         {showAddForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddForm(false)} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowAddForm(false); resetForm(); }} />
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden z-10">
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold">Create New Class</h3>
-                    <p className="text-blue-100 text-sm">Set up a new class template</p>
+                    <h3 className="text-xl font-bold">{editingId ? 'Edit Class' : 'Create New Class'}</h3>
+                    <p className="text-blue-100 text-sm">{editingId ? 'Update this class template' : 'Set up a new class template'}</p>
                   </div>
-                  <button onClick={() => setShowAddForm(false)} className="text-white/80 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10">
+                  <button onClick={() => { setShowAddForm(false); resetForm(); }} className="text-white/80 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -281,24 +326,41 @@ export default function ClassesManagerPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">End Date <span className="text-gray-400 font-normal">(optional)</span></label>
-                      <input
-                        type="date"
-                        value={classEndDate}
-                        onChange={(e) => setClassEndDate(e.target.value)}
-                        min={classStartDate}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900"
-                        placeholder="Leave empty to run indefinitely"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Leave empty to run this class indefinitely.</p>
+                    <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={runIndefinitely}
+                          onChange={(e) => {
+                            setRunIndefinitely(e.target.checked);
+                            if (e.target.checked) setClassEndDate('');
+                          }}
+                          className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                        />
+                        <span>
+                          <span className="block text-sm font-semibold text-gray-900">Run indefinitely (no end date)</span>
+                          <span className="block text-xs text-gray-600 mt-0.5">This class will keep appearing every week until you set an end date.</span>
+                        </span>
+                      </label>
+                      {!runIndefinitely && (
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium mb-2 text-gray-900">End Date</label>
+                          <input
+                            type="date"
+                            value={classEndDate}
+                            onChange={(e) => setClassEndDate(e.target.value)}
+                            min={classStartDate}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900 bg-white"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
                     <button 
                       type="button" 
-                      onClick={() => setShowAddForm(false)} 
+                      onClick={() => { setShowAddForm(false); resetForm(); }} 
                       className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
                     >
                       Cancel
@@ -308,7 +370,7 @@ export default function ClassesManagerPage() {
                       disabled={loading} 
                       className="px-6 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-70"
                     >
-                      {loading ? 'Creating...' : 'Create Class'}
+                      {loading ? (editingId ? 'Saving...' : 'Creating...') : (editingId ? 'Save Changes' : 'Create Class')}
                     </button>
                   </div>
                 </form>
@@ -321,7 +383,7 @@ export default function ClassesManagerPage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-bold text-gray-900">Current Classes</h2>
-            <p className="text-sm text-gray-600">Manage your recurring class schedules</p>
+            <p className="text-sm text-gray-600">Manage your class schedules</p>
           </div>
           
           {templates.length === 0 ? (
@@ -332,9 +394,9 @@ export default function ClassesManagerPage() {
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No classes created yet</h3>
-              <p className="text-gray-600 mb-6">Create your first class template to start scheduling recurring classes</p>
+              <p className="text-gray-600 mb-6">Create your first class template to start scheduling classes</p>
               <button
-                onClick={() => setShowAddForm(true)}
+                onClick={openCreate}
                 className="inline-flex items-center px-6 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 hover:scale-105 shadow-lg"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,7 +407,7 @@ export default function ClassesManagerPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {templates.map((t: ClassTemplate, index: number) => (
+              {templates.map((t: ClassTemplate) => (
                 <div key={t.id} className="p-6 hover:bg-gray-50 transition-colors group">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -375,19 +437,23 @@ export default function ClassesManagerPage() {
                           <span>{t.capacity} athletes maximum</span>
                         </div>
                         
-                        {(t.startDate || t.endDate) && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
                             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <span className="font-medium">Runs:</span>
                             <span>
-                              {t.startDate ? new Date(t.startDate).toLocaleDateString() : 'Now'}
+                              {formatDateOnly(t.startDate) ?? 'Now'}
                               {' – '}
-                              {t.endDate ? new Date(t.endDate).toLocaleDateString() : 'Ongoing'}
                             </span>
+                            {t.endDate ? (
+                              <span>{formatDateOnly(t.endDate)}</span>
+                            ) : (
+                              <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                                Ongoing — no end date
+                              </span>
+                            )}
                           </div>
-                        )}
                         
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -399,7 +465,18 @@ export default function ClassesManagerPage() {
                       </div>
                     </div>
                     
-                    {/* Delete Button */}
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openEdit(t)}
+                        className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
+                        type="button"
+                        title="Edit class"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
                     <button 
                       onClick={() => onDelete(t.id)} 
                       className="p-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
@@ -410,6 +487,7 @@ export default function ClassesManagerPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
+                    </div>
                   </div>
                 </div>
               ))}

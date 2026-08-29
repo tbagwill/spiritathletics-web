@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { Resend } from 'resend';
 import { generateOrderConfirmationEmail } from '@/lib/emailTemplates';
 import { buildICS } from '@/lib/ics';
-import { buildCustomerHtml, buildCoachHtml, sendBookingEmails, sendPendingRequestEmails } from '@/lib/email';
+import { buildCustomerHtml, buildCoachHtml, sendBookingEmails, sendPendingRequestEmails, programSubjectPrefix } from '@/lib/email';
 import { computePrivatePrice } from '@/lib/pricing';
 import { formatPt } from '@/lib/time';
 import { v4 as uuidv4 } from 'uuid';
@@ -129,6 +129,7 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
           customerEmail,
           athleteName,
           notes: notes || null,
+          coachId: service.coachId,
           serviceId,
           classOccurrenceId,
           startDateTimeUTC: occ.startDateTimeUTC,
@@ -173,14 +174,21 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
     await sendBookingEmails({
       customerEmail,
       coachEmails,
-      subject: `Class Reserved & Paid: ${title} (${when})`,
+      subject: `${programSubjectPrefix('CLASS')}Class Reserved & Paid: ${title} (${when})`,
       htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
         athleteNames: allAthleteNames,
         customerName,
         paymentMethod: 'CARD',
         priceCents: totalCents,
+        coachName: occ.classTemplate.service.coach?.user?.name ?? 'Coach',
+        kind: 'CLASS',
       }),
-      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames, 'CARD'),
+      htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames, {
+        paymentMethod: 'CARD',
+        customerEmail,
+        kind: 'CLASS',
+        priceCents: totalCents,
+      }),
       icsContent: ics,
     });
   });
@@ -271,6 +279,7 @@ async function handlePrivateBookingCompleted(session: Stripe.Checkout.Session) {
         athleteName,
         cancelUrl,
         dashboardUrl,
+        coachName,
       });
     } else {
       const ics = buildICS({
@@ -289,14 +298,21 @@ async function handlePrivateBookingCompleted(session: Stripe.Checkout.Session) {
       await sendBookingEmails({
         customerEmail,
         coachEmails: finalCoachEmails,
-        subject: `Private Lesson Booked & Paid (${when})`,
+        subject: `${programSubjectPrefix('PRIVATE')}Private Lesson Booked & Paid (${when})`,
         htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
           athleteNames: athleteName,
           customerName,
           paymentMethod: 'CARD',
           priceCents: pricing.priceCents,
+          coachName,
+          kind: 'PRIVATE',
         }),
-        htmlCoach: buildCoachHtml(title, when, customerName, athleteName, 'CARD'),
+        htmlCoach: buildCoachHtml(title, when, customerName, athleteName, {
+          paymentMethod: 'CARD',
+          customerEmail,
+          kind: 'PRIVATE',
+          priceCents: pricing.priceCents,
+        }),
         icsContent: ics,
       });
     }
@@ -352,7 +368,7 @@ async function handleClinicRegistrationCompleted(session: Stripe.Checkout.Sessio
     await resend.emails.send({
       from: `Spirit Athletics <${SENDER}>`,
       to: [customerEmail],
-      subject: `Clinic Registration Confirmed & Paid: ${clinic.title}`,
+      subject: `[Clinic] Registration Confirmed & Paid: ${clinic.title}`,
       html: buildClinicConfirmationHtml(clinic.title, when, location, customerName, athleteLabel, totalPaidCents),
     });
   } catch (err) {
@@ -394,7 +410,7 @@ function buildClinicConfirmationHtml(title: string, when: string, location: stri
 <div style="background-color:#f0f9ff;border-left:4px solid #7c3aed;padding:16px 20px;border-radius:6px;">
 <p style="margin:0 0 8px 0;color:#4c1d95;font-size:14px;font-weight:700;">Important Information</p>
 <p style="margin:0;color:#4c1d95;font-size:14px;line-height:1.6;">
-&bull; Please arrive 5-10 minutes early<br>
+&bull; Please arrive 5-10 minutes early and check in at the front desk<br>
 &bull; Bring water and a positive attitude!
 </p>
 </div>

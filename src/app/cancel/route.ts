@@ -9,8 +9,10 @@ import {
   buildPendingCancelledCoachHtml,
   buildCancellationCustomerHtml,
   buildCancellationCoachHtml,
+  programSubjectPrefix,
 } from '@/lib/email';
 import { formatPt } from '@/lib/time';
+import { refundBookingIfPaid } from '@/lib/refund';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SENDER = process.env.SENDER_EMAIL || 'booking@spiritathletics.net';
@@ -54,6 +56,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  let refunded = false;
+  try {
+    const refund = await refundBookingIfPaid(booking);
+    refunded = refund.refunded;
+  } catch (err) {
+    console.error('Stripe refund failed on customer cancel:', err);
+    return NextResponse.json({
+      ok: false,
+      message: 'We could not process the card refund. Your booking was not cancelled. Please call the front desk.',
+    }, { status: 200 });
+  }
+
   await prisma.booking.update({
     where: { id: booking.id },
     data: { status: 'CANCELLED', cancelledAt: new Date() },
@@ -63,6 +77,7 @@ export async function GET(req: NextRequest) {
   const settings = booking.service.coachId ? await (prisma as any).coachSettings.findUnique({ where: { coachId: booking.service.coachId } }).catch(()=>null) : null;
   const coachEmails = [coachEmail, ...(settings?.alertEmails || [])].filter(Boolean) as string[];
   const title = booking.service.type === 'CLASS' ? booking.service.title : 'Private Lesson';
+  const kind = booking.service.type === 'CLASS' ? 'CLASS' as const : 'PRIVATE' as const;
   const when = formatPt(booking.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
 
   if (isPending) {
@@ -71,15 +86,15 @@ export async function GET(req: NextRequest) {
       await resend.emails.send({
         from: `Spirit Athletics <${SENDER}>`,
         to: [booking.customerEmail],
-        subject: `Request Cancelled: ${title}`,
-        html: buildPendingCancelledCustomerHtml(title, when),
+        subject: `${programSubjectPrefix(kind)}Request Cancelled: ${title}`,
+        html: buildPendingCancelledCustomerHtml(title, when, refunded),
       });
       if (coachEmails.length > 0) {
         await resend.emails.send({
           from: `Spirit Athletics <${SENDER}>`,
           to: coachEmails,
-          subject: `[Coach Notification] Request Cancelled: ${title}`,
-          html: buildPendingCancelledCoachHtml(title, when, booking.customerName, booking.athleteName),
+          subject: `[Coach] ${programSubjectPrefix(kind)}Request Cancelled: ${title}`,
+          html: buildPendingCancelledCoachHtml(title, when, booking.customerName, booking.athleteName, refunded),
         });
       }
     } catch {
@@ -104,8 +119,8 @@ export async function GET(req: NextRequest) {
       await resend.emails.send({
         from: `Spirit Athletics <${SENDER}>`,
         to: [booking.customerEmail],
-        subject: `Booking Cancelled: ${title}`,
-        html: buildCancellationCustomerHtml(title, when, coachName, false),
+        subject: `${programSubjectPrefix(kind)}Booking Cancelled: ${title}`,
+        html: buildCancellationCustomerHtml(title, when, coachName, false, refunded, kind),
         attachments: [{ filename: 'cancel.ics', content: ics, contentType: 'text/calendar' }],
       });
       // Only email coach if they have cancellation emails enabled
@@ -114,8 +129,8 @@ export async function GET(req: NextRequest) {
         await resend.emails.send({
           from: `Spirit Athletics <${SENDER}>`,
           to: coachEmails,
-          subject: `[Coach Copy] Booking Cancelled: ${title}`,
-          html: buildCancellationCoachHtml(title, when, booking.customerName, booking.athleteName, false),
+          subject: `[Coach] ${programSubjectPrefix(kind)}Booking Cancelled: ${title}`,
+          html: buildCancellationCoachHtml(title, when, booking.customerName, booking.athleteName, false, refunded, kind),
           attachments: [{ filename: 'cancel.ics', content: ics, contentType: 'text/calendar' }],
         });
       }
@@ -124,5 +139,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, refunded });
 } 

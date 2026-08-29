@@ -1,46 +1,43 @@
 import { NextResponse } from 'next/server';
+import { getAdminUser } from '@/lib/adminAuth';
 import { stripe, isStripeConfigured, validateStripeKeys } from '@/lib/stripe';
 
 export async function GET() {
+  const admin = await getAdminUser();
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    // Check if environment variables are present
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_KEY;
-    
+
     const envCheck = {
-      STRIPE_SECRET_KEY: secretKey ? '✅ Present' : '❌ Missing',
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: publishableKey ? '✅ Present' : '❌ Missing',
-      STRIPE_WEBHOOK_SECRET_KEY: webhookSecret ? '✅ Present' : '❌ Missing (optional for now)',
+      STRIPE_SECRET_KEY: secretKey ? 'present' : 'missing',
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: publishableKey ? 'present' : 'missing',
+      STRIPE_WEBHOOK_SECRET_KEY: webhookSecret ? 'present' : 'missing',
     };
 
-    // Validate key formats
     const keyValidation = validateStripeKeys();
 
-    // Test Stripe connection if keys are configured
-    let stripeTest = null;
+    let stripeTest: { status: string; error?: string; code?: string; message?: string } | null = null;
     if (isStripeConfigured() && stripe) {
       try {
-        // Try to list payment methods (minimal API call)
-        const paymentMethods = await stripe.paymentMethods.list({
-          limit: 1
-        });
+        await stripe.paymentMethods.list({ limit: 1 });
+        stripeTest = { status: 'Connection successful' };
+      } catch (error: unknown) {
+        const err = error as { message?: string; code?: string };
         stripeTest = {
-          status: '✅ Connection successful',
-          apiVersion: '2024-06-20',
-          accountInfo: 'Connected successfully'
-        };
-      } catch (error: any) {
-        stripeTest = {
-          status: '❌ Connection failed',
-          error: error.message,
-          code: error.code
+          status: 'Connection failed',
+          error: err.message,
+          code: err.code,
         };
       }
     } else {
       stripeTest = {
-        status: '⚠️ Stripe not configured',
-        message: 'Missing required environment variables'
+        status: 'Stripe not configured',
+        message: 'Missing required environment variables',
       };
     }
 
@@ -51,14 +48,13 @@ export async function GET() {
       summary: {
         configured: isStripeConfigured(),
         keysValid: keyValidation.isValid,
-        connectionWorking: stripeTest?.status?.includes('✅') || false
-      }
+        connectionWorking: stripeTest?.status === 'Connection successful',
+      },
     });
-
   } catch (error) {
     console.error('Stripe test error:', error);
     return NextResponse.json(
-      { error: 'Failed to test Stripe connection', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to test Stripe connection' },
       { status: 500 }
     );
   }

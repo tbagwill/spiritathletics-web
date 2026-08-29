@@ -204,6 +204,7 @@ export default function PrivateLessonPicker({ coaches }: Props) {
           <BookPrivateDialog
             coachId={selectedCoach.id}
             serviceId={selectedCoach.serviceId}
+            coachName={selectedCoach.name}
             selection={selectedDuration.selection as any}
             startUTC={selectedSlot.startUTC}
             endUTC={selectedSlot.endUTC}

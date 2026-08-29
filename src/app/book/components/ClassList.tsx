@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import ClassListClient from './ClassListClient';
+import { ptDateString } from '@/lib/time';
 
 export default async function ClassList() {
   const now = new Date();
@@ -26,8 +27,21 @@ export default async function ClassList() {
     },
   });
 
+  const inBounds = occurrences.filter((occ) => {
+    const occDate = ptDateString(occ.startDateTimeUTC);
+    const startBound = occ.classTemplate.startDate
+      ? occ.classTemplate.startDate.toISOString().slice(0, 10)
+      : null;
+    const endBound = occ.classTemplate.endDate
+      ? occ.classTemplate.endDate.toISOString().slice(0, 10)
+      : null;
+    if (startBound && occDate < startBound) return false;
+    if (endBound && occDate > endBound) return false;
+    return true;
+  });
+
   // Convert Date objects to strings for client component
-  const serializedOccurrences = occurrences.map(occ => ({
+  const serializedOccurrences = inBounds.map(occ => ({
     ...occ,
     startDateTimeUTC: occ.startDateTimeUTC.toISOString(),
   }));

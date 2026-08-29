@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { computePrivatePrice } from '@/lib/pricing';
 import { buildICS } from '@/lib/ics';
-import { buildCoachHtml, buildCustomerHtml, sendBookingEmails, sendPendingRequestEmails } from '@/lib/email';
+import { buildCoachHtml, buildCustomerHtml, sendBookingEmails, sendPendingRequestEmails, programSubjectPrefix } from '@/lib/email';
 import { formatPt } from '@/lib/time';
 
 import { rateLimitHit } from '@/lib/rateLimit';
@@ -24,7 +24,7 @@ const BodySchema = z.object({
     z.object({ kind: z.literal('SOLO'), duration: z.literal(60) }),
     z.object({ kind: z.literal('SEMI_PRIVATE'), duration: z.literal(60) }),
   ]),
-  paymentMethod: z.enum(['CARD', 'CASH']).optional().default('CARD'),
+  paymentMethod: z.enum(['CASH']).optional().default('CASH'),
 });
 
 export async function POST(req: NextRequest) {
@@ -34,6 +34,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invalid input', issues: parse.error.format() }, { status: 400 });
   }
   const { coachId, serviceId, startDateTimeUTC, endDateTimeUTC, customerName, customerEmail, athleteName, selection, paymentMethod } = parse.data;
+
+  if (paymentMethod !== 'CASH') {
+    return NextResponse.json({ ok: false, error: 'Card payments must be completed through checkout.' }, { status: 400 });
+  }
 
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim();
   const key = `private:${ip}:${customerEmail}`;
@@ -143,6 +147,7 @@ export async function POST(req: NextRequest) {
         athleteName,
         cancelUrl,
         dashboardUrl,
+        coachName,
       });
     } else {
       // Send immediate confirmation with calendar invite
@@ -163,16 +168,21 @@ export async function POST(req: NextRequest) {
       await sendBookingEmails({
         customerEmail,
         coachEmails: finalCoachEmails,
-        subject: paymentMethod === 'CASH'
-          ? `Booking Confirmed (Cash): ${title} (${when})`
-          : `Booking Confirmed: ${title} (${when})`,
+        subject: `${programSubjectPrefix('PRIVATE')}${paymentMethod === 'CASH' ? 'Booking Confirmed (Cash)' : 'Booking Confirmed'}: ${title} (${when})`,
         htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
           athleteNames: athleteName,
           customerName,
           paymentMethod,
           priceCents: result.booking.priceCents,
+          coachName,
+          kind: 'PRIVATE',
         }),
-        htmlCoach: buildCoachHtml(title, when, customerName, athleteName, paymentMethod),
+        htmlCoach: buildCoachHtml(title, when, customerName, athleteName, {
+          paymentMethod,
+          customerEmail,
+          kind: 'PRIVATE',
+          priceCents: result.booking.priceCents,
+        }),
         icsContent: ics,
       });
     }

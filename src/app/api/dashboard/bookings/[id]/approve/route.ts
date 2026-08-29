@@ -3,8 +3,13 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildICS } from '@/lib/ics';
-import { buildCoachHtml, buildCustomerHtml, sendBookingEmails } from '@/lib/email';
+import { buildCoachHtml, buildCustomerHtml, buildCustomerDeclinedHtml, sendBookingEmails, programSubjectPrefix } from '@/lib/email';
 import { formatPt } from '@/lib/time';
+import { refundBookingIfPaid } from '@/lib/refund';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const SENDER = process.env.SENDER_EMAIL || 'booking@spiritathletics.net';
 
 export async function POST(
   req: NextRequest,
@@ -88,8 +93,7 @@ export async function POST(
         data: { status: 'CONFIRMED' },
       });
 
-      // Auto-decline all other pending bookings for this coach that overlap
-      await tx.booking.updateMany({
+      const overlappingPending = await tx.booking.findMany({
         where: {
           coachId: booking.coachId!,
           status: 'PENDING',
@@ -103,10 +107,9 @@ export async function POST(
             }
           ]
         },
-        data: { status: 'CANCELLED', cancelledAt: new Date() }
       });
 
-      return { booking: updatedBooking, service: booking.service };
+      return { booking: updatedBooking, service: booking.service, overlappingPending };
     });
 
     // Get coach settings and emails
@@ -141,11 +144,72 @@ export async function POST(
     await sendBookingEmails({
       customerEmail: result.booking.customerEmail,
       coachEmails,
-      subject: `Booking Confirmed: ${title} (${when})`,
-      htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl),
-      htmlCoach: buildCoachHtml(title, when, result.booking.customerName, result.booking.athleteName),
+      subject: `${programSubjectPrefix('PRIVATE')}Booking Confirmed: ${title} (${when})`,
+      htmlCustomer: buildCustomerHtml(title, when, location, cancelUrl, {
+        coachName,
+        customerName: result.booking.customerName,
+        athleteNames: result.booking.athleteName,
+        kind: 'PRIVATE',
+        paymentMethod: result.booking.paymentMethod,
+        priceCents: result.booking.priceCents,
+      }),
+      htmlCoach: buildCoachHtml(title, when, result.booking.customerName, result.booking.athleteName, {
+        kind: 'PRIVATE',
+        customerEmail: result.booking.customerEmail,
+        paymentMethod: result.booking.paymentMethod,
+        priceCents: result.booking.priceCents,
+      }),
       icsContent: ics,
     });
+
+    const declined: { email: string; when: string; refunded: boolean }[] = [];
+    const overlapRefundFailures: { customerName: string; athleteName: string }[] = [];
+    for (const overlap of result.overlappingPending) {
+      let refunded = false;
+      try {
+        const refund = await refundBookingIfPaid(overlap);
+        refunded = refund.refunded;
+      } catch (err) {
+        console.error('Stripe refund failed for overlapping pending booking:', overlap.id, err);
+        overlapRefundFailures.push({
+          customerName: overlap.customerName,
+          athleteName: overlap.athleteName,
+        });
+        continue;
+      }
+
+      await prisma.booking.update({
+        where: { id: overlap.id },
+        data: { status: 'CANCELLED', cancelledAt: new Date() },
+      });
+
+      declined.push({
+        email: overlap.customerEmail,
+        when: formatPt(overlap.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'"),
+        refunded,
+      });
+    }
+
+    for (const item of declined) {
+      try {
+        await resend.emails.send({
+          from: `Spirit Athletics <${SENDER}>`,
+          to: [item.email],
+          subject: `Request Update: Private Lesson (${item.when})`,
+          html: buildCustomerDeclinedHtml('Private Lesson', item.when, item.refunded),
+        });
+      } catch (err) {
+        console.error('Overlap decline email failed:', err);
+      }
+    }
+
+    if (overlapRefundFailures.length > 0) {
+      const names = overlapRefundFailures.map((f) => `${f.athleteName} (${f.customerName})`).join(', ');
+      return NextResponse.json({
+        ok: true,
+        warning: `This lesson was approved, but overlapping paid requests could not be refunded and were left pending: ${names}. Decline those requests from Bookings after checking Stripe.`,
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e: any) {

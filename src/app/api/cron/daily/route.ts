@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   // Authenticate: Vercel sends Authorization: Bearer <CRON_SECRET>
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
         priceCents: b.priceCents,
         paymentMethod: b.paymentMethod,
         isManualBlock: b.isManualBlock,
+        customerEmail: b.customerEmail,
       }));
 
       const html = buildCoachDailyAgendaHtml(coach.user.name ?? 'Coach', dateLabel, agendaItems);
@@ -81,7 +82,7 @@ export async function GET(req: NextRequest) {
       await resend.emails.send({
         from: `Spirit Athletics <${SENDER}>`,
         to: recipients as string[],
-        subject: `Your schedule for ${dateLabel}`,
+        subject: `[Coach] Your schedule for ${dateLabel}`,
         html,
       });
       coachEmailsSent++;
@@ -98,7 +99,7 @@ export async function GET(req: NextRequest) {
       reminderSentAt: null,
       startDateTimeUTC: { gte: todayStartUtc, lte: todayEndUtc },
     },
-    include: { service: true },
+    include: { service: { include: { coach: { include: { user: { select: { name: true } } } } } } },
     orderBy: { startDateTimeUTC: 'asc' },
   });
 
@@ -108,16 +109,24 @@ export async function GET(req: NextRequest) {
   for (const booking of todayBookings) {
     try {
       const isClass = !!booking.classOccurrenceId;
+      const kind = isClass ? 'CLASS' as const : 'PRIVATE' as const;
       const title = isClass ? booking.service.title : 'Private Lesson';
       const when = formatPt(booking.startDateTimeUTC, "h:mm a 'PT'");
       const cancelUrl = `${baseUrl}/cancel?token=${booking.cancellationToken}`;
 
-      const html = buildClientReminderHtml(title, when, location, cancelUrl);
+      const html = buildClientReminderHtml(
+        title,
+        when,
+        location,
+        cancelUrl,
+        booking.service.coach?.user?.name ?? undefined,
+        kind,
+      );
 
       await resend.emails.send({
         from: `Spirit Athletics <${SENDER}>`,
         to: [booking.customerEmail],
-        subject: `Reminder: ${title} today at ${when}`,
+        subject: `${kind === 'CLASS' ? '[Class]' : '[Private]'} Reminder: ${title} today at ${when}`,
         html,
       });
 

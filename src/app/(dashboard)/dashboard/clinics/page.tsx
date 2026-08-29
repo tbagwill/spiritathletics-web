@@ -148,17 +148,19 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
     setTimeout(() => setToast(null), 3500);
   };
 
-  const handleRemoveRegistration = async (reg: ClinicRegistration, refund: boolean) => {
-    const action = refund ? 'refund and remove' : 'remove';
-    if (!confirm(`Are you sure you want to ${action} ${reg.athleteFirstName} (booked by ${reg.customerName})?`)) return;
+  const handleRemoveRegistration = async (reg: ClinicRegistration) => {
+    const paidByCard = reg.paymentMethod === 'CARD' && !!reg.stripeSessionId;
+    const confirmMsg = paidByCard
+      ? `Remove ${reg.athleteFirstName} from this clinic? Their card payment will be refunded through Stripe, and they will receive a confirmation email.`
+      : `Remove ${reg.athleteFirstName} (booked by ${reg.customerName}) from this clinic? They will receive a confirmation email. No card payment is on file.`;
+    if (!confirm(confirmMsg)) return;
 
     setRemovingRegId(reg.id);
     try {
-      const url = `/api/dashboard/clinics/registrations/${reg.id}${refund ? '?refund=true' : ''}`;
-      const res = await fetch(url, { method: 'DELETE' });
+      const res = await fetch(`/api/dashboard/clinics/registrations/${reg.id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
-      showToast(data.refunded ? 'Refunded & removed.' : 'Registration removed.');
+      showToast(data.refunded ? 'Refunded and removed.' : 'Registration removed.');
       load();
     } catch (e: any) {
       showToast(e.message || 'Something went wrong.');
@@ -388,7 +390,6 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
                         <div className="space-y-2">
                           {clinic.registrations.map((reg) => {
                             const isRemoving = removingRegId === reg.id;
-                            const canRefund = reg.paymentMethod === 'CARD' && !!reg.stripeSessionId;
                             return (
                               <div key={reg.id} className={`flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 ${isRemoving ? 'opacity-50' : ''}`}>
                                 <div className="flex-1 min-w-0">
@@ -404,17 +405,8 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0 ml-3">
                                   <span className="text-xs text-gray-400 hidden sm:inline">{new Date(reg.createdAt).toLocaleDateString()}</span>
-                                  {canRefund && (
-                                    <button
-                                      onClick={() => handleRemoveRegistration(reg, true)}
-                                      disabled={isRemoving}
-                                      className="px-2.5 py-1 rounded-lg text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors disabled:opacity-50"
-                                    >
-                                      Refund &amp; Remove
-                                    </button>
-                                  )}
                                   <button
-                                    onClick={() => handleRemoveRegistration(reg, false)}
+                                    onClick={() => handleRemoveRegistration(reg)}
                                     disabled={isRemoving}
                                     className="px-2.5 py-1 rounded-lg text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
                                   >

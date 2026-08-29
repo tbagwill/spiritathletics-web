@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import BookingsList from './BookingsList';
+import { addDays } from 'date-fns';
+import { ptMidnightUtc, ptTodayString } from '@/lib/time';
+import FrontDeskBoard, { type DeskBooking } from './FrontDeskBoard';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,72 +15,135 @@ export default async function BookingsPage() {
   const coach = userId ? await prisma.coachProfile.findUnique({ where: { userId } }) : null;
   const isAdmin = userRole === 'ADMIN';
 
-  const now = new Date();
+  if (!coach && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6 py-16 text-center">
+          <h1 className="text-xl font-semibold text-gray-900">Coach profile not found</h1>
+          <p className="text-gray-600 mt-2">Unable to load your schedule. Please contact support.</p>
+          <Link href="/dashboard" className="inline-block mt-6 text-sm font-semibold text-blue-700">Back to dashboard</Link>
+        </div>
+      </div>
+    );
+  }
 
-  const coachFilter = coach
-    ? [{ coachId: coach.id }, { service: { coachId: coach.id } }]
-    : undefined;
+  const rangeStart = ptMidnightUtc(ptTodayString());
+  const rangeEnd = addDays(rangeStart, 15);
+  const coachFilter = !isAdmin && coach
+    ? { OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] }
+    : {};
 
-  const bookings = (coach || isAdmin) ? await prisma.booking.findMany({
-    where: {
-      OR: [
-        { status: 'PENDING', ...(coachFilter ? { OR: coachFilter } : {}) },
-        { status: 'CONFIRMED', startDateTimeUTC: { gte: now }, ...(coachFilter ? { OR: coachFilter } : {}) },
-        { status: 'CANCELLED', cancelledAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, ...(coachFilter ? { OR: coachFilter } : {}) },
-      ],
-    },
-    include: { service: { include: { coach: { include: { user: true } } } }, classOccurrence: true },
-    orderBy: [{ status: 'asc' }, { startDateTimeUTC: 'asc' }],
-    take: 200,
-  }) : [];
+  const [bookings, clinics] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        AND: [
+          coachFilter,
+          {
+            OR: [
+              { status: 'PENDING' },
+              { status: 'CONFIRMED', startDateTimeUTC: { gte: rangeStart, lt: rangeEnd } },
+              { status: 'CANCELLED', cancelledAt: { gte: rangeStart } },
+            ],
+          },
+        ],
+      },
+      include: {
+        service: { include: { coach: { include: { user: { select: { name: true } } } } } },
+        coach: { include: { user: { select: { name: true } } } },
+      },
+      orderBy: { startDateTimeUTC: 'asc' },
+      take: 800,
+    }),
+    prisma.clinic.findMany({
+      where: {
+        dateTimeUTC: { gte: rangeStart, lt: rangeEnd },
+      },
+      include: {
+        registrations: {
+          where: { status: 'CONFIRMED' },
+          select: {
+            id: true,
+            athleteFirstName: true,
+            customerName: true,
+            customerEmail: true,
+            paymentMethod: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { dateTimeUTC: 'asc' },
+    }),
+  ]);
+
+  const rows: DeskBooking[] = [];
+
+  for (const booking of bookings) {
+    const isClass = booking.type === 'CLASS' || !!booking.classOccurrenceId;
+    rows.push({
+      id: booking.id,
+      kind: booking.isManualBlock ? 'HOLD' : isClass ? 'CLASS' : 'PRIVATE',
+      status: booking.status,
+      startISO: booking.startDateTimeUTC.toISOString(),
+      endISO: booking.endDateTimeUTC.toISOString(),
+      title: booking.isManualBlock
+        ? (booking.notes || 'Reserved slot')
+        : isClass
+          ? booking.service.title
+          : 'Private Lesson',
+      coachName: booking.coach?.user?.name || booking.service.coach?.user?.name || '',
+      athleteName: booking.isManualBlock ? '' : booking.athleteName,
+      customerName: booking.isManualBlock ? '' : booking.customerName,
+      customerEmail: booking.isManualBlock ? '' : booking.customerEmail,
+      paymentMethod: booking.isManualBlock ? null : booking.paymentMethod,
+      priceCents: booking.priceCents,
+      notes: booking.notes,
+      privateKind: booking.privateKind,
+      cancelable: !booking.isManualBlock && booking.status === 'CONFIRMED',
+    });
+  }
+
+  for (const clinic of clinics) {
+    for (const reg of clinic.registrations) {
+        rows.push({
+          id: reg.id,
+          kind: 'CLINIC',
+          status: reg.status === 'CANCELLED' ? 'CANCELLED' : 'CONFIRMED',
+          startISO: clinic.dateTimeUTC.toISOString(),
+          endISO: clinic.endDateTimeUTC.toISOString(),
+          title: clinic.title,
+          coachName: '',
+          athleteName: reg.athleteFirstName,
+          customerName: reg.customerName,
+          customerEmail: reg.customerEmail,
+          paymentMethod: reg.paymentMethod,
+          priceCents: clinic.priceCents,
+          cancelable: false,
+        });
+      }
+    }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 animate-fade-in">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="animate-slide-up">
-            {/* Mobile-first layout: stack vertically on small screens */}
-            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-              <div className="flex-1">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Upcoming Bookings</h1>
-                <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">View your scheduled classes and private lessons</p>
-              </div>
-              <div className="flex justify-center sm:justify-end">
-                <Link href="/dashboard" className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:shadow-md text-sm sm:text-base">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                  </svg>
-                  Back
-                </Link>
-              </div>
-            </div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {isAdmin ? 'Front Desk Board' : 'Upcoming Bookings'}
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              {isAdmin
+                ? 'All privates, classes, and clinics for the next two weeks — search by athlete, parent, or coach.'
+                : 'Your scheduled privates and classes. Front desk admins see every coach.'}
+            </p>
           </div>
+          <Link href="/dashboard" className="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50">
+            Back
+          </Link>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {!coach && !isAdmin ? (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center animate-fade-in-up">
-            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Coach Profile Not Found</h3>
-            <p className="text-gray-600">Unable to load your coach profile. Please contact support.</p>
-          </div>
-        ) : (
-          <BookingsList bookings={bookings.map(booking => ({
-            ...booking,
-            startDateTimeUTC: booking.startDateTimeUTC.toISOString(),
-            endDateTimeUTC: booking.endDateTimeUTC.toISOString(),
-            classOccurrenceId: booking.classOccurrenceId || undefined,
-            isManualBlock: booking.isManualBlock,
-            notes: booking.notes,
-          }))} />
-        )}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6">
+        <FrontDeskBoard rows={rows} canCancel={isAdmin || !!coach} />
       </div>
     </div>
   );

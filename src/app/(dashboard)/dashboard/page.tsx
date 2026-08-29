@@ -76,6 +76,13 @@ const IconTeam = (
 		<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeLinecap="round" strokeLinejoin="round"/>
 	</svg>
 );
+const IconHistory = (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full" strokeWidth="1.8">
+		<path d="M12 8v4l3 3" strokeLinecap="round" strokeLinejoin="round"/>
+		<path d="M3.05 11a9 9 0 1 1 .5 4" strokeLinecap="round"/>
+		<path d="M3 4v5h5" strokeLinecap="round" strokeLinejoin="round"/>
+	</svg>
+);
 
 export default async function DashboardHome() {
 	const session = await getServerSession(authOptions);
@@ -90,10 +97,10 @@ export default async function DashboardHome() {
 	const pendingCount = (coach || isAdmin) ? await prisma.booking.count({
 		where: {
 			status: 'PENDING',
-			...(coach ? { OR: [
+			...(isAdmin || !coach ? {} : { OR: [
 				{ coachId: coach.id },
 				{ service: { coachId: coach.id } },
-			] } : {}),
+			] }),
 		},
 	}) : 0;
 	
@@ -146,10 +153,18 @@ export default async function DashboardHome() {
 					<div className="animate-fade-in" style={{ animationDelay: '300ms' }}>
 						<Tile 
 							href="/dashboard/bookings" 
-							title="Upcoming Bookings" 
+							title={isAdmin ? 'Front Desk Board' : 'Upcoming Bookings'} 
 							icon={IconCalendar}
-							description="View your upcoming classes and private lessons"
+							description={isAdmin ? 'All privates, classes, and clinics — condensed for check-in' : 'View your upcoming classes and private lessons'}
 							{...(pendingCount > 0 && { badge: pendingCount })}
+						/>
+					</div>
+					<div className="animate-fade-in" style={{ animationDelay: '350ms' }}>
+						<Tile
+							href="/dashboard/history"
+							title="History"
+							icon={IconHistory}
+							description={isAdmin ? 'Past privates, classes, and clinics for every coach' : 'Your past private lessons, classes, and clinic registrations'}
 						/>
 					</div>
 				<div className="animate-fade-in" style={{ animationDelay: '400ms' }}>

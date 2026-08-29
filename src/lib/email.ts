@@ -28,7 +28,7 @@ export async function sendBookingEmails(params: {
         await resend.emails.send({
 			from: `Spirit Athletics <${SENDER}>`,
             to: filteredCoachEmails,
-			subject: `[Coach Copy] ${subject}`,
+			subject: `[Coach] ${subject}`,
 			html: htmlCoach,
 			attachments: [
 				{ filename: 'event.ics', content: icsContent, contentType: 'text/calendar' },
@@ -37,12 +37,36 @@ export async function sendBookingEmails(params: {
 	}
 }
 
+export type ProgramKind = 'PRIVATE' | 'CLASS' | 'CLINIC';
+
 export type CustomerEmailOptions = {
 	athleteNames?: string;
 	customerName?: string;
 	paymentMethod?: 'CARD' | 'CASH';
 	priceCents?: number;
+	coachName?: string;
+	kind?: ProgramKind;
 };
+
+export type CoachEmailOptions = {
+	paymentMethod?: 'CARD' | 'CASH';
+	customerEmail?: string;
+	kind?: ProgramKind;
+	priceCents?: number;
+};
+
+export function programSubjectPrefix(kind?: ProgramKind) {
+	if (kind === 'CLASS') return '[Class] ';
+	if (kind === 'CLINIC') return '[Clinic] ';
+	return '[Private] ';
+}
+
+function programKindBadge(kind?: ProgramKind) {
+	const label = kind === 'CLASS' ? 'Class' : kind === 'CLINIC' ? 'Clinic' : 'Private Lesson';
+	const bg = kind === 'CLASS' ? '#dcfce7' : kind === 'CLINIC' ? '#f3e8ff' : '#dbeafe';
+	const fg = kind === 'CLASS' ? '#166534' : kind === 'CLINIC' ? '#6b21a8' : '#1e40af';
+	return `<span style="display:inline-block;background-color:${bg};color:${fg};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.3px;text-transform:uppercase;">${label}</span>`;
+}
 
 export function buildCustomerHtml(title: string, when: string, location: string, cancelUrl?: string, opts?: CustomerEmailOptions) {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
@@ -78,7 +102,7 @@ ${isCash ? "You're Registered!" : "You're All Set!"}
 <p style="margin:0 0 8px 0;color:#64748b;font-size:16px;line-height:1.6;">
 ${opts?.customerName ? `Hi ${escape(opts.customerName)}, ` : ''}${isCash ? 'Your spot is reserved! Please remember to bring cash when you arrive.' : 'Your booking has been confirmed. We\'re excited to see you at Spirit Athletics!'}
 </p>
-${paymentBadge}
+<div style="margin-top:12px;">${programKindBadge(opts?.kind)}${paymentBadge ? `&nbsp;${paymentBadge}` : ''}</div>
 </td></tr>
 
 <tr><td style="padding:20px 40px 32px 40px;">
@@ -89,6 +113,10 @@ ${paymentBadge}
 <p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Session</p>
 <p style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">${escape(title)}</p>
 </td></tr>
+${opts?.coachName ? `<tr><td style="padding-bottom:16px;">
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Coach</p>
+<p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">${escape(opts.coachName)}</p>
+</td></tr>` : ''}
 ${opts?.athleteNames ? `<tr><td style="padding-bottom:16px;">
 <p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Athlete${opts.athleteNames.includes(',') ? 's' : ''}</p>
 <p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">${escape(opts.athleteNames)}</p>
@@ -123,7 +151,7 @@ Please bring <strong>${priceText || 'the exact amount in'} cash</strong> when yo
 <div style="background-color:#f0f9ff;border-left:4px solid #3b82f6;padding:16px 20px;border-radius:6px;">
 <p style="margin:0 0 8px 0;color:#1e40af;font-size:14px;font-weight:700;">Important Information</p>
 <p style="margin:0;color:#1e40af;font-size:14px;line-height:1.6;">
-&bull; Please arrive 5-10 minutes early<br>
+&bull; Please arrive 5-10 minutes early and check in at the front desk<br>
 &bull; Bring water and a positive attitude!<br>
 ${!isCash ? '&bull; A calendar invite is attached to this email' : '&bull; Check in at the front desk when you arrive'}
 </p>
@@ -156,12 +184,16 @@ Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345
 </html>`;
 }
 
-export function buildCoachHtml(title: string, when: string, customer: string, athlete: string, paymentMethod?: 'CARD' | 'CASH') {
+export function buildCoachHtml(title: string, when: string, customer: string, athlete: string, paymentMethodOrOpts?: 'CARD' | 'CASH' | CoachEmailOptions) {
+	const opts: CoachEmailOptions = typeof paymentMethodOrOpts === 'object' && paymentMethodOrOpts
+		? paymentMethodOrOpts
+		: { paymentMethod: paymentMethodOrOpts };
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
-	const isCash = paymentMethod === 'CASH';
+	const isCash = opts.paymentMethod === 'CASH';
+	const priceText = opts.priceCents ? `$${(opts.priceCents / 100).toFixed(2)}` : null;
 	const badge = isCash
 		? `<span style="display:inline-block;background-color:#fef3c7;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">CASH — Due On-Site</span>`
-		: `<span style="display:inline-block;background-color:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">PAID</span>`;
+		: `<span style="display:inline-block;background-color:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">PAID${priceText ? ` — ${priceText}` : ''}</span>`;
 	return `<!DOCTYPE html>
 <html>
 <head>
@@ -179,7 +211,8 @@ export function buildCoachHtml(title: string, when: string, customer: string, at
 </td></tr>
 
 <tr><td style="padding:40px 40px 20px 40px;">
-<h1 style="margin:0 0 12px 0;color:#1e293b;font-size:28px;font-weight:700;line-height:1.3;">New Booking ${badge}</h1>
+<h1 style="margin:0 0 12px 0;color:#1e293b;font-size:28px;font-weight:700;line-height:1.3;">New Booking</h1>
+<div style="margin:0 0 16px 0;">${programKindBadge(opts.kind)}&nbsp;${badge}</div>
 <p style="margin:0 0 24px 0;color:#64748b;font-size:16px;line-height:1.6;">
 A new session has been booked. The calendar invite is attached.
 </p>
@@ -208,6 +241,10 @@ A new session has been booked. The calendar invite is attached.
 <p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Athlete${athlete.includes(',') ? 's' : ''}:</p>
 <p style="margin:4px 0 0 0;color:#1e293b;font-size:16px;font-weight:600;">${escape(athlete)}</p>
 </td></tr>
+${opts.customerEmail ? `<tr><td style="padding:8px 0;">
+<p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Parent email:</p>
+<p style="margin:4px 0 0 0;color:#1e293b;font-size:16px;font-weight:600;"><a href="mailto:${escape(opts.customerEmail)}" style="color:#2563eb;text-decoration:none;">${escape(opts.customerEmail)}</a></p>
+</td></tr>` : ''}
 </table>
 </td></tr>
 </table>
@@ -237,29 +274,29 @@ export async function sendPendingRequestEmails(params: {
 	athleteName: string;
 	cancelUrl: string;
 	dashboardUrl: string;
+	coachName?: string;
 }) {
-	const { customerEmail, coachEmails, title, when, location, customerName, athleteName, cancelUrl, dashboardUrl } = params;
+	const { customerEmail, coachEmails, title, when, location, customerName, athleteName, cancelUrl, dashboardUrl, coachName } = params;
 
 	// Customer: request submitted
 	await resend.emails.send({
 		from: `Spirit Athletics <${SENDER}>`,
 		to: [customerEmail],
-		subject: `Request Submitted: ${title} (${when})`,
-		html: buildCustomerPendingHtml(title, when, location, cancelUrl),
+		subject: `${programSubjectPrefix('PRIVATE')}Request Submitted: ${title} (${when})`,
+		html: buildCustomerPendingHtml(title, when, location, cancelUrl, coachName),
 	});
 
-	// Coach: approval needed
 	if (coachEmails.length > 0) {
 		await resend.emails.send({
 			from: `Spirit Athletics <${SENDER}>`,
 			to: coachEmails,
-			subject: `[Action Required] New Private Lesson Request`,
+			subject: `[Coach] ${programSubjectPrefix('PRIVATE')}Action Required: New lesson request`,
 			html: buildCoachApprovalNeededHtml(title, when, customerName, athleteName, dashboardUrl),
 		});
 	}
 }
 
-export function buildCustomerPendingHtml(title: string, when: string, location: string, cancelUrl: string) {
+export function buildCustomerPendingHtml(title: string, when: string, location: string, cancelUrl: string, coachName?: string) {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
 	return `
 		<!DOCTYPE html>
@@ -310,6 +347,16 @@ export function buildCustomerPendingHtml(title: string, when: string, location: 
 															</p>
 														</td>
 													</tr>
+													${coachName ? `<tr>
+														<td style="padding-bottom:16px;">
+															<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
+																Coach
+															</p>
+															<p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">
+																${escape(coachName)}
+															</p>
+														</td>
+													</tr>` : ''}
 													<tr>
 														<td style="padding-bottom:16px;">
 															<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
@@ -509,7 +556,7 @@ export function buildCoachApprovalNeededHtml(title: string, when: string, custom
 	`;
 }
 
-export function buildCustomerDeclinedHtml(title: string, when: string) {
+export function buildCustomerDeclinedHtml(title: string, when: string, refunded?: boolean) {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
 	const bookingUrl = `${baseUrl}/book/privates`;
 	return `
@@ -579,6 +626,8 @@ export function buildCustomerDeclinedHtml(title: string, when: string) {
 								</td>
 							</tr>
 							
+							${refundBannerCustomer(refunded)}
+							
 							<!-- Next Steps -->
 							<tr>
 								<td style="padding:0 40px 32px 40px;">
@@ -618,7 +667,7 @@ export function buildCustomerDeclinedHtml(title: string, when: string) {
 	`;
 }
 
-export function buildPendingCancelledCustomerHtml(title: string, when: string) {
+export function buildPendingCancelledCustomerHtml(title: string, when: string, refunded?: boolean) {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
 	const bookingUrl = `${baseUrl}/book/privates`;
 	return `
@@ -674,6 +723,8 @@ export function buildPendingCancelledCustomerHtml(title: string, when: string) {
 								</td>
 							</tr>
 							
+							${refundBannerCustomer(refunded)}
+							
 							<!-- Book Again -->
 							<tr>
 								<td style="padding:0 40px 32px 40px;">
@@ -708,7 +759,7 @@ export function buildPendingCancelledCustomerHtml(title: string, when: string) {
 	`;
 }
 
-export function buildPendingCancelledCoachHtml(title: string, when: string, customer: string, athlete: string) {
+export function buildPendingCancelledCoachHtml(title: string, when: string, customer: string, athlete: string, refunded?: boolean) {
 	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
 	return `
 		<!DOCTYPE html>
@@ -792,6 +843,8 @@ export function buildPendingCancelledCoachHtml(title: string, when: string, cust
 								</td>
 							</tr>
 							
+							${refundBannerCoach(refunded)}
+							
 							<!-- Footer -->
 							<tr>
 								<td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
@@ -845,7 +898,45 @@ export function buildPasswordResetHtml(coachName: string, resetUrl: string) {
 </html>`;
 }
 
-export function buildCancellationCustomerHtml(title: string, when: string, coachName: string, cancelledByCoach = false) {
+function refundBannerCustomer(refunded?: boolean) {
+  if (refunded === true) {
+    return `<tr><td style="padding:0 40px 32px 40px;">
+<div style="background-color:#ecfdf5;border-left:4px solid #10b981;padding:16px 20px;border-radius:6px;">
+<p style="margin:0 0 6px 0;color:#065f46;font-size:14px;font-weight:700;">Refund in progress</p>
+<p style="margin:0;color:#047857;font-size:14px;line-height:1.6;">Your card payment has been refunded through Stripe. Please allow 5–10 business days for it to appear on your statement.</p>
+</div>
+</td></tr>`;
+  }
+  if (refunded === false) {
+    return `<tr><td style="padding:0 40px 32px 40px;">
+<div style="background-color:#fffbeb;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:6px;">
+<p style="margin:0;color:#92400e;font-size:14px;line-height:1.6;">No card payment was on file for this booking, so no Stripe refund was issued.</p>
+</div>
+</td></tr>`;
+  }
+  return '';
+}
+
+function refundBannerCoach(refunded?: boolean) {
+  if (refunded === true) {
+    return `<tr><td style="padding:0 40px 24px 40px;">
+<div style="background-color:#ecfdf5;border-left:4px solid #10b981;padding:16px 20px;border-radius:6px;">
+<p style="margin:0 0 6px 0;color:#065f46;font-size:14px;font-weight:700;">Refund issued</p>
+<p style="margin:0;color:#047857;font-size:14px;line-height:1.6;">A Stripe refund has been processed for this cancellation. The customer has been notified.</p>
+</div>
+</td></tr>`;
+  }
+  if (refunded === false) {
+    return `<tr><td style="padding:0 40px 24px 40px;">
+<div style="background-color:#fffbeb;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:6px;">
+<p style="margin:0;color:#92400e;font-size:14px;line-height:1.6;">No card payment was on file. No Stripe refund was issued.</p>
+</div>
+</td></tr>`;
+  }
+  return '';
+}
+
+export function buildCancellationCustomerHtml(title: string, when: string, coachName: string, cancelledByCoach = false, refunded?: boolean, kind?: ProgramKind) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
   const reason = cancelledByCoach
     ? `Your booking was cancelled by ${escape(coachName)}. We apologize for any inconvenience this may cause.`
@@ -862,6 +953,7 @@ export function buildCancellationCustomerHtml(title: string, when: string, coach
 
 <tr><td style="padding:40px 40px 20px 40px;">
 <h1 style="margin:0 0 12px 0;color:#dc2626;font-size:26px;font-weight:700;">Booking Cancelled</h1>
+<p style="margin:0 0 12px 0;">${programKindBadge(kind)}</p>
 <p style="margin:0;color:#64748b;font-size:16px;line-height:1.6;">${reason}</p>
 </td></tr>
 
@@ -874,6 +966,8 @@ export function buildCancellationCustomerHtml(title: string, when: string, coach
 </td></tr>
 </table>
 </td></tr>
+
+${refundBannerCustomer(refunded)}
 
 <tr><td style="padding:0 40px 32px 40px;">
 <p style="margin:0;color:#64748b;font-size:14px;line-height:1.6;">If you have any questions or would like to rebook, please visit us at <a href="${baseUrl}" style="color:#667eea;text-decoration:none;">spiritathletics.net</a>.</p>
@@ -889,7 +983,7 @@ export function buildCancellationCustomerHtml(title: string, when: string, coach
 </html>`;
 }
 
-export function buildCancellationCoachHtml(title: string, when: string, customerName: string, athleteName: string, cancelledByCoach = false) {
+export function buildCancellationCoachHtml(title: string, when: string, customerName: string, athleteName: string, cancelledByCoach = false, refunded?: boolean, kind?: ProgramKind) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
   const who = cancelledByCoach ? 'You cancelled this booking.' : 'The customer cancelled this booking.';
   return `<!DOCTYPE html>
@@ -903,7 +997,8 @@ export function buildCancellationCoachHtml(title: string, when: string, customer
 <tr><td style="padding:0;"><img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics" width="600" style="display:block;width:100%;height:auto;border:0;"></td></tr>
 
 <tr><td style="padding:40px 40px 20px 40px;">
-<h1 style="margin:0 0 8px 0;color:#dc2626;font-size:24px;font-weight:700;">[Coach Copy] Booking Cancelled</h1>
+<h1 style="margin:0 0 8px 0;color:#dc2626;font-size:24px;font-weight:700;">Booking Cancelled</h1>
+<p style="margin:0 0 8px 0;">${programKindBadge(kind)}</p>
 <p style="margin:0;color:#64748b;font-size:16px;">${who}</p>
 </td></tr>
 
@@ -917,6 +1012,8 @@ export function buildCancellationCoachHtml(title: string, when: string, customer
 </td></tr>
 </table>
 </td></tr>
+
+${refundBannerCoach(refunded)}
 
 <tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
 <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345</p>
@@ -937,6 +1034,7 @@ export type AgendaBooking = {
   priceCents: number;
   paymentMethod: string;
   isManualBlock?: boolean;
+  customerEmail?: string;
 };
 
 export function buildCoachDailyAgendaHtml(coachName: string, dateLabel: string, bookings: AgendaBooking[]) {
@@ -961,7 +1059,7 @@ export function buildCoachDailyAgendaHtml(coachName: string, dateLabel: string, 
             <td>
               <p style="margin:0 0 4px 0;color:#1e293b;font-size:15px;font-weight:700;">${escape(b.when)} ${badge}</p>
               <p style="margin:0 0 2px 0;color:#475569;font-size:14px;">${escape(b.title)}</p>
-              ${!isBlock ? `<p style="margin:0;color:#64748b;font-size:13px;">${escape(b.customerName)} &mdash; ${escape(b.athleteName)} &nbsp; ${payBadge}</p>` : ''}
+              ${!isBlock ? `<p style="margin:0;color:#64748b;font-size:13px;">${escape(b.customerName)} &mdash; ${escape(b.athleteName)} &nbsp; ${payBadge}${b.customerEmail ? ` &nbsp; ${escape(b.customerEmail)}` : ''}</p>` : ''}
             </td>
           </tr>
         </table>
@@ -1007,7 +1105,7 @@ ${bookings.length === 0
 </html>`;
 }
 
-export function buildClientReminderHtml(title: string, when: string, location: string, cancelUrl?: string) {
+export function buildClientReminderHtml(title: string, when: string, location: string, cancelUrl?: string, coachName?: string, kind?: ProgramKind) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
   return `<!DOCTYPE html>
 <html>
@@ -1023,6 +1121,7 @@ export function buildClientReminderHtml(title: string, when: string, location: s
 
 <tr><td style="padding:40px 40px 20px 40px;">
 <h1 style="margin:0 0 8px 0;color:#1e293b;font-size:26px;font-weight:700;">Reminder: You have a session today!</h1>
+<p style="margin:0 0 12px 0;">${programKindBadge(kind)}</p>
 <p style="margin:0;color:#64748b;font-size:16px;">Just a friendly reminder about your upcoming booking at Spirit Athletics.</p>
 </td></tr>
 
@@ -1031,6 +1130,8 @@ export function buildClientReminderHtml(title: string, when: string, location: s
 <tr><td style="padding:24px;">
 <p style="margin:0 0 6px 0;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Session</p>
 <p style="margin:0 0 16px 0;color:#fff;font-size:20px;font-weight:700;">${escape(title)}</p>
+${coachName ? `<p style="margin:0 0 6px 0;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Coach</p>
+<p style="margin:0 0 16px 0;color:#fff;font-size:18px;font-weight:600;">${escape(coachName)}</p>` : ''}
 <p style="margin:0 0 6px 0;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Date &amp; Time</p>
 <p style="margin:0 0 16px 0;color:#fff;font-size:18px;font-weight:600;">${escape(when)}</p>
 <p style="margin:0 0 6px 0;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Location</p>

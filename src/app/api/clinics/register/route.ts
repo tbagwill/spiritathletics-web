@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({
         from: `Spirit Athletics <${SENDER}>`,
         to: [customerEmail],
-        subject: `Clinic Registration Confirmed: ${clinic.title} (Pay Cash On-Site)`,
+        subject: `[Clinic] Registration Confirmed: ${clinic.title} (Pay Cash On-Site)`,
         html: buildCashClinicConfirmationHtml(clinic.title, when, location, customerName, athleteFirstNames, cashTotal, cardTotal),
       });
     } catch (err) {
@@ -131,7 +131,7 @@ function buildCashClinicConfirmationHtml(title: string, when: string, location: 
         <div style="background-color:#f0f9ff;border-left:4px solid #7c3aed;padding:16px 20px;border-radius:6px;">
           <p style="margin:0 0 8px 0;color:#4c1d95;font-size:14px;font-weight:700;">&#128204; Clinic Details</p>
           <p style="margin:0;color:#4c1d95;font-size:14px;line-height:1.6;">
-            &bull; Please arrive 5-10 minutes early<br>
+            &bull; Please arrive 5-10 minutes early and check in at the front desk<br>
             &bull; Athlete${athleteFirstNames.length > 1 ? 's' : ''} registered: ${athleteList}<br>
             &bull; Bring water and a positive attitude!
           </p>

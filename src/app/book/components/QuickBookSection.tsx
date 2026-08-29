@@ -338,6 +338,7 @@ export default function QuickBookSection() {
         <BookPrivateDialog
           coachId={bookingTarget.coachId}
           serviceId={bookingTarget.serviceId}
+          coachName={bookingTarget.coachName}
           selection={DEFAULT_SELECTION}
           startUTC={bookingTarget.startUTC}
           endUTC={bookingTarget.endUTC}

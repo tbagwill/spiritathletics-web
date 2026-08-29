@@ -13,6 +13,7 @@ export type PrivateSelection =
 type Props = {
   coachId: string;
   serviceId: string;
+  coachName?: string;
   selection: PrivateSelection;
   startUTC: string;
   endUTC: string;
@@ -34,7 +35,7 @@ const PRICE_MAP: Record<string, Record<number, number>> = {
   SEMI_PRIVATE: { 60: 7000 },
 };
 
-export default function BookPrivateDialog({ coachId, serviceId, selection, startUTC, endUTC, priceCents, onClose, onSuccess }: Props) {
+export default function BookPrivateDialog({ coachId, serviceId, coachName, selection, startUTC, endUTC, priceCents, onClose, onSuccess }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CARD');
@@ -95,26 +96,7 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
         });
 
         if (res.status === 503) {
-          const fallback = await fetch('/api/book/private', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              coachId,
-              serviceId,
-              startDateTimeUTC: startUTC,
-              endDateTimeUTC: endUTC,
-              customerName: values.customerName,
-              customerEmail: values.customerEmail,
-              athleteName: values.athleteName,
-              selection,
-            }),
-          });
-          const fallbackData = await fallback.json();
-          if (!fallback.ok || !fallbackData.ok) throw new Error(fallbackData.error || 'Booking failed');
-          onClose();
-          reset();
-          if (onSuccess) onSuccess(fallbackData.requiresApproval);
-          return;
+          throw new Error('Online payment is temporarily unavailable. Please choose Pay Cash or try again shortly.');
         }
 
         const data = await res.json();
@@ -143,7 +125,7 @@ export default function BookPrivateDialog({ coachId, serviceId, selection, start
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white">Book Private Lesson</h3>
-                <p className="mt-0.5 text-sm text-blue-100">{kindLabel}</p>
+                <p className="mt-0.5 text-sm text-blue-100">{coachName ? `With ${coachName} · ${kindLabel}` : kindLabel}</p>
               </div>
             </div>
             <button onClick={onClose} className="-mr-1 -mt-1 rounded-lg p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white">
