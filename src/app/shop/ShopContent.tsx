@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { formatPt } from '@/lib/time';
 
 interface ShopCampaign {
   id: string;
@@ -253,6 +254,9 @@ export default function ShopContent() {
                   <div className="inline-block bg-white/95 rounded-lg px-6 py-3 shadow-lg">
                     <p className="text-lg font-medium text-gray-700">Time Remaining:</p>
                     <p className="text-2xl font-bold text-gray-900">{timeRemaining}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Closes {formatPt(new Date(campaign.endsAt), "EEE, MMM d 'at' h:mm a 'PT'")}
+                    </p>
                   </div>
                 )}
               </div>
@@ -268,6 +272,9 @@ export default function ShopContent() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg px-6 py-3 inline-block">
                   <p className="text-blue-800 font-medium">Time Remaining:</p>
                   <p className="text-2xl font-bold text-blue-900">{timeRemaining}</p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Closes {formatPt(new Date(campaign.endsAt), "EEE, MMM d 'at' h:mm a 'PT'")}
+                  </p>
                 </div>
               )}
             </div>

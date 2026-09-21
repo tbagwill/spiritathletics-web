@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import { formatPt } from '@/lib/time';
 
 export default async function ShopAdminDashboard() {
   // Get shop statistics
@@ -101,7 +102,7 @@ export default async function ShopAdminDashboard() {
               <h3 className="text-lg font-medium text-green-900">Active Campaign</h3>
               <p className="text-green-700">{activeCampaign.title}</p>
               <p className="text-sm text-green-600 mt-1">
-                Ends {activeCampaign.endsAt.toLocaleDateString()} at {activeCampaign.endsAt.toLocaleTimeString()}
+                Ends {formatPt(activeCampaign.endsAt, "EEE, MMM d, yyyy 'at' h:mm a 'PT'")}
               </p>
             </div>
             <div className="text-right">

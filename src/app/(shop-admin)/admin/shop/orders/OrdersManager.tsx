@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { formatPt } from '@/lib/time';
 
 interface Campaign {
   id: string;
@@ -377,7 +378,7 @@ export default function OrdersManager() {
                       <div>
                         <span className="font-medium text-gray-500">Date:</span>
                         <div className="text-gray-900">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                          {formatPt(new Date(order.createdAt), "MMM d, yyyy h:mm a 'PT'")}
                         </div>
                       </div>
                       <div>

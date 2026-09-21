@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
+import { ptDateTimeLocalToUtc, toPtDateTimeLocal } from '@/lib/time';
 
 interface CampaignFormProps {
   campaignId?: string;
@@ -33,8 +34,8 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
     slug: initialData?.slug || '',
     description: initialData?.description || '',
     heroImageUrl: initialData?.heroImageUrl || '',
-    startsAt: initialData?.startsAt ? new Date(initialData.startsAt).toISOString().slice(0, 16) : '',
-    endsAt: initialData?.endsAt ? new Date(initialData.endsAt).toISOString().slice(0, 16) : '',
+    startsAt: initialData?.startsAt ? toPtDateTimeLocal(initialData.startsAt) : '',
+    endsAt: initialData?.endsAt ? toPtDateTimeLocal(initialData.endsAt) : '',
     status: initialData?.status || 'DRAFT' as const,
   });
 
@@ -68,8 +69,8 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          startsAt: new Date(formData.startsAt).toISOString(),
-          endsAt: new Date(formData.endsAt).toISOString(),
+          startsAt: ptDateTimeLocalToUtc(formData.startsAt).toISOString(),
+          endsAt: ptDateTimeLocalToUtc(formData.endsAt).toISOString(),
         })
       });
 
@@ -225,6 +226,9 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
                 />
               </div>
             </div>
+            <p className="text-xs text-gray-500 -mt-2">
+              Start and end times are Pacific Time, same as classes and private lessons.
+            </p>
 
             {/* Status */}
             <div>

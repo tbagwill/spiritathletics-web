@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import SignaturePad from '@/components/SignaturePad';
+import { formatPt } from '@/lib/time';
 
 const WAIVER_VERSION = '1.0';
 
@@ -18,11 +19,7 @@ export default function WaiverPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  const today = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const today = formatPt(new Date(), 'MMMM d, yyyy');
 
   const allFieldsFilled =
     athleteFirstName.trim() &&

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { formatPt } from '@/lib/time';
 
 interface Campaign {
   id: string;
@@ -231,12 +232,12 @@ export default function CampaignsManager() {
                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Revenue</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold text-gray-700">
-                          {new Date(campaign.startsAt).toLocaleDateString()} 
+                        <div className="text-sm font-semibold text-gray-700">
+                          {formatPt(new Date(campaign.startsAt), "MMM d, yyyy h:mm a")}
                         </div>
                         <div className="text-xs text-gray-500">to</div>
-                        <div className="text-lg font-semibold text-gray-700">
-                          {new Date(campaign.endsAt).toLocaleDateString()}
+                        <div className="text-sm font-semibold text-gray-700">
+                          {formatPt(new Date(campaign.endsAt), "MMM d, yyyy h:mm a 'PT'")}
                         </div>
                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Campaign Dates</div>
                       </div>
@@ -246,7 +247,7 @@ export default function CampaignsManager() {
                   {/* Action Buttons */}
                   <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <div className="text-xs text-gray-500">
-                      Created {new Date(campaign.createdAt).toLocaleDateString()}
+                      Created {formatPt(new Date(campaign.createdAt), 'MMM d, yyyy')}
                     </div>
                     <div className="flex items-center gap-2">
                       <Link

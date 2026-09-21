@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import jsPDF from 'jspdf';
+import { formatPt } from '@/lib/time';
 
 async function requireCoachOrAdmin() {
   const session = await getServerSession(authOptions as any);
@@ -150,11 +151,7 @@ function generatePdf(waiver: {
   doc.setFontSize(8);
   doc.text("ATHLETE'S NAME (PRINTED)", margin, y + 10);
 
-  const signedDate = new Date(waiver.signedAt).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const signedDate = formatPt(new Date(waiver.signedAt), 'MMMM d, yyyy');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.text(signedDate, margin + 100, y + 4);

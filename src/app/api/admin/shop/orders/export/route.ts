@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireShopAdminAccess } from '@/lib/shopAdminAuth';
 import { prisma } from '@/lib/prisma';
+import { formatPt, ptDateString } from '@/lib/time';
 
 export async function GET(req: NextRequest) {
   try {
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
         order.lineItems.forEach(item => {
           csvRows.push([
             order.id,
-            order.createdAt.toISOString().split('T')[0],
+            formatPt(order.createdAt, "yyyy-MM-dd h:mm a 'PT'"),
             order.campaign.title,
             order.customerName || '',
             order.email,
@@ -72,7 +73,7 @@ export async function GET(req: NextRequest) {
       return new Response(csvContent, {
         headers: {
           'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="shop-orders-${new Date().toISOString().split('T')[0]}.csv"`
+          'Content-Disposition': `attachment; filename="shop-orders-${ptDateString(new Date())}.csv"`
         }
       });
     }

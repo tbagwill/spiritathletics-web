@@ -71,8 +71,8 @@ export default function EditCampaignForm({ campaignId }: EditCampaignFormProps) 
     slug: campaign.slug,
     description: campaign.description || '',
     heroImageUrl: campaign.heroImageUrl || '',
-    startsAt: new Date(campaign.startsAt).toISOString().slice(0, 16),
-    endsAt: new Date(campaign.endsAt).toISOString().slice(0, 16),
+    startsAt: campaign.startsAt,
+    endsAt: campaign.endsAt,
     status: campaign.status
   };
 

@@ -1,3 +1,5 @@
+import { formatPt } from '@/lib/time';
+
 interface OrderEmailData {
   orderId: string;
   customerName: string | null;
@@ -147,7 +149,7 @@ export function generateOrderConfirmationEmail(order: OrderEmailData): string {
                         <span style="color:#1e3a8a;">Your order is confirmed and payment has been received</span>
                       </div>
                       <div style="margin-bottom:10px;padding-left:20px;position:relative;">
-                        <strong style="display:block;margin-bottom:2px;">📅 Campaign Closes: ${new Date(order.campaignEndDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+                        <strong style="display:block;margin-bottom:2px;">📅 Campaign Closes: ${formatPt(new Date(order.campaignEndDate), "MMMM d, yyyy 'at' h:mm a 'PT'")}</strong>
                         <span style="color:#1e3a8a;">We'll place the bulk order once the campaign ends</span>
                       </div>
                       <div style="margin-bottom:10px;padding-left:20px;position:relative;">

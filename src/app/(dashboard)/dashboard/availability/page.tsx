@@ -157,6 +157,11 @@ export default function AvailabilityPage() {
     if (res.ok) fetchRules();
   };
 
+  const formatDateOnly = (iso: string) => {
+    const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   const formatReservationTime = (iso: string) => {
     try {
       return formatInTimeZone(new Date(iso), 'America/Los_Angeles', "EEE, MMM d 'at' h:mm a 'PT'");
@@ -363,8 +368,8 @@ export default function AvailabilityPage() {
                         {r.slotIntervalMinutes === 60 ? "Every hour" : "Every 30 min"}
                       </span>
                       <span className="text-slate-500">
-                        {new Date(r.effectiveFrom).toLocaleDateString()}
-                        {r.effectiveTo && ` → ${new Date(r.effectiveTo).toLocaleDateString()}`}
+                        {formatDateOnly(r.effectiveFrom)}
+                        {r.effectiveTo && ` → ${formatDateOnly(r.effectiveTo)}`}
                       </span>
                     </div>
                   </div>
@@ -411,7 +416,7 @@ export default function AvailabilityPage() {
                   <input
                     type="date"
                     value={resDate}
-                    min={new Date().toISOString().slice(0, 10)}
+                    min={ptTodayString()}
                     onChange={(e) => setResDate(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
                     required

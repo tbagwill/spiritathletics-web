@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { formatPt } from '@/lib/time';
 
 interface WaiverSummary {
   id: string;
@@ -81,13 +82,7 @@ export default function WaiversDashboard() {
   };
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    formatPt(new Date(dateStr), "MMM d, yyyy h:mm a 'PT'");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 animate-fade-in">

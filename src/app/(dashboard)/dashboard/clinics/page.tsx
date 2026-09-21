@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { formatPt, ptDateTimeLocalToUtc, toPtDateTimeLocal } from '@/lib/time';
 
 interface ClinicRegistration {
   id: string;
@@ -37,28 +38,7 @@ type FormMode = 'create' | 'edit' | null;
 const DEFAULT_LOCATION = 'Spirit Athletics — 17537 Bear Valley Rd, Hesperia, CA 92345';
 
 function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric',
-    year: 'numeric', hour: 'numeric', minute: '2-digit',
-    timeZoneName: 'short', timeZone: 'America/Los_Angeles',
-  });
-}
-
-function toLocalDatetimeValue(iso: string) {
-  const d = new Date(iso);
-  const ptStr = d.toLocaleString('en-CA', {
-    timeZone: 'America/Los_Angeles',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  });
-  return ptStr.replace(', ', 'T').replace(' ', 'T');
-}
-
-/** Given a datetime-local string and duration in minutes, return the end ISO string */
-function computeEndDateTimeUTC(startLocal: string, durationMinutes: number): string {
-  const start = new Date(startLocal);
-  const end = new Date(start.getTime() + durationMinutes * 60_000);
-  return end.toISOString();
+  return formatPt(new Date(iso), "EEE, MMM d, yyyy • h:mm a 'PT'");
 }
 
 const EMPTY_FORM = {
@@ -100,7 +80,7 @@ export default function DashboardClinicsPage() {
             <td style="padding:6px 10px;color:#374151;">${reg.customerName}</td>
             <td style="padding:6px 10px;color:#374151;">${reg.customerEmail}</td>
             <td style="padding:6px 10px;"><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;${reg.paymentMethod === 'CASH' ? 'background:#fef3c7;color:#b45309;' : 'background:#d1fae5;color:#047857;'}">${reg.paymentMethod === 'CASH' ? 'Cash' : 'Card'}</span></td>
-            <td style="padding:6px 10px;color:#6b7280;">${new Date(reg.createdAt).toLocaleDateString()}</td>
+            <td style="padding:6px 10px;color:#6b7280;">${formatPt(new Date(reg.createdAt), 'MMM d, yyyy')}</td>
           </tr>`
       )
       .join('');
@@ -194,7 +174,7 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
       title: clinic.title,
       slug: clinic.slug,
       description: clinic.description,
-      dateTimeUTC: toLocalDatetimeValue(clinic.dateTimeUTC),
+      dateTimeUTC: toPtDateTimeLocal(clinic.dateTimeUTC),
       durationMinutes: clinic.durationMinutes,
       priceCents: clinic.priceCents,
       capacity: clinic.capacity,
@@ -218,8 +198,9 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
       if (!form.title.trim()) throw new Error('Title is required');
       if (!form.description.trim()) throw new Error('Description is required');
 
-      const startISO = new Date(form.dateTimeUTC).toISOString();
-      const endISO = computeEndDateTimeUTC(form.dateTimeUTC, Number(form.durationMinutes));
+      const start = ptDateTimeLocalToUtc(form.dateTimeUTC);
+      const startISO = start.toISOString();
+      const endISO = new Date(start.getTime() + Number(form.durationMinutes) * 60_000).toISOString();
 
       const payload = {
         ...form,
@@ -260,10 +241,10 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
 
   // Derived end time preview for the form
   const endPreview = form.dateTimeUTC && form.durationMinutes
-    ? new Date(new Date(form.dateTimeUTC).getTime() + Number(form.durationMinutes) * 60_000).toLocaleString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric',
-        hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles',
-      }) + ' PT'
+    ? formatPt(
+        new Date(ptDateTimeLocalToUtc(form.dateTimeUTC).getTime() + Number(form.durationMinutes) * 60_000),
+        "EEE, MMM d • h:mm a 'PT'"
+      )
     : null;
 
   return (
@@ -404,7 +385,7 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
                                   <p className="text-xs text-gray-500">{reg.customerEmail}</p>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                                  <span className="text-xs text-gray-400 hidden sm:inline">{new Date(reg.createdAt).toLocaleDateString()}</span>
+                                  <span className="text-xs text-gray-400 hidden sm:inline">{formatPt(new Date(reg.createdAt), 'MMM d, yyyy')}</span>
                                   <button
                                     onClick={() => handleRemoveRegistration(reg)}
                                     disabled={isRemoving}
@@ -481,7 +462,7 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
                               {reg.paymentMethod === 'CASH' ? 'Cash' : 'Card'}
                             </span>
                           </td>
-                          <td className="py-2 text-gray-500">{new Date(reg.createdAt).toLocaleDateString()}</td>
+                          <td className="py-2 text-gray-500">{formatPt(new Date(reg.createdAt), 'MMM d, yyyy')}</td>
                         </tr>
                       ))}
                     </tbody>

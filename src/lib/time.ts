@@ -31,6 +31,22 @@ export function formatPt(date: Date, fmt = "EEE, MMM d • h:mm a 'PT'"): string
   return formatInTimeZone(date, APP_TZ, fmt);
 }
 
+/** Format a UTC instant as a datetime-local value in Pacific Time (yyyy-MM-ddTHH:mm). */
+export function toPtDateTimeLocal(date: Date | string): string {
+  const instant = typeof date === 'string' ? new Date(date) : date;
+  return formatInTimeZone(instant, APP_TZ, "yyyy-MM-dd'T'HH:mm");
+}
+
+/**
+ * Interpret a datetime-local value (yyyy-MM-ddTHH:mm) as Pacific wall-clock time
+ * and return the corresponding UTC instant.
+ */
+export function ptDateTimeLocalToUtc(value: string): Date {
+  const trimmed = value.trim().replace('T', ' ');
+  const withSeconds = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(trimmed) ? `${trimmed}:00` : trimmed;
+  return fromZonedTime(withSeconds, APP_TZ);
+}
+
 export function minutesFromMidnight(date: Date): number {
   const hours = date.getHours();
   const minutes = date.getMinutes();
