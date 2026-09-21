@@ -246,13 +246,13 @@ export default function ShopContent() {
               fill
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-              <div className="text-center text-white">
-                <h1 className="text-4xl sm:text-5xl font-bold mb-4">{campaign.title}</h1>
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <div className="text-center text-white px-4">
+                <h1 className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-md">{campaign.title}</h1>
                 {isActive && timeRemaining && (
-                  <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-6 py-3">
-                    <p className="text-lg font-medium">Time Remaining:</p>
-                    <p className="text-2xl font-bold">{timeRemaining}</p>
+                  <div className="inline-block bg-white/95 rounded-lg px-6 py-3 shadow-lg">
+                    <p className="text-lg font-medium text-gray-700">Time Remaining:</p>
+                    <p className="text-2xl font-bold text-gray-900">{timeRemaining}</p>
                   </div>
                 )}
               </div>
