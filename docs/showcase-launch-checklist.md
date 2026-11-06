@@ -44,3 +44,9 @@ Full plan and results: [showcase-test-plan.md](showcase-test-plan.md). 74 automa
 - [ ] Phones charged, plus a hotspot plan if venue wifi drops.
 - [ ] Decide how onsite cash/card door sales are counted. They don't go through this system.
 - [ ] Online sales close automatically at 4:00 PM.
+
+## 7. After the show (security cleanup, not urgent)
+- [ ] **Vercel variable scopes.** Every production secret is set to "All Environments", so any feature-branch preview gets the live database and live Stripe key (behind Vercel's login). Edit each secret row (`DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET_KEY`, `NEXTAUTH_SECRET`, `CRON_SECRET`, `RECAPTCHA_SECRET_KEY`) to **Production only**. Then add general Preview values that point at the staging database and test keys, so every preview is safe by default.
+- [ ] **"Needs Attention" badges in Vercel.** Hover or click one to see Vercel's reason (usually a secret not marked Sensitive) and follow its fix.
+- [ ] **Unused variables.** Remove `TEST_STRIPE_SECRET_KEY`, `NEXT_PUBLIC_TEST_STRIPE_PUBLISHABLE_KEY`, `NEXTAUTH_TEST_URL`, `NEXTAUTH_PROD_URL` and `BASE_TEST_URL`. The code doesn't read any of them.
+- [ ] **Front desk password.** Change the `frontdesk@` admin password that's hard-coded in `prisma/seed.ts`, then remove it from the file.

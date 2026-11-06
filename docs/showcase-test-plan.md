@@ -22,11 +22,11 @@ Test data from these runs lives on the TEST event (orders named "E2E Tester…",
 
 ## Part 2: needs you (a real phone, your login, or Stripe's checkout page)
 
-### Setup
-`stripe listen` and the Cloudflare tunnel were both closed when I ran the tests. Restart both:
-1. `stripe listen --forward-to localhost:3000/api/stripe/webhook --all-snapshot`
-2. `cloudflared tunnel --url http://localhost:3000`, then paste the new address so `.env.local` can be updated.
-3. `npm run dev`, then sign in on your phone through the tunnel address.
+### Setup (on staging)
+Run everything on **staging.spiritathletics.net**. No tunnel and no `stripe listen` needed. See [staging-setup.md](staging-setup.md).
+1. Run `npm run staging:reset` for a fresh on-sale event. It prints the buy, attendance and scanner links.
+2. Sign in on your phone with your staging admin login.
+3. Pay with test cards only. Stripe's checkout page shows **Test mode / Sandbox**.
 
 ### A. Buyer on a phone (highest priority: most buyers)
 Do this on **iPhone Safari** and, if you can, an **Android** phone.
@@ -48,20 +48,26 @@ Do this on **iPhone Safari** and, if you can, an **Android** phone.
 - [ ] Scan one individual ticket: green, **1 wristband**.
 - [ ] Scan the group QR from the email: green, **N wristbands**, plus "N more already checked in" if some were scanned first.
 - [ ] Scan the same code again: yellow **Already checked in**, with no second wristband.
-- [ ] Scan a refunded ticket (the "Refund Test" order on the TEST event): red **Ticket void**.
-- [ ] Open the **Fall 2026** scanner and scan a TEST-event ticket: red **Wrong event**.
+- [ ] Refund an order from the Stripe **test** dashboard (Payments → the payment → Refund). Within a few seconds its ticket page says "refunded", and scanning it shows red **Ticket void**. This also proves Stripe's real refund delivery to staging.
+- [ ] Create a second event in staging admin (the New event defaults are fine), open **its** scanner, and scan a Staging Showcase ticket: red **Wrong event**.
 - [ ] Scan any non-ticket QR (a website QR, for example): red **Not a ticket**.
 - [ ] Two phones scan the same group QR at the same moment: one green, one yellow.
 - [ ] Airplane mode on the scanner phone: you get the "No connection" popup, and the same code works once you're back online.
 - [ ] Flashlight button (Android), screen stays awake, no scrolling or zooming, X returns to Attendance.
 - [ ] Attendance: search by name, check someone in manually. A second device shows the new count within about 15 seconds.
-- [ ] Export CSV opens cleanly in Excel or Google Sheets, and totals match Stripe for the TEST event.
+- [ ] Export CSV opens cleanly in Excel or Google Sheets, and totals match the Stripe test dashboard.
 
-### D. Admin (desktop is fine)
-- [ ] Open Fall 2026. The warning and timeline flag the Nov 4 start. Fix it to **Nov 8, 1:00 PM**, then save.
-- [ ] Try an invalid change (doors after start): saving is blocked with a clear message.
+### D. Admin and sales windows (desktop is fine)
+- [ ] Edit the staging event and try an invalid change (doors after start): saving is blocked with a clear message.
 - [ ] Date picker, status dropdown and Early Bird switches all work. "Discard" restores the original values. Leaving with unsaved changes asks before going.
-- [ ] On the TEST event, move Early Bird's end into the past: the ticket page switches to door prices. Move sales close into the past: the page says closed and checkout is refused.
+- [ ] Each sales window, using `npm run staging:reset <window>`, then reload the ticket page:
+  - `door`: door prices.
+  - `gap`: "Door pricing opens online…", nothing buyable.
+  - `upcoming`: "On sale …".
+  - `closed`: "Online sales have closed".
+  - `door-only`: the Fall 2026 setup; tells buyers online tickets open at 8 AM on show day.
+
+The real Fall 2026 fix (start → **Nov 8, 1:00 PM**, plus the tier toggles) is a launch step, not a staging test: see checklist section 1.
 
 ### E. Before deploy
 Continue with [showcase-launch-checklist.md](showcase-launch-checklist.md), sections 4–6: production config, cleanup, deploy, and day-of.
