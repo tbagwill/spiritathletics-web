@@ -34,14 +34,6 @@ export default async function Home() {
         />
       ) : null}
 
-      {/* Tryouts Announcement Banner */}
-      <AnnouncementBanner
-        id="tryouts-2026"
-        message="🏆 2026–27 Season Tryouts — Clinics June 1–3 · Tryouts June 6th!"
-        linkHref="/tryouts"
-        linkLabel="View Full Schedule"
-      />
-
       {/* Hero Section with Background Image */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         {/* Background Image */}

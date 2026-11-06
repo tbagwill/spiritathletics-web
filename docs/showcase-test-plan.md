@@ -16,7 +16,7 @@
 
 **Fixed during testing:** the attendance CSV export allowed spreadsheet formula injection (a buyer named `=HYPERLINK(...)` would have run as a formula in Excel or Sheets). Names starting with `=`, `+`, `-` or `@` are now forced to plain text, and the file opens accented names (José, Zoë) correctly in Excel.
 
-Test data from these runs lives on the TEST event (orders named "E2E Tester…", "Race…", "Refund Test…") and is removed when the TEST event is deleted.
+Test data from these runs lived on the TEST event in production (orders named "E2E Tester…", "Race…", "Refund Test…"). It was wiped on Nov 6 along with the TEST event. Future testing runs on staging only.
 
 ---
 

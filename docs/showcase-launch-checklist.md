@@ -1,21 +1,24 @@
 # Spirit Spectacular: pre-deploy checklist
 
-Work top to bottom. Sections 1–3 happen before the final test run; 4–6 are deploy and day-of.
+Work top to bottom. Section 1 must be done **before** the deploy in section 4.
 
-## 1. Fix the real event (`/admin/events` → Fall 2026)
-- [ ] **Start time → Sun, Nov 8, 1:00 PM PT.** It is currently saved as Nov 4, which would print the wrong date in every ticket email and calendar invite.
-- [ ] **Standard: turn Early Bird off.** It is on, so Standard would sell online at $20 from Fri 8 AM to Sat 11:59 PM.
+## 1. Fix the real event in production (before deploying)
+On Nov 6, Claude wiped production's ticketing tables (a backup was taken first) and rebuilt Fall 2026 fresh. Production now holds only Fall 2026, with 0 orders, 0 tickets and nothing sold.
+- [x] **Start time → Sun, Nov 8, 1:00 PM PT.** (Was saved as Nov 4.)
+- [x] **Standard: Early Bird off.** Online is door-only: Standard at $25 from Sun 8 AM.
 - [ ] **Senior/Child: decide on "show online".** It is hidden right now.
 - [ ] **VIP:** to show a SOLD OUT badge, turn "show online" on and set capacity to 0. Leave it hidden if you'd rather not list it.
 - [ ] Double-check title, venue, address, doors (12:30 PM), end time, and the $3 fee.
 
+Change the last three in the admin of your **local** site: run `npm run dev`, then go to `localhost:3000/admin/events` → Fall 2026. Your local site reads the production database, and the live site doesn't have the new admin yet.
+
 ## 2. Code fixes (before deploy)
 - [x] Door-only state: when no online tier has Early Bird on, the ticket page should say "Online tickets go on sale Sun at 8:00 AM" instead of showing Early Bird messaging with nothing buyable. *(Built with the UI refresh.)*
 - [x] Admin validation: doors open ≤ start < end, so a start-date slip can't be saved again. *(Built with the UI refresh. Saving Fall 2026 is blocked until its start date is fixed.)*
-- [ ] Commit a checkpoint of the ticketing work.
+- [x] Commit a checkpoint of the ticketing work.
 
-## 3. Final test run (sandbox keys, tunnel running)
-Full plan and results: [showcase-test-plan.md](showcase-test-plan.md). 74 automated checks passed on Nov 5.
+## 3. Final test run (on staging)
+Full plan and results: [showcase-test-plan.md](showcase-test-plan.md). 74 automated checks passed on Nov 5. The manual tests run on staging.spiritathletics.net.
 - [ ] Happy path again on the redesigned pages: buy → ticket page → email → scan single → scan group → re-scan.
 - [ ] Declined card `4000 0000 0000 0002`: clear error, no order created.
 - [x] VIP sold out mid-checkout: with 1 seat left, open two checkouts, pay both. The second gets the "sold out, refunded" page and email, and a refund in Stripe. *(Automated: two simultaneous payments, one order, other refunded.)*
@@ -25,17 +28,33 @@ Full plan and results: [showcase-test-plan.md](showcase-test-plan.md). 74 automa
 - [ ] Attendance board numbers and CSV export match Stripe totals.
 - [ ] Ticket email looks right in Apple Mail (iPhone) as well as Gmail.
 
-## 4. Production config
-- [ ] Live Stripe webhook endpoint receives `checkout.session.completed` **and** `charge.refunded`. Refund voiding depends on the second one.
-- [ ] Vercel env: `BASE_PROD_URL` and `NEXTAUTH_URL` are the live `https://` site. Optional: `TICKETS_SENDER_EMAIL`, `TICKETS_REPLY_TO` (code defaults are already correct).
-- [ ] No database migration needed at deploy: both ticketing migrations are already applied to the shared database.
+## 4. Go live (in this order, Friday or Saturday)
+Already verified on Nov 6:
+- [x] **Database is ready.** Both ticketing migrations are applied to production, so the deploy needs no database step.
+- [x] **Live Stripe webhook.** It points at `https://www.spiritathletics.net/api/stripe/webhook` and receives `checkout.session.completed` and `charge.refunded`. It uses `www`, so the bare domain's redirect doesn't block Stripe.
+- [x] `.env.local` is back on localhost, and the tunnel is retired.
 
-## 5. Cleanup, then deploy
-- [ ] Delete the TEST event and its orders. Same database as production: while it exists, the homepage banner and `/showcase` will feature it.
-- [ ] `.env.local`: set `NEXT_PUBLIC_SITE_URL` and `BASE_PROD_URL` back to `http://localhost:3000`. Close the cloudflared tunnel.
-- [ ] Deploy.
-- [ ] Live smoke test: homepage banner and `/showcase` show Fall 2026, the ticket page loads fast on cellular, and the scanner opens on a staff phone.
-- [ ] Optional: buy one real ticket with your own card, scan it, then refund it from Stripe and confirm it voids.
+Then:
+1. [ ] **Section 1 is done:** Fall 2026 starts **Sun, Nov 8, 1:00 PM**, and no online tier has Early Bird on. *(Date and Early Bird fixed Nov 6; Senior/Child and VIP still up to you.)*
+2. [x] **Production ticketing tables are fresh.** The TEST event, its 6 test orders, 17 tickets and the failed-fulfillment log row were deleted on Nov 6. Fall 2026 is the only event.
+3. [ ] **Deploy exactly what you tested:** `git log -1 --oneline origin/staging` and `git log -1 --oneline` should show the same commit.
+4. [ ] **Deploy:** `git push origin main`. Vercel builds production in about 2 minutes.
+5. [ ] **Live check (5 minutes):**
+   - The homepage banner says "Spirit Spectacular Fall 2026 — Sun, Nov 8". There's **no** yellow staging banner.
+   - `/showcase` shows Nov 8 and "On sale Sun, Nov 8 at 8:00 AM".
+   - `/showcase/fall-2026/tickets` says online tickets go on sale Sunday. Nothing is buyable yet, which is expected.
+   - On a staff phone, sign in, then open `/dashboard/events/fall-2026/scan`. The camera starts.
+6. **If anything looks wrong:** Vercel → **Deployments** → the previous production deployment → **Instant Rollback**. Rolling back is safe because the database changes only added new tables, which the old code ignores.
+
+## 5. Sunday 8:00 AM: first live purchase
+- [ ] When online sales open, buy **one** Standard ticket with your own card ($28 with the fee). Check the email, the ticket page, and a scan at the door. Then refund it in Stripe (live) and confirm its ticket page says refunded. Stripe keeps its processing fee on refunds (about $1).
+- [ ] Stripe → Webhooks → the live endpoint shows `200` deliveries.
+
+**Gotchas:**
+- **Never set `NEXT_PUBLIC_APP_ENV` on production.** It adds the staging banner and switches off live payments.
+- **Your local site still reads the production database** until it's switched to staging. Do that right after go-live; Claude can.
+- **Staging logins don't exist on production.** Staff sign in with their real accounts.
+- **Neon may pause idle databases.** If production's compute scales to zero, the first request after a quiet stretch takes a few extra seconds. If your Neon plan allows it, turn off auto-suspend for Sunday.
 
 ## 6. Day of the show (Sun, Nov 8)
 - [ ] Every scanning staff member has a COACH or ADMIN login and has opened the scanner on their own phone once.
