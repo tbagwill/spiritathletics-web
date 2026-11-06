@@ -1,11 +1,16 @@
 import Stripe from 'stripe';
 
-// Only initialize Stripe if the secret key is configured
-export const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-07-30.basil',
-    })
-  : null;
+const secretKey = process.env.STRIPE_SECRET_KEY;
+// Staging must never charge real cards; a live key there is treated as "not configured".
+const liveKeyOnStaging = process.env.NEXT_PUBLIC_APP_ENV === 'staging' && !!secretKey?.startsWith('sk_live_');
+if (liveKeyOnStaging) console.error('Refusing to use a live Stripe key on staging. Set sk_test_ keys for the staging branch.');
+
+export const stripe =
+  secretKey && !liveKeyOnStaging
+    ? new Stripe(secretKey, {
+        apiVersion: '2025-07-30.basil',
+      })
+    : null;
 
 // Helper to check if Stripe is configured
 export function isStripeConfigured(): boolean {

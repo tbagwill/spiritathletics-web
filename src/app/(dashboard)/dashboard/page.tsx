@@ -83,6 +83,12 @@ const IconHistory = (
 		<path d="M3 4v5h5" strokeLinecap="round" strokeLinejoin="round"/>
 	</svg>
 );
+const IconTicket = (
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full" strokeWidth="1.8">
+		<path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z" strokeLinecap="round" strokeLinejoin="round"/>
+		<path d="M13 6v12" strokeLinecap="round" strokeDasharray="2 2"/>
+	</svg>
+);
 
 export default async function DashboardHome() {
 	const session = await getServerSession(authOptions);
@@ -93,6 +99,13 @@ export default async function DashboardHome() {
 	
 	// Get coach profile and count pending bookings
 	const coach = userId ? await prisma.coachProfile.findUnique({ where: { userId } }) : null;
+
+	// Active ticketed events (showcases) — any staff can scan / view attendance
+	const activeEvents = await prisma.event.findMany({
+		where: { status: 'ACTIVE' },
+		orderBy: { startDateTimeUTC: 'asc' },
+		take: 5,
+	});
 	// ADMIN sees all pending bookings; coaches see only their own
 	const pendingCount = (coach || isAdmin) ? await prisma.booking.count({
 		where: {
@@ -193,14 +206,24 @@ export default async function DashboardHome() {
 			</div>
 			{isAdmin && (
 				<div className="animate-fade-in" style={{ animationDelay: '700ms' }}>
-					<Tile 
-						href="/dashboard/coaches" 
-						title="Coach Management" 
+					<Tile
+						href="/dashboard/coaches"
+						title="Coach Management"
 						icon={IconTeam}
 						description="Add, edit, and manage coach and admin accounts"
 					/>
 				</div>
 			)}
+			{activeEvents.map((event, idx) => (
+				<div key={event.id} className="animate-fade-in" style={{ animationDelay: `${800 + idx * 100}ms` }}>
+					<Tile
+						href={`/dashboard/events/${event.slug}`}
+						title={event.title}
+						icon={IconTicket}
+						description="Attendance board, QR scanner, and CSV export"
+					/>
+				</div>
+			))}
 		</div>
 			</div>
 		</div>

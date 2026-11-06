@@ -52,6 +52,11 @@ export default async function RootLayout({
       >
         <SessionProvider session={session}>
           <CartProvider>
+            {process.env.NEXT_PUBLIC_APP_ENV === 'staging' ? (
+              <div className="bg-amber-400 px-4 py-1.5 text-center text-xs font-semibold text-black">
+                Staging site · Stripe test mode · not the live website
+              </div>
+            ) : null}
             <NavBar />
             <main>{children}</main>
             <Footer />

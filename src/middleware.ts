@@ -10,6 +10,10 @@ export function middleware(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   
+  if (process.env.NEXT_PUBLIC_APP_ENV === 'staging') {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+
   // HSTS (only in production)
   if (process.env.NODE_ENV === 'production') {
     response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
@@ -25,6 +29,8 @@ export function middleware(request: NextRequest) {
     "font-src 'self' https://fonts.gstatic.com",
     "connect-src 'self' https://www.google.com https://accounts.google.com",
     "frame-src https://www.google.com https://calendar.google.com https://accounts.google.com",
+    "media-src 'self' blob:",
+    "worker-src 'self' blob:",
   ].join('; ');
   response.headers.set('Content-Security-Policy', csp);
 

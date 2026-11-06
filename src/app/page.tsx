@@ -1,10 +1,38 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import { prisma } from '@/lib/prisma';
+import { salesAreOpen } from '@/lib/ticketing';
+import { formatPt } from '@/lib/time';
 
-export default function Home() {
+async function getActiveTicketedEvent() {
+  const now = new Date();
+  const events = await prisma.event.findMany({
+    where: {
+      status: 'ACTIVE',
+      salesCloseAtUTC: { gt: now },
+    },
+    orderBy: { startDateTimeUTC: 'asc' },
+    take: 3,
+  });
+  return events.find((e) => salesAreOpen(e, now)) ?? events[0] ?? null;
+}
+
+export default async function Home() {
+  const ticketedEvent = await getActiveTicketedEvent();
+
   return (
     <div className="min-h-screen">
+
+      {/* Ticketed event banner (shows when an event is active) */}
+      {ticketedEvent ? (
+        <AnnouncementBanner
+          id={`tickets-${ticketedEvent.slug}`}
+          message={`🎟️ ${ticketedEvent.title} — ${formatPt(ticketedEvent.startDateTimeUTC, "EEE, MMM d")}`}
+          linkHref={`/showcase/${ticketedEvent.slug}/tickets`}
+          linkLabel="Get Tickets"
+        />
+      ) : null}
 
       {/* Tryouts Announcement Banner */}
       <AnnouncementBanner

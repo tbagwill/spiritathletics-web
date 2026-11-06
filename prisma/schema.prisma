@@ -504,3 +504,112 @@ model Waiver {
   @@index([parentEmail])
   @@index([athleteLastName, athleteFirstName])
 }
+
+// Ticketed events (e.g. Spirit Spectacular showcases)
+model Event {
+  id                   String        @id @default(cuid())
+  slug                 String        @unique
+  title                String
+  description          String?
+  venue                String?
+  venueAddress         String?
+  heroImageUrl         String?
+  startDateTimeUTC     DateTime
+  doorsOpenUTC         DateTime?
+  endDateTimeUTC       DateTime?
+  salesOpenAtUTC       DateTime
+  earlyBirdEndsAtUTC   DateTime
+  doorSalesOpenAtUTC   DateTime
+  salesCloseAtUTC      DateTime
+  convenienceFeeCents  Int           @default(300)
+  status               EventStatus   @default(DRAFT)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  tiers                TicketTier[]
+  orders               TicketOrder[]
+
+  @@index([status, startDateTimeUTC])
+}
+
+model TicketTier {
+  id                   String        @id @default(cuid())
+  eventId              String
+  tierCode             TicketTierCode
+  name                 String
+  description          String?
+  earlyBirdPriceCents  Int
+  doorPriceCents       Int
+  capacity             Int?
+  sold                 Int           @default(0)
+  showOnline           Boolean       @default(true)
+  earlyBirdEnabled     Boolean       @default(true)
+  sortOrder            Int           @default(0)
+  event                Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets              Ticket[]
+
+  @@unique([eventId, tierCode])
+  @@index([eventId])
+}
+
+model TicketOrder {
+  id              String             @id @default(cuid())
+  eventId         String
+  email           String
+  customerName    String
+  subtotalCents   Int
+  feeCents        Int
+  totalCents      Int
+  stripeSessionId String?            @unique
+  stripePaymentId String?
+  // Unlocks the buyer's ticket page and the "check in everyone" QR.
+  accessToken     String             @unique
+  status          TicketOrderStatus  @default(PAID)
+  createdAt       DateTime           @default(now())
+  event           Event              @relation(fields: [eventId], references: [id])
+  tickets         Ticket[]
+
+  @@index([eventId, createdAt])
+  @@index([email])
+}
+
+model Ticket {
+  id             String        @id @default(cuid())
+  orderId        String
+  tierId         String
+  priceCents     Int
+  qrToken        String        @unique
+  status         TicketStatus  @default(ACTIVE)
+  redeemedAt     DateTime?
+  redeemedByUserId String?
+  createdAt      DateTime      @default(now())
+  order          TicketOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  tier           TicketTier    @relation(fields: [tierId], references: [id])
+
+  @@index([orderId])
+  @@index([tierId, status])
+}
+
+enum EventStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  COMPLETED
+}
+
+enum TicketTierCode {
+  STANDARD
+  SENIOR_CHILD
+  VIP
+}
+
+enum TicketOrderStatus {
+  PAID
+  REFUNDED
+  CANCELED
+}
+
+enum TicketStatus {
+  ACTIVE
+  REDEEMED
+  VOIDED
+}

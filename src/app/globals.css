@@ -276,4 +276,90 @@ body {
   transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
   animation: shimmer 1.6s infinite;
-} 
+}
+
+/* ── Modern UI tokens (showcase, ticketing, events admin) ── */
+
+@theme {
+  --color-ink: #0a0c16;
+  --color-ink-800: #12152a;
+  --color-ink-700: #1b2040;
+  --color-spirit: #0000fe;
+  --color-spirit-500: #2b3bff;
+  --color-spirit-400: #5864ff;
+  --color-spirit-50: #eef0ff;
+  --color-canvas: #f5f6fa;
+
+  --animate-rise: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  --animate-fade: fade 0.3s ease-out both;
+  --animate-sheet: sheet 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-sweep: sweep 2.4s ease-in-out infinite;
+  --animate-glow: glow 6s ease-in-out infinite;
+  --animate-drain: drain linear both;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.86); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes sheet {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes sweep {
+    0%, 100% { top: 6%; }
+    50% { top: 92%; }
+  }
+  @keyframes glow {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.08); }
+  }
+  @keyframes drain {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+}
+
+/* Brand blue surfaces: bright for feature cards, deep for larger panels. */
+.bg-spirit-gradient {
+  background-image: linear-gradient(135deg, #0000fe 0%, #2233ff 55%, #4169e1 100%);
+}
+.bg-spirit-deep {
+  background-image: linear-gradient(155deg, #0000fe 0%, #0610c9 45%, #040861 100%);
+}
+.shadow-spirit {
+  box-shadow: 0 1px 2px rgba(0, 0, 254, 0.2), 0 22px 48px -20px rgba(0, 0, 254, 0.65);
+}
+
+/* Hides the native disclosure triangle on <summary> in every engine. */
+.summary-clean { list-style: none; }
+.summary-clean::-webkit-details-marker { display: none; }
+
+/* Ticket perforation: a dashed rule with half-circle notches cut from each edge. */
+.perforation {
+  position: relative;
+  border-top: 2px dashed rgb(226 232 240);
+}
+.perforation::before,
+.perforation::after {
+  content: "";
+  position: absolute;
+  top: -11px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--perf-bg, var(--color-ink));
+}
+.perforation::before { left: -11px; }
+.perforation::after { right: -11px; }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

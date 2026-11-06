@@ -10,6 +10,8 @@ import { buildCustomerHtml, buildCoachHtml, sendBookingEmails, sendPendingReques
 import { computePrivatePrice } from '@/lib/pricing';
 import { formatPt } from '@/lib/time';
 import { v4 as uuidv4 } from 'uuid';
+import { generateQrToken, orderQrPayload, ticketPagePath } from '@/lib/ticketing';
+import { sendTicketOrderEmail, sendTicketOrderFailedEmail } from '@/lib/ticketEmail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -80,9 +82,202 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     await handlePrivateBookingCompleted(session);
   } else if (bookingType === 'CLINIC') {
     await handleClinicRegistrationCompleted(session);
+  } else if (bookingType === 'TICKET_ORDER') {
+    await handleTicketOrderCompleted(session);
   } else {
     // Existing shop order flow
     await handleShopCheckoutCompleted(session);
+  }
+}
+
+// ─── Ticket Orders (Spirit Spectacular etc.) ──────────────────────────────────
+
+type TicketMetaItem = { tierId: string; quantity: number; unitPrice: number };
+
+async function handleTicketOrderCompleted(session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const eventId = meta.eventId;
+  const customerName = meta.customerName || '';
+  const subtotalCents = parseInt(meta.subtotalCents || '0', 10) || 0;
+  const feeCents = parseInt(meta.feeCents || '0', 10) || 0;
+  const items: TicketMetaItem[] = meta.items ? JSON.parse(meta.items) : [];
+  const email = session.customer_details?.email || session.customer_email || '';
+  const paymentId = typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : session.payment_intent?.id || null;
+
+  if (!eventId || !email || items.length === 0) {
+    console.error('TICKET_ORDER missing fields', { eventId, email, items });
+    return;
+  }
+
+  // Idempotency: if we've already created an order for this Stripe session, bail.
+  const existing = await prisma.ticketOrder.findUnique({
+    where: { stripeSessionId: session.id },
+    include: { tickets: true },
+  });
+  if (existing) {
+    return;
+  }
+
+  let created: {
+    orderId: string;
+    accessToken: string;
+    tickets: { id: string; tierId: string; qrToken: string; priceCents: number }[];
+  };
+  try {
+    created = await prisma.$transaction(async (tx) => {
+      const ev = await tx.event.findUnique({ where: { id: eventId }, include: { tiers: true } });
+      if (!ev) throw new Error('Event not found');
+
+      const tiersById = new Map(ev.tiers.map((t) => [t.id, t]));
+
+      // Atomic sold-count updates with capacity guard per tier.
+      for (const item of items) {
+        const tier = tiersById.get(item.tierId);
+        if (!tier) throw new Error(`Unknown tier ${item.tierId}`);
+        // Conditional update: only increment if remaining allows it.
+        const affected = await tx.$executeRaw`
+          UPDATE "TicketTier"
+          SET "sold" = "sold" + ${item.quantity}
+          WHERE "id" = ${tier.id}
+            AND ("capacity" IS NULL OR "sold" + ${item.quantity} <= "capacity")
+        `;
+        if (Number(affected) !== 1) {
+          throw new Error(`Capacity exceeded for ${tier.name}`);
+        }
+      }
+
+      const totalCents = subtotalCents + feeCents;
+      const order = await tx.ticketOrder.create({
+        data: {
+          eventId,
+          email,
+          customerName,
+          subtotalCents,
+          feeCents,
+          totalCents,
+          stripeSessionId: session.id,
+          stripePaymentId: paymentId,
+          accessToken: generateQrToken(),
+          status: 'PAID',
+        },
+      });
+
+      const ticketsCreated: { id: string; tierId: string; qrToken: string; priceCents: number }[] = [];
+      for (const item of items) {
+        for (let i = 0; i < item.quantity; i++) {
+          const qrToken = generateQrToken();
+          const t = await tx.ticket.create({
+            data: {
+              orderId: order.id,
+              tierId: item.tierId,
+              priceCents: item.unitPrice,
+              qrToken,
+              status: 'ACTIVE',
+            },
+          });
+          ticketsCreated.push({ id: t.id, tierId: t.tierId, qrToken: t.qrToken, priceCents: t.priceCents });
+        }
+      }
+
+      return { orderId: order.id, accessToken: order.accessToken, tickets: ticketsCreated };
+    });
+  } catch (err) {
+    console.error('Ticket order fulfillment failed', err);
+    // Payment went through but we couldn't fulfill — initiate a refund and alert.
+    let refunded = false;
+    try {
+      if (paymentId && stripe) {
+        await stripe.refunds.create({ payment_intent: paymentId });
+        refunded = true;
+      }
+    } catch (refundErr) {
+      console.error('Refund attempt also failed', refundErr);
+    }
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: null,
+        action: 'TICKET_ORDER_FULFILLMENT_FAILED',
+        entity: 'Event',
+        entityId: eventId,
+        meta: {
+          stripeSessionId: session.id,
+          email,
+          items,
+          error: err instanceof Error ? err.message : String(err),
+          refunded,
+        },
+      },
+    }).catch(() => {});
+
+    try {
+      const ev = await prisma.event.findUnique({ where: { id: eventId }, select: { title: true } });
+      await sendTicketOrderFailedEmail({
+        to: email,
+        customerName,
+        eventTitle: ev?.title || 'Spirit Athletics event',
+        refunded,
+      });
+    } catch (mailErr) {
+      console.error('Failed to send ticket order failure email', mailErr);
+    }
+    return;
+  }
+
+  // Load fresh event + tier labels for the email.
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
+  const tiersById = new Map(
+    (await prisma.ticketTier.findMany({ where: { eventId } })).map((t) => [t.id, t]),
+  );
+  if (!event) return;
+
+  const ticketsForEmail = created.tickets.map((t) => ({
+    id: t.id,
+    tierName: tiersById.get(t.tierId)?.name || 'Ticket',
+    priceCents: t.priceCents,
+  }));
+  const ticketsUrl = `${getStripeConfig().baseUrl}${ticketPagePath(created.accessToken)}`;
+
+  const icsStart = event.doorsOpenUTC || event.startDateTimeUTC;
+  const icsEnd = event.endDateTimeUTC || new Date(event.startDateTimeUTC.getTime() + 4 * 60 * 60 * 1000);
+  const location = [event.venue, event.venueAddress].filter(Boolean).join(', ');
+  const icsContent = buildICS({
+    uid: `ticket-order-${created.orderId}@spiritathletics.net`,
+    start: icsStart,
+    end: icsEnd,
+    summary: event.title,
+    location: location || 'Spirit Athletics',
+    description: `Your tickets: ${ticketsUrl}${event.doorsOpenUTC ? ` · Doors open ${formatPt(event.doorsOpenUTC, "h:mm a 'PT'")}` : ''}`,
+    organizerEmail: process.env.TICKETS_SENDER_EMAIL || 'tickets@spiritathletics.net',
+  });
+
+  try {
+    await sendTicketOrderEmail({
+      to: email,
+      event: {
+        title: event.title,
+        startDateTimeUTC: event.startDateTimeUTC,
+        doorsOpenUTC: event.doorsOpenUTC,
+        endDateTimeUTC: event.endDateTimeUTC,
+        venue: event.venue,
+        venueAddress: event.venueAddress,
+      },
+      order: {
+        id: created.orderId,
+        customerName,
+        subtotalCents,
+        feeCents,
+        totalCents: subtotalCents + feeCents,
+      },
+      tickets: ticketsForEmail,
+      ticketsUrl,
+      checkinQrPayload: orderQrPayload(created.accessToken),
+      icsContent,
+    });
+  } catch (err) {
+    console.error('Failed to send ticket confirmation email', err);
+    // We don't fail the webhook — tickets exist in DB; admin can resend.
   }
 }
 
@@ -549,6 +744,21 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
   }
 
   if (!sessionId) return;
+
+  // Full refund on a ticket order: void any tickets not yet used so they stop scanning.
+  const ticketOrder = await prisma.ticketOrder.findUnique({ where: { stripeSessionId: sessionId } });
+  if (ticketOrder) {
+    if (charge.refunded && ticketOrder.status === 'PAID') {
+      await prisma.$transaction([
+        prisma.ticketOrder.update({ where: { id: ticketOrder.id }, data: { status: 'REFUNDED' } }),
+        prisma.ticket.updateMany({
+          where: { orderId: ticketOrder.id, status: 'ACTIVE' },
+          data: { status: 'VOIDED' },
+        }),
+      ]);
+    }
+    return;
+  }
 
   let order = await prisma.shopOrder.findFirst({ where: { stripePaymentId: sessionId } });
   if (!order) order = await prisma.shopOrder.findFirst({ where: { stripePaymentId: paymentIntent.id } });
