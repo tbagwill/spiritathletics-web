@@ -37,9 +37,9 @@ Already verified on Nov 6:
 Then:
 1. [x] **Section 1 is done:** Fall 2026 starts **Sun, Nov 8, 1:00 PM**, no online tier has Early Bird on, and tiers and fee are final.
 2. [x] **Production ticketing tables are fresh.** The TEST event, its 6 test orders, 17 tickets and the failed-fulfillment log row were deleted on Nov 6. Fall 2026 is the only event.
-3. [ ] **Deploy exactly what you tested:** `git log -1 --oneline origin/staging` and `git log -1 --oneline` should show the same commit.
-4. [ ] **Deploy:** `git push origin main`. Vercel builds production in about 2 minutes.
-5. [ ] **Live check (5 minutes):**
+3. [x] **Deploy exactly what you tested:** `git log -1 --oneline origin/staging` and `git log -1 --oneline` should show the same commit.
+4. [x] **Deploy:** `git push origin main`. Vercel builds production in about 2 minutes. *(Deployed `95c5a54` on Nov 6 at 11:54 PM PT.)*
+5. [ ] **Live check (5 minutes):** *(Claude checked the first three items on Nov 6: no staging banner or noindex, the production database, Standard $27, Senior / Child $22, VIP $47 Sold out, $2 fee, no Early Bird. The scanner redirects to sign-in, and the webhook answers. Still yours: the staff-phone scanner, plus `/api/debug/stripe-config` signed in as admin, which should say live, live, true.)*
    - The homepage banner says "Spirit Spectacular Fall 2026 · Sun, Nov 8", and the hero shows the show card with a countdown. There's **no** yellow staging banner.
    - `/showcase` shows Nov 8 and "On sale Sun, Nov 8 at 8:00 AM".
    - `/showcase/fall-2026/tickets` says online tickets go on sale Sunday, shows your prices and the reduced fee, and VIP shows Sold out. Nothing is buyable yet, which is expected.
@@ -47,7 +47,7 @@ Then:
 6. **If anything looks wrong:** Vercel → **Deployments** → the previous production deployment → **Instant Rollback**. Rolling back is safe because the database changes only added new tables, which the old code ignores.
 
 ## 5. Sunday 8:00 AM: first live purchase
-- [ ] When online sales open, buy **one** Standard ticket with your own card ($28 with the fee). Check the email, the ticket page, and a scan at the door. Then refund it in Stripe (live) and confirm its ticket page says refunded. Stripe keeps its processing fee on refunds (about $1).
+- [ ] When online sales open, buy **one** Standard ticket with your own card ($29 with the fee). Check the email, the ticket page, and a scan at the door. Then refund it in Stripe (live) and confirm its ticket page says refunded. Stripe keeps its processing fee on refunds (about $1).
 - [ ] Stripe → Webhooks → the live endpoint shows `200` deliveries.
 
 **Gotchas:**
