@@ -1,3 +1,5 @@
+import { mailto } from '@/lib/site';
+
 export default function ParentPortal() {
   return (
     <div className="min-h-screen">
@@ -121,7 +123,7 @@ export default function ParentPortal() {
                 New to the parent portal? You should have received login credentials via email when you enrolled. If you need assistance accessing your account, please contact us.
               </p>
               <a 
-                href="mailto:hdcspirit@aol.com?subject=Parent Portal Access Help"
+                href={mailto('Parent Portal Access Help')}
                 className="inline-flex items-center px-6 py-3 text-white font-semibold rounded-full transition-all duration-300"
                 style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}
               >

@@ -3,7 +3,7 @@ export const SITE = {
   name: 'Spirit Athletics',
   phoneDisplay: '(760) 947-7130',
   phoneHref: 'tel:+17609477130',
-  email: 'hdcspirit@aol.com',
+  email: 'frontdesk@spiritathletics.net',
   addressLine1: '17537 Bear Valley Rd',
   addressLine2: 'Hesperia, CA 92345',
   mapsHref:
