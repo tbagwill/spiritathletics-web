@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatPt, ptDateTimeLocalToUtc, toPtDateTimeLocal } from '@/lib/time';
+import { Button } from '@/components/ui/Button';
+import { Field, FormAlert, Input, MoneyInput, Textarea } from '@/components/ui/Field';
+import { FormGroup, MoreOptions, Sheet } from '@/components/ui/Sheet';
+import { Switch } from '@/components/ui/Switch';
 
 interface ClinicRegistration {
   id: string;
@@ -53,9 +57,6 @@ const EMPTY_FORM = {
   isFeatured: true,
 };
 
-// Shared input className — visible placeholder text
-const INPUT = 'w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-gray-900 placeholder:text-gray-400 bg-white';
-const TEXTAREA = 'w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-gray-900 placeholder:text-gray-400 bg-white resize-none';
 
 export default function DashboardClinicsPage() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -496,200 +497,159 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
         );
       })()}
 
-      {/* Create / Edit Form Modal */}
-      {formMode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeForm} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10">
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-              <h2 className="text-xl font-bold text-gray-900">{formMode === 'create' ? 'Create Clinic' : 'Edit Clinic'}</h2>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+      {/* Create / Edit form */}
+      <Sheet
+        open={formMode !== null}
+        onOpenChange={(next) => {
+          if (!next) closeForm();
+        }}
+        size="lg"
+        eyebrow={formMode === 'create' ? 'New clinic' : 'Edit clinic'}
+        title={form.title.trim() || (formMode === 'create' ? 'Untitled clinic' : 'Clinic')}
+        footer={
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="outline" onClick={closeForm}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} loading={saving}>
+              {saving ? 'Saving…' : formMode === 'create' ? 'Create clinic' : 'Save changes'}
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid gap-8">
+          {error ? <FormAlert>{error}</FormAlert> : null}
 
-            <div className="px-6 py-5 space-y-4">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">{error}</div>
+          <FormGroup title="Details" description="What families see on the booking page.">
+            <Field label="Title">
+              {(id) => (
+                <Input
+                  id={id}
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value, slug: generateSlug(e.target.value) })}
+                  placeholder="e.g. Summer Cheer Clinic"
+                />
               )}
+            </Field>
+            <Field label="Description">
+              {(id) => (
+                <Textarea
+                  id={id}
+                  rows={3}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="What athletes will learn and who it's for"
+                />
+              )}
+            </Field>
+          </FormGroup>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Title */}
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Title *</label>
-                  <input
-                    type="text"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value, slug: generateSlug(e.target.value) })}
-                    className={INPUT}
-                    placeholder="e.g. Summer Cheer Clinic"
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Description *</label>
-                  <textarea
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    rows={3}
-                    className={TEXTAREA}
-                    placeholder="Describe the clinic, what athletes will learn, who it's for..."
-                  />
-                </div>
-
-                {/* Start Date & Time */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Start Date &amp; Time (PT) *</label>
-                  <input
+          <FormGroup title="When" description="Pacific Time.">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Starts">
+                {(id) => (
+                  <Input
+                    id={id}
                     type="datetime-local"
                     value={form.dateTimeUTC}
                     onChange={(e) => setForm({ ...form, dateTimeUTC: e.target.value })}
-                    className={INPUT}
                   />
-                </div>
-
-                {/* Duration */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Duration (minutes) *</label>
-                  <input
+                )}
+              </Field>
+              <Field label="Length (minutes)" hint={endPreview ? `Ends ${endPreview}` : undefined}>
+                {(id) => (
+                  <Input
+                    id={id}
                     type="number"
+                    inputMode="numeric"
+                    min={1}
                     value={form.durationMinutes}
                     onChange={(e) => setForm({ ...form, durationMinutes: Number(e.target.value) })}
-                    className={INPUT}
-                    min={1}
-                    placeholder="60"
                   />
-                  {endPreview && (
-                    <p className="text-xs text-purple-600 font-medium mt-1.5">
-                      ✓ Ends at {endPreview}
-                    </p>
-                  )}
-                </div>
+                )}
+              </Field>
+            </div>
+          </FormGroup>
 
-                {/* Price */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Price *</label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
-                    <input
-                      type="number"
-                      value={form.priceCents === 0 ? '' : (form.priceCents / 100).toFixed(2)}
-                      onChange={(e) => setForm({ ...form, priceCents: Math.round(Number(e.target.value) * 100) })}
-                      className={INPUT + ' pl-7'}
-                      min={0}
-                      step={0.01}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-
-                {/* Capacity */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Capacity *</label>
-                  <input
+          <FormGroup title="Price and spots">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Price per athlete">
+                {(id) => (
+                  <MoneyInput
+                    id={id}
+                    cents={form.priceCents}
+                    onCentsChange={(cents) => setForm({ ...form, priceCents: cents })}
+                  />
+                )}
+              </Field>
+              <Field label="Spots">
+                {(id) => (
+                  <Input
+                    id={id}
                     type="number"
+                    inputMode="numeric"
+                    min={1}
                     value={form.capacity}
                     onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })}
-                    className={INPUT}
-                    min={1}
-                    placeholder="20"
                   />
-                </div>
-
-                {/* Location */}
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Location</label>
-                  <input
-                    type="text"
-                    value={form.location}
-                    onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    className={INPUT}
-                    placeholder={DEFAULT_LOCATION}
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Leave as-is for the Spirit Athletics gym, or change for off-site events.</p>
-                </div>
-
-                {/* Image URL */}
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Image URL <span className="font-normal text-gray-400">(optional)</span></label>
-                  <input
-                    type="url"
-                    value={form.imageUrl}
-                    onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                    className={INPUT}
-                    placeholder="https://..."
-                  />
-                </div>
-
-                {/* Slug — advanced, collapsed at the bottom */}
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Slug <span className="font-normal text-gray-400">(auto-generated)</span></label>
-                  <input
-                    type="text"
-                    value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    className={INPUT + ' font-mono text-sm'}
-                    placeholder="summer-cheer-clinic"
-                  />
-                </div>
-
-                {/* Toggles */}
-                <div className="sm:col-span-2 flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.isActive}
-                      onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                      className="w-4 h-4 rounded accent-purple-600"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Active (visible to public)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.isFeatured}
-                      onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                      className="w-4 h-4 rounded accent-purple-600"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Featured</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
-              <button
-                type="button"
-                onClick={closeForm}
-                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-6 py-2.5 rounded-xl text-white font-semibold disabled:opacity-60 flex items-center gap-2 transition-all hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
-              >
-                {saving ? (
-                  <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Saving…
-                  </>
-                ) : (
-                  formMode === 'create' ? 'Create Clinic' : 'Save Changes'
                 )}
-              </button>
+              </Field>
             </div>
-          </div>
+          </FormGroup>
+
+          <FormGroup title="Visibility">
+            <div className="grid gap-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200">
+              <Switch
+                checked={form.isActive}
+                onChange={(checked) => setForm({ ...form, isActive: checked })}
+                label="Active"
+                description="Shown on the booking page and open for registration."
+              />
+              <Switch
+                checked={form.isFeatured}
+                onChange={(checked) => setForm({ ...form, isFeatured: checked })}
+                label="Featured"
+                description="Highlighted at the top of the clinics list."
+              />
+            </div>
+          </FormGroup>
+
+          <MoreOptions label="Location, image and link">
+            <Field label="Location" hint="Leave as-is for the gym, or change it for off-site events.">
+              {(id) => (
+                <Input
+                  id={id}
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  placeholder={DEFAULT_LOCATION}
+                />
+              )}
+            </Field>
+            <Field label="Image URL" optional>
+              {(id) => (
+                <Input
+                  id={id}
+                  type="url"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                  placeholder="https://"
+                />
+              )}
+            </Field>
+            <Field label="Link name" hint="Filled in from the title. Only change it if you need to.">
+              {(id) => (
+                <Input
+                  id={id}
+                  value={form.slug}
+                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                  className="font-mono text-sm"
+                  placeholder="summer-cheer-clinic"
+                />
+              )}
+            </Field>
+          </MoreOptions>
         </div>
-      )}
+      </Sheet>
     </div>
   );
 }

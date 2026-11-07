@@ -42,7 +42,7 @@ export function Select<T extends string>({ id, value, onValueChange, options, pl
         <SelectPrimitive.Content
           position="popper"
           sideOffset={6}
-          className="z-[80] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl bg-white p-1.5 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
+          className="z-[100] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl bg-white p-1.5 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
         >
           <SelectPrimitive.Viewport>
             {options.map((o) => (

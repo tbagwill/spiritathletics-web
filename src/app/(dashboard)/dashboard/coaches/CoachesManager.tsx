@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Field, FormAlert, Input, PasswordInput, Textarea } from '@/components/ui/Field';
+import { Select } from '@/components/ui/Select';
+import { FormGroup, MoreOptions, Sheet } from '@/components/ui/Sheet';
+import { Switch } from '@/components/ui/Switch';
 
 type Coach = {
   id: string;
@@ -323,140 +328,125 @@ export default function CoachesManager({ currentUserId }: { currentUserId: strin
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden z-10">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold">{editingId ? 'Edit Coach' : 'Add New Coach'}</h3>
-              <button onClick={() => setModalOpen(false)} className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] text-gray-900">
-              <form onSubmit={submit} className="space-y-5">
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-3 text-sm font-medium">{error}</div>
-                )}
-
-                {!editingId && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-                    New coaches start with the default password <strong>SpiritCoach123!</strong> — they can change it in Preferences after logging in.
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Name</label>
-                    <input
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
-                      placeholder="Coach name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
-                      placeholder="coach@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Role</label>
-                    <select
-                      value={form.role}
-                      onChange={(e) => setForm({ ...form, role: e.target.value as 'COACH' | 'ADMIN' })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white"
-                    >
-                      <option value="COACH">Coach</option>
-                      <option value="ADMIN">Admin</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Specialties (comma-separated)</label>
-                    <input
-                      value={form.specialties}
-                      onChange={(e) => setForm({ ...form, specialties: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
-                      placeholder="Tumbling, Stunting"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-2">Bio</label>
-                    <textarea
-                      value={form.bio}
-                      onChange={(e) => setForm({ ...form, bio: e.target.value })}
-                      rows={3}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
-                      placeholder="Short bio (optional)"
-                    />
-                  </div>
-                  {editingId && (
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-2">Set New Password (optional)</label>
-                      <input
-                        type="text"
-                        value={form.newPassword}
-                        onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
-                        placeholder="Leave blank to keep current password"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-6 pt-2">
-                  <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.canManageShop}
-                      onChange={(e) => setForm({ ...form, canManageShop: e.target.checked })}
-                      className="w-4 h-4"
-                    />
-                    Can manage shop
-                  </label>
-                  {editingId && (
-                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={form.isActive}
-                        onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                        className="w-4 h-4"
-                      />
-                      Active
-                    </label>
-                  )}
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="px-6 py-2.5 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-70"
-                  >
-                    {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Add Coach'}
-                  </button>
-                </div>
-              </form>
-            </div>
+      {/* Add/Edit coach */}
+      <Sheet
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        size="lg"
+        eyebrow={editingId ? 'Edit coach' : 'New coach'}
+        title={form.name.trim() || (editingId ? 'Coach' : 'Add a coach')}
+        footer={
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" form="coach-form" loading={saving}>
+              {saving ? 'Saving…' : editingId ? 'Save changes' : 'Add coach'}
+            </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form id="coach-form" onSubmit={submit} noValidate className="grid gap-8">
+          {error ? <FormAlert>{error}</FormAlert> : null}
+
+          {!editingId ? (
+            <FormAlert tone="info">
+              New coaches start with the default password <strong>SpiritCoach123!</strong> and can change it in
+              Preferences after logging in.
+            </FormAlert>
+          ) : null}
+
+          <FormGroup title="Account">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Name">
+                {(id) => (
+                  <Input id={id} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                )}
+              </Field>
+              <Field label="Email" hint="Used to log in.">
+                {(id) => (
+                  <Input
+                    id={id}
+                    type="email"
+                    inputMode="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  />
+                )}
+              </Field>
+              <Field label="Role" className="sm:col-span-2">
+                {(id) => (
+                  <Select
+                    id={id}
+                    value={form.role}
+                    onValueChange={(role) => setForm({ ...form, role })}
+                    options={[
+                      { value: 'COACH', label: 'Coach', description: 'Their own bookings, classes and availability' },
+                      { value: 'ADMIN', label: 'Admin', description: 'Everything, including coaches and events' },
+                    ]}
+                  />
+                )}
+              </Field>
+            </div>
+          </FormGroup>
+
+          <FormGroup title="Profile" description="Shown to families when they pick a coach.">
+            <Field label="Specialties" hint="Separate with commas, e.g. Tumbling, Stunting." optional>
+              {(id) => (
+                <Input
+                  id={id}
+                  value={form.specialties}
+                  onChange={(e) => setForm({ ...form, specialties: e.target.value })}
+                />
+              )}
+            </Field>
+            <Field label="Bio" optional>
+              {(id) => (
+                <Textarea
+                  id={id}
+                  rows={3}
+                  value={form.bio}
+                  onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                />
+              )}
+            </Field>
+          </FormGroup>
+
+          <FormGroup title="Permissions">
+            <div className="grid gap-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200">
+              <Switch
+                checked={form.canManageShop}
+                onChange={(checked) => setForm({ ...form, canManageShop: checked })}
+                label="Can manage the shop"
+                description="Campaigns, products and orders."
+              />
+              {editingId ? (
+                <Switch
+                  checked={form.isActive}
+                  onChange={(checked) => setForm({ ...form, isActive: checked })}
+                  label="Active"
+                  description="Turn off to block their login and hide them from booking."
+                />
+              ) : null}
+            </div>
+          </FormGroup>
+
+          {editingId ? (
+            <MoreOptions label="Reset their password">
+              <Field label="New password" hint="Leave blank to keep their current password.">
+                {(id) => (
+                  <PasswordInput
+                    id={id}
+                    autoComplete="new-password"
+                    value={form.newPassword}
+                    onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
+                  />
+                )}
+              </Field>
+            </MoreOptions>
+          ) : null}
+        </form>
+      </Sheet>
     </div>
   );
 }

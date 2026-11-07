@@ -220,7 +220,7 @@ export default function PreferencesPage() {
                     value={additionalEmail}
                     onChange={(e) => setAdditionalEmail(e.target.value)}
                     placeholder="assistant@example.com"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                    className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   />
                 </div>
 
@@ -299,33 +299,33 @@ export default function PreferencesPage() {
             )}
             <form onSubmit={onChangePassword} className="max-w-md space-y-5">
               <div>
-                <label className="mb-1.5 block text-sm font-semibold text-slate-700">Current Password</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">Current Password</label>
                 <input
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   required
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-semibold text-slate-700">New Password</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">New Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   placeholder="At least 8 characters"
                   required
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-semibold text-slate-700">Confirm New Password</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">Confirm New Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   required
                 />
               </div>

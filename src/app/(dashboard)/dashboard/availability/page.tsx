@@ -224,7 +224,7 @@ export default function AvailabilityPage() {
 
             {/* Days Selection */}
             <div>
-              <label className="mb-3 block text-sm font-semibold text-slate-700">Available Days</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">Available Days</label>
               <div className="flex flex-wrap gap-2">
                 {DAYS.map((d) => (
                   <button
@@ -246,33 +246,33 @@ export default function AvailabilityPage() {
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
               {/* Time Range */}
               <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200">
-                <label className="mb-2 block text-sm font-semibold text-slate-700">Start Time</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">Start Time</label>
                 <TimePicker value={start} onChange={setStart} step={15} ariaLabel="Start time" />
               </div>
 
               <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200">
-                <label className="mb-2 block text-sm font-semibold text-slate-700">End Time</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">End Time</label>
                 <TimePicker value={end} onChange={setEnd} step={15} ariaLabel="End time" />
               </div>
 
               {/* Date Range */}
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700">Effective From</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">Effective From</label>
                 <input
                   type="date"
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700">Effective To <span className="font-normal text-slate-400">(optional)</span></label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">Effective To <span className="font-normal text-slate-400">(optional)</span></label>
                 <input
                   type="date"
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   placeholder="Leave empty for no end date"
                 />
               </div>
@@ -280,7 +280,7 @@ export default function AvailabilityPage() {
 
             {/* Slot Interval */}
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-slate-700">Session Start Interval</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">Session Start Interval</label>
               <p className="mb-3 text-xs text-slate-500">Controls how often slots are offered within this window. &quot;Every hour&quot; starts at your window start and repeats hourly (e.g. 4:30, 5:30, 6:30).</p>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -412,19 +412,19 @@ export default function AvailabilityPage() {
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Date</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-800">Date</label>
                   <input
                     type="date"
                     value={resDate}
                     min={ptTodayString()}
                     onChange={(e) => setResDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
+                    className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Start Time (PT)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-800">Start Time (PT)</label>
                   <TimePicker
                     value={resStartMin}
                     onChange={setResStartMin}
@@ -436,11 +436,11 @@ export default function AvailabilityPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Duration</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-800">Duration</label>
                   <select
                     value={resDuration}
                     onChange={(e) => setResDuration(parseInt(e.target.value))}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
+                    className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   >
                     <option value={30}>30 min</option>
                     <option value={45}>45 min</option>
@@ -451,14 +451,14 @@ export default function AvailabilityPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Label <span className="font-normal text-slate-400">(optional)</span></label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-800">Label <span className="font-normal text-slate-400">(optional)</span></label>
                   <input
                     type="text"
                     value={resLabel}
                     onChange={(e) => setResLabel(e.target.value)}
                     placeholder="e.g. Private arrangement"
                     maxLength={100}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
+                    className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   />
                 </div>
               </div>

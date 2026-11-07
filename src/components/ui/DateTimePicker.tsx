@@ -132,7 +132,7 @@ export function DateTimePicker({
           align="start"
           sideOffset={8}
           collisionPadding={12}
-          className="z-[80] rounded-2xl bg-white p-3 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
+          className="z-[100] rounded-2xl bg-white p-3 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
         >
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="w-[266px]">

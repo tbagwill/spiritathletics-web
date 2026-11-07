@@ -178,13 +178,13 @@ export default function ProductsManager() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1.5 block text-sm font-medium text-slate-800">
               Filter by Campaign
             </label>
             <select
               value={selectedCampaign}
               onChange={(e) => handleCampaignFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
+              className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
             >
               <option value="all">All Campaigns</option>
               {campaigns.map(campaign => (
@@ -199,7 +199,7 @@ export default function ProductsManager() {
         {activeCampaigns.length > 0 ? (
           <Link
             href="/admin/shop/products/new"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-spirit hover:bg-spirit-500 text-white font-medium rounded-lg transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -233,7 +233,7 @@ export default function ProductsManager() {
           {activeCampaigns.length > 0 && (
             <Link
               href="/admin/shop/products/new"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-spirit hover:bg-spirit-500 text-white font-medium rounded-lg transition-colors"
             >
               Add Your First Product
             </Link>

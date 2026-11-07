@@ -5,6 +5,11 @@ import Link from 'next/link';
 import TimePicker from '@/components/TimePicker';
 import Stepper from '@/components/Stepper';
 import { ptTodayString } from '@/lib/time';
+import { Button } from '@/components/ui/Button';
+import { Field, FormAlert, Input, MoneyInput, Textarea } from '@/components/ui/Field';
+import { Select } from '@/components/ui/Select';
+import { FormGroup, Sheet } from '@/components/ui/Sheet';
+import { Switch } from '@/components/ui/Switch';
 
 const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
 
@@ -218,166 +223,147 @@ export default function ClassesManagerPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Add Class Modal */}
-        {showAddForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowAddForm(false); resetForm(); }} />
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden z-10">
-              {/* Modal Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold">{editingId ? 'Edit Class' : 'Create New Class'}</h3>
-                    <p className="text-blue-100 text-sm">{editingId ? 'Update this class template' : 'Set up a new class template'}</p>
-                  </div>
-                  <button onClick={() => { setShowAddForm(false); resetForm(); }} className="text-white/80 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+        {/* Add / edit class */}
+        <Sheet
+          open={showAddForm}
+          onOpenChange={(next) => {
+            if (!next) {
+              setShowAddForm(false);
+              resetForm();
+            }
+          }}
+          size="lg"
+          eyebrow={editingId ? 'Edit class' : 'New class'}
+          title={title.trim() || (editingId ? 'Class' : 'Create a class')}
+          footer={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddForm(false);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" form="class-form" loading={loading}>
+                {loading ? 'Saving…' : editingId ? 'Save changes' : 'Create class'}
+              </Button>
+            </div>
+          }
+        >
+          <form id="class-form" onSubmit={submit} noValidate className="grid gap-8">
+            {error ? <FormAlert>{error}</FormAlert> : null}
+
+            <FormGroup title="Details" description="Shown to families on the booking page.">
+              <Field label="Class name">
+                {(id) => (
+                  <Input
+                    id={id}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Tumbling, Level 1"
+                  />
+                )}
+              </Field>
+              <Field label="Description">
+                {(id) => (
+                  <Textarea
+                    id={id}
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="What this class covers"
+                  />
+                )}
+              </Field>
+            </FormGroup>
+
+            <FormGroup title="Weekly schedule" description="Pacific Time.">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Field label="Day">
+                  {(id) => (
+                    <Select
+                      id={id}
+                      value={String(weekday)}
+                      onValueChange={(v) => setWeekday(parseInt(v) || 0)}
+                      options={WEEKDAYS.map((d, i) => ({ value: String(i), label: d }))}
+                    />
+                  )}
+                </Field>
+                <div className="space-y-1.5">
+                  <span className="block text-sm font-medium text-slate-800">Starts</span>
+                  <TimePicker value={start} onChange={setStart} step={15} ariaLabel="Class start time" />
+                </div>
+                <Field label="Length (minutes)">
+                  {(id) => (
+                    <Input
+                      id={id}
+                      type="number"
+                      inputMode="numeric"
+                      min={15}
+                      step={5}
+                      value={duration}
+                      onChange={(e) => setDuration(parseInt(e.target.value) || 60)}
+                    />
+                  )}
+                </Field>
+              </div>
+            </FormGroup>
+
+            <FormGroup title="Price and spots">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Price per athlete">
+                  {(id) => <MoneyInput id={id} cents={price} onCentsChange={setPrice} />}
+                </Field>
+                <div className="space-y-1.5">
+                  <span className="block text-sm font-medium text-slate-800">Spots</span>
+                  <Stepper value={capacity} onChange={setCapacity} min={3} max={10} unit="athletes" />
+                  <p className="text-xs text-slate-500">3 to 10 athletes. Bigger groups should be a clinic.</p>
                 </div>
               </div>
+            </FormGroup>
 
-              {/* Modal Body */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] text-gray-900">
-                <form onSubmit={submit} className="space-y-6">
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 flex items-start gap-3">
-                      <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                      <span className="font-medium">{error}</span>
-                    </div>
+            <FormGroup title="Runs">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="First class">
+                  {(id) => (
+                    <Input
+                      id={id}
+                      type="date"
+                      value={classStartDate}
+                      onChange={(e) => setClassStartDate(e.target.value)}
+                    />
                   )}
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Class Title</label>
-                      <input 
-                        value={title} 
-                        onChange={(e)=>setTitle(e.target.value)} 
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900 placeholder-gray-500"
-                        placeholder="e.g., Tumbling Class - Level 1"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Weekday</label>
-                      <select 
-                        value={weekday} 
-                        onChange={(e)=>setWeekday(parseInt(e.target.value) || 0)} 
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white transition-colors"
-                      >
-                        {WEEKDAYS.map((d, i)=>(<option key={i} value={i}>{d}</option>))}
-                      </select>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Description</label>
-                      <textarea 
-                        value={description} 
-                        onChange={(e)=>setDescription(e.target.value)} 
-                        rows={3} 
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900 placeholder-gray-500"
-                        placeholder="Describe what this class covers..."
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Start Time</label>
-                      <TimePicker value={start} onChange={setStart} step={15} ariaLabel="Class start time" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Duration (minutes)</label>
-                      <input 
-                        type="number" 
-                        min={15} 
-                        step={5} 
-                        value={duration} 
-                        onChange={(e)=>setDuration(parseInt(e.target.value) || 60)} 
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900 placeholder-gray-500"
-                        placeholder="60"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Price ($)</label>
-                      <input 
-                        type="number" 
-                        min={0} 
-                        step="0.01"
-                        value={price/100} 
-                        onChange={(e)=>setPrice(Math.round(parseFloat(e.target.value||'0')*100))} 
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900 placeholder-gray-500"
-                        placeholder="30.00"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">
-                        Class Capacity <span className="text-gray-400 font-normal">(3–10 athletes)</span>
-                      </label>
-                      <Stepper value={capacity} onChange={setCapacity} min={3} max={10} unit="athletes" />
-                      <p className="text-xs text-gray-500 mt-1">Classes over 10 athletes require a clinic (separate event type).</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Start Date</label>
-                      <input
+                </Field>
+                {!runIndefinitely ? (
+                  <Field label="Last class">
+                    {(id) => (
+                      <Input
+                        id={id}
                         type="date"
-                        value={classStartDate}
-                        onChange={(e) => setClassStartDate(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900"
+                        min={classStartDate}
+                        value={classEndDate}
+                        onChange={(e) => setClassEndDate(e.target.value)}
                       />
-                    </div>
-
-                    <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={runIndefinitely}
-                          onChange={(e) => {
-                            setRunIndefinitely(e.target.checked);
-                            if (e.target.checked) setClassEndDate('');
-                          }}
-                          className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                        />
-                        <span>
-                          <span className="block text-sm font-semibold text-gray-900">Run indefinitely (no end date)</span>
-                          <span className="block text-xs text-gray-600 mt-0.5">This class will keep appearing every week until you set an end date.</span>
-                        </span>
-                      </label>
-                      {!runIndefinitely && (
-                        <div className="mt-3">
-                          <label className="block text-sm font-medium mb-2 text-gray-900">End Date</label>
-                          <input
-                            type="date"
-                            value={classEndDate}
-                            onChange={(e) => setClassEndDate(e.target.value)}
-                            min={classStartDate}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors text-gray-900 bg-white"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-                    <button 
-                      type="button" 
-                      onClick={() => { setShowAddForm(false); resetForm(); }} 
-                      className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      type="submit" 
-                      disabled={loading} 
-                      className="px-6 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-70"
-                    >
-                      {loading ? (editingId ? 'Saving...' : 'Creating...') : (editingId ? 'Save Changes' : 'Create Class')}
-                    </button>
-                  </div>
-                </form>
+                    )}
+                  </Field>
+                ) : null}
               </div>
-            </div>
-          </div>
-        )}
+              <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200">
+                <Switch
+                  checked={runIndefinitely}
+                  onChange={(checked) => {
+                    setRunIndefinitely(checked);
+                    if (checked) setClassEndDate('');
+                  }}
+                  label="Repeat every week with no end date"
+                  description="Turn off to choose the last class date."
+                />
+              </div>
+            </FormGroup>
+          </form>
+        </Sheet>
 
         {/* Class Templates List */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">

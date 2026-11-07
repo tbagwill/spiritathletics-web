@@ -132,7 +132,7 @@ export default function WaiversDashboard() {
               placeholder="Search by athlete name, parent name, or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
+              className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px] pl-10 pr-4"
             />
           </div>
         </div>

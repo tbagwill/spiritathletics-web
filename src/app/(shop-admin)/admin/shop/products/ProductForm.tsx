@@ -174,7 +174,7 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
         <p className="text-gray-600 mb-6">You need to create an active campaign before adding products</p>
         <Link
           href="/admin/shop/campaigns/new"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-spirit hover:bg-spirit-500 text-white font-medium rounded-lg transition-colors"
         >
           Create Campaign First
         </Link>
@@ -202,13 +202,13 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
           <div className="grid grid-cols-1 gap-6">
             {/* Campaign Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Campaign *
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                Campaign
               </label>
               <select
                 value={formData.campaignId}
                 onChange={(e) => handleChange('campaignId', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                 required
               >
                 <option value="">Select a campaign</option>
@@ -222,14 +222,14 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
 
             {/* Product Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Name *
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                Product Name
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                 placeholder="e.g. Spirit Athletics T-Shirt"
                 required
               />
@@ -237,14 +237,14 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
 
             {/* Slug */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                URL Slug *
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                URL Slug
               </label>
               <input
                 type="text"
                 value={formData.slug}
                 onChange={(e) => handleChange('slug', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                 placeholder="spirit-athletics-t-shirt"
                 pattern="^[a-z0-9-]+$"
                 title="Only lowercase letters, numbers, and hyphens allowed"
@@ -257,8 +257,8 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
 
             {/* Base Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Base Price (USD) *
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                Base Price (USD)
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -268,7 +268,7 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                   min="0"
                   value={formData.basePrice}
                   onChange={(e) => handleChange('basePrice', parseFloat(e.target.value) || 0)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px] pl-8 pr-3"
                   placeholder="25.00"
                   required
                 />
@@ -280,28 +280,28 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
                 Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 py-2.5 leading-relaxed sm:text-[15px]"
                 placeholder="Product description..."
               />
             </div>
 
             {/* Product Images */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
                 Product Images (one URL per line)
               </label>
               <textarea
                 rows={4}
                 value={formData.imageUrls.join('\n')}
                 onChange={(e) => handleChange('imageUrls', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 py-2.5 leading-relaxed sm:text-[15px]"
                 placeholder="https://example.com/image-1.jpg\nhttps://example.com/image-2.jpg"
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -311,14 +311,14 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
 
             {/* Sizing Chart */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
                 Sizing Chart Image URL (optional)
               </label>
               <input
                 type="url"
                 value={formData.sizingChartUrl}
                 onChange={(e) => handleChange('sizingChartUrl', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                 placeholder="https://example.com/sizing-chart.jpg"
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -361,7 +361,7 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                     type="text"
                     value={size.label}
                     onChange={(e) => handleSizeChange(originalIndex, 'label', e.target.value)}
-                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                    className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-10 sm:text-sm"
                     placeholder="S, M, L, etc."
                     required
                   />
@@ -375,7 +375,7 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                       step="0.01"
                       value={size.priceDelta}
                       onChange={(e) => handleSizeChange(originalIndex, 'priceDelta', parseFloat(e.target.value) || 0)}
-                      className="w-full pl-6 pr-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                      className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-10 sm:text-sm pl-6 pr-2"
                       placeholder="0.00"
                     />
                   </div>
@@ -413,7 +413,7 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-2 bg-spirit hover:bg-spirit-500 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
           >
             {loading ? 'Saving...' : (productId ? 'Update Product' : 'Create Product')}
           </button>

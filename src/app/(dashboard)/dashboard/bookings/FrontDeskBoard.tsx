@@ -186,7 +186,7 @@ export default function FrontDeskBoard({ rows, canCancel }: { rows: DeskBooking[
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search athlete, parent, coach, email, program…"
-            className="lg:ml-auto w-full lg:max-w-sm rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-10 sm:text-sm lg:ml-auto lg:max-w-sm"
           />
         </div>
 

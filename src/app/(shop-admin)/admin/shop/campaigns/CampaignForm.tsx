@@ -132,14 +132,14 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
           <div className="grid grid-cols-1 gap-6">
             {/* Campaign Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Campaign Title *
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                Campaign Title
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                 placeholder="e.g. Spring 2025 Collection"
                 required
               />
@@ -147,8 +147,8 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
 
             {/* Slug */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                URL Slug *
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                URL Slug
               </label>
               <div className="flex items-center">
                 <span className="text-sm text-gray-500 mr-2">/shop/</span>
@@ -156,7 +156,7 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
                   type="text"
                   value={formData.slug}
                   onChange={(e) => handleChange('slug', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px] flex-1"
                   placeholder="spring-2025-collection"
                   pattern="^[a-z0-9-]+$"
                   title="Only lowercase letters, numbers, and hyphens allowed"
@@ -170,28 +170,28 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
                 Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 py-2.5 leading-relaxed sm:text-[15px]"
                 placeholder="Brief description of this campaign..."
               />
             </div>
 
             {/* Hero Image URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
                 Hero Image URL
               </label>
               <input
                 type="url"
                 value={formData.heroImageUrl}
                 onChange={(e) => handleChange('heroImageUrl', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 placeholder-gray-500"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                 placeholder="https://example.com/image.jpg"
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -202,26 +202,26 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
             {/* Campaign Dates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date & Time *
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                  Start Date & Time
                 </label>
                 <input
                   type="datetime-local"
                   value={formData.startsAt}
                   onChange={(e) => handleChange('startsAt', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date & Time *
+                <label className="mb-1.5 block text-sm font-medium text-slate-800">
+                  End Date & Time
                 </label>
                 <input
                   type="datetime-local"
                   value={formData.endsAt}
                   onChange={(e) => handleChange('endsAt', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
+                  className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
                   required
                 />
               </div>
@@ -232,13 +232,13 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
 
             {/* Status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-1.5 block text-sm font-medium text-slate-800">
                 Status
               </label>
               <select
                 value={formData.status}
                 onChange={(e) => handleChange('status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900"
+                className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:text-[15px]"
               >
                 <option value="DRAFT">Draft</option>
                 <option value="ACTIVE">Active</option>
@@ -258,7 +258,7 @@ export default function CampaignForm({ campaignId, initialData }: CampaignFormPr
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-2 bg-spirit hover:bg-spirit-500 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
           >
             {loading ? 'Saving...' : (campaignId ? 'Update Campaign' : 'Create Campaign')}
           </button>
