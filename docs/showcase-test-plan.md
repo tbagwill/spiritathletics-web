@@ -47,7 +47,8 @@ Do this on **iPhone Safari** and, if you can, an **Android** phone.
 ### C. At the door (staff phone, signed in)
 - [ ] Scan one individual ticket: green, **1 wristband**.
 - [ ] Scan the group QR from the email: green, **N wristbands**, plus "N more already checked in" if some were scanned first.
-- [ ] Scan the same code again: yellow **Already checked in**, with no second wristband.
+- [ ] Scan the same code again: yellow **Already checked in**, with no second wristband. Move it out of view for a second first. A code held steady in front of the camera is ignored, so it can't re-trigger by accident.
+- [ ] Tap **Scan another** and hold up a different ticket: it reads almost instantly, with no wait.
 - [ ] Refund an order from the Stripe **test** dashboard (Payments → the payment → Refund). Within a few seconds its ticket page says "refunded", and scanning it shows red **Ticket void**. This also proves Stripe's real refund delivery to staging.
 - [ ] Create a second event in staging admin (the New event defaults are fine), open **its** scanner, and scan a Staging Showcase ticket: red **Wrong event**.
 - [ ] Scan any non-ticket QR (a website QR, for example): red **Not a ticket**.

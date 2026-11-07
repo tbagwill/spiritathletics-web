@@ -6,9 +6,12 @@ import { CameraOff, Flashlight, FlashlightOff, LoaderCircle, Search, X } from 'l
 import { cn } from '@/components/ui/cn';
 import { ScanResultSheet, type ScanOutcome } from './ScanResultSheet';
 
-// A code still sitting in the frame after its popup closes shouldn't re-trigger "already checked in".
-// Counted from when staff tap "Scan another", since the result stays up until they do.
-const REPEAT_IGNORE_MS = 8000;
+// How often the camera frame is checked for a QR code. zxing's default is 500ms, which feels laggy at the door.
+const SCAN_INTERVAL_MS = 100;
+
+// A code still in front of the camera after "Scan another" shouldn't re-trigger "already checked in".
+// It counts as gone once the camera hasn't read it for this long, so it can then be scanned again.
+const GONE_AFTER_MS = 1500;
 
 type Controls = { stop: () => void; switchTorch?: (on: boolean) => Promise<void> };
 
@@ -54,7 +57,7 @@ function useWakeLock() {
 export default function Scanner({ slug, title, subtitle }: { slug: string; title: string; subtitle: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const controlsRef = useRef<Controls | null>(null);
-  const lastRef = useRef<{ token: string; at: number } | null>(null);
+  const lastRef = useRef<{ token: string; seenAt: number } | null>(null);
   const busyRef = useRef(false);
 
   const [camera, setCamera] = useState<'starting' | 'ready' | { error: string }>('starting');
@@ -68,18 +71,24 @@ export default function Scanner({ slug, title, subtitle }: { slug: string; title
   useWakeLock();
 
   const dismiss = useCallback(() => {
-    // Restart the repeat guard now: the guest may still be holding the same code up.
-    if (lastRef.current) lastRef.current = { ...lastRef.current, at: Date.now() };
+    // Start the "gone" clock now: the guest may still be holding the same code up.
+    if (lastRef.current) lastRef.current.seenAt = Date.now();
     setOutcome(null);
     busyRef.current = false;
   }, []);
 
   const handleToken = useCallback(
     async (token: string) => {
-      if (busyRef.current) return;
       const now = Date.now();
-      if (lastRef.current?.token === token && now - lastRef.current.at < REPEAT_IGNORE_MS) return;
-      lastRef.current = { token, at: now };
+      const last = lastRef.current;
+      if (last?.token === token) {
+        // Keep refreshing while it stays in view (including while the result is up).
+        const stillInView = now - last.seenAt < GONE_AFTER_MS;
+        last.seenAt = now;
+        if (stillInView || busyRef.current) return;
+      }
+      if (busyRef.current) return;
+      lastRef.current = { token, seenAt: now };
       busyRef.current = true;
       setChecking(true);
 
@@ -141,7 +150,10 @@ export default function Scanner({ slug, title, subtitle }: { slug: string; title
       }
       try {
         const { BrowserQRCodeReader } = await import('@zxing/browser');
-        const reader = new BrowserQRCodeReader();
+        const reader = new BrowserQRCodeReader(undefined, {
+          delayBetweenScanAttempts: SCAN_INTERVAL_MS,
+          delayBetweenScanSuccess: SCAN_INTERVAL_MS,
+        });
         // facingMode picks the rear camera even before permission is granted, when device labels are still blank.
         const controls: Controls = await reader.decodeFromConstraints(
           { video: { facingMode: { ideal: 'environment' } }, audio: false },
