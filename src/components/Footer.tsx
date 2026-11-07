@@ -1,122 +1,149 @@
+import Image from 'next/image';
 import Link from 'next/link';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
+import { PROGRAMS } from '@/lib/programs';
+import { SITE } from '@/lib/site';
 
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
+const FAMILIES = [
+  { href: '/book', label: 'Book online' },
+  { href: '/showcase', label: 'Spirit Spectacular' },
+  { href: '/calendar', label: 'Calendar' },
+  { href: '/parent-portal', label: 'Parent Portal' },
+  { href: '/shop', label: 'Shop' },
+  { href: '/forms', label: 'Forms' },
+];
+
+const COMPANY = [
+  { href: '/about', label: 'About' },
+  { href: '/staff', label: 'Staff' },
+  { href: '/sponsors', label: 'Sponsors' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/dashboard', label: 'Coaches dashboard' },
+];
+
+const linkClass = 'text-sm text-white/65 transition-colors hover:text-white';
+
+export default function Footer() {
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Company Info */}
-          <div>
-            <h3 className="text-2xl font-bold mb-4" style={{ background: 'linear-gradient(to right, #0000FE, #4169E1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Spirit Athletics
-            </h3>
-            <p className="text-gray-300 text-sm leading-relaxed mb-4">
-              We provide competitive cheerleading programs 
-              for athletes of all levels, from non-competitive to Elite All-Star teams.
+    <footer className="relative isolate overflow-hidden bg-ink font-sans text-white">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -left-48 -top-48 h-[380px] w-[620px] rounded-full bg-spirit opacity-30 blur-[130px]" />
+        <div className="bg-dot-grid absolute inset-0 opacity-15 [mask-image:radial-gradient(ellipse_at_top_left,black_10%,transparent_55%)]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-spirit-400/60 to-transparent" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pt-16 lg:px-8">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] lg:gap-10">
+          <div className="col-span-2 lg:col-span-1">
+            <Link href="/" aria-label="Spirit Athletics home" className="inline-block">
+              <Image
+                src="/images/SpiritAthletics_Logo_WordMark-transparent.png"
+                alt="Spirit Athletics"
+                width={200}
+                height={62}
+                className="h-12 w-auto"
+              />
+            </Link>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/65">
+              Competitive cheerleading programs for athletes of all levels, from non-competitive to Elite All-Star
+              teams.
             </p>
-            <div className="flex space-x-2">
-              <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#0000FE' }}></span>
-              <span className="inline-block w-2 h-2 bg-white rounded-full"></span>
-              <span className="inline-block w-2 h-2 bg-gray-600 rounded-full"></span>
-            </div>
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1 text-xs font-medium text-white/70 ring-1 ring-inset ring-white/10">
+              <span className="size-1.5 rounded-full bg-spirit-400" aria-hidden />
+              Building champions since {SITE.founded}
+            </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6" style={{ color: '#4169E1' }}>Quick Links</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/programs" className="text-gray-300 hover:text-blue-400 transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 rounded-full mr-3 group-hover:bg-white transition-colors" style={{ backgroundColor: '#0000FE' }}></span>
-                  Programs
+          <FooterColumn title="Programs">
+            {PROGRAMS.map((p) => (
+              <li key={p.slug}>
+                <Link href={`/programs/${p.slug}`} className={linkClass}>
+                  {p.shortName}
                 </Link>
               </li>
-              <li>
-                <Link href="/parent-portal" className="text-gray-300 hover:text-blue-400 transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 rounded-full mr-3 group-hover:bg-white transition-colors" style={{ backgroundColor: '#0000FE' }}></span>
-                  Parent Portal
+            ))}
+            <li>
+              <Link href="/tryouts" className={linkClass}>
+                Tryouts
+              </Link>
+            </li>
+          </FooterColumn>
+
+          <FooterColumn title="Families">
+            {FAMILIES.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className={linkClass}>
+                  {l.label}
                 </Link>
               </li>
+            ))}
+          </FooterColumn>
+
+          <div className="col-span-2 lg:col-span-1">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">Visit</h3>
+            <ul className="mt-4 grid gap-3 text-sm">
               <li>
-                <Link href="/calendar" className="text-gray-300 hover:text-blue-400 transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 rounded-full mr-3 group-hover:bg-white transition-colors" style={{ backgroundColor: '#0000FE' }}></span>
-                  Calendar
-                </Link>
+                <a href={SITE.mapsHref} target="_blank" rel="noopener noreferrer" className="group flex gap-3 text-white/75 hover:text-white">
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-spirit-400" aria-hidden />
+                  <span>
+                    {SITE.addressLine1}
+                    <br />
+                    {SITE.addressLine2}
+                  </span>
+                </a>
               </li>
               <li>
-                <Link href="/forms" className="text-gray-300 hover:text-blue-400 transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 rounded-full mr-3 group-hover:bg-white transition-colors" style={{ backgroundColor: '#0000FE' }}></span>
-                  Forms
-                </Link>
+                <a href={SITE.phoneHref} className="flex items-center gap-3 text-white/75 hover:text-white">
+                  <Phone className="size-4 shrink-0 text-spirit-400" aria-hidden />
+                  {SITE.phoneDisplay}
+                </a>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-300 hover:text-blue-400 transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 rounded-full mr-3 group-hover:bg-white transition-colors" style={{ backgroundColor: '#0000FE' }}></span>
-                  Contact Us
-                </Link>
+                <a href={`mailto:${SITE.email}`} className="flex items-center gap-3 break-all text-white/75 hover:text-white">
+                  <Mail className="size-4 shrink-0 text-spirit-400" aria-hidden />
+                  {SITE.email}
+                </a>
+              </li>
+              <li className="flex gap-3 text-white/75">
+                <Clock className="mt-0.5 size-4 shrink-0 text-spirit-400" aria-hidden />
+                <span>
+                  {SITE.hours.map((h) => (
+                    <span key={h.days} className="block">
+                      {h.days}: <span className="text-white/55">{h.time}</span>
+                    </span>
+                  ))}
+                </span>
               </li>
             </ul>
           </div>
-
-          {/* Social Media & Contact */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6" style={{ color: '#4169E1' }}>Connect With Us</h4>
-            <div className="flex space-x-4 mb-6">
-              {/* Social media icons with Spirit Athletics colors */}
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 transform"
-                style={{ background: 'linear-gradient(135deg, #0000FE, #0000CC)' }}
-                aria-label="Facebook"
-              >
-                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 transform"
-                style={{ background: 'linear-gradient(135deg, #000000, #333333)' }}
-                aria-label="Instagram"
-              >
-                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987 6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.875-2.026 1.297-3.323 1.297zm7.718-1.297c-.875.807-2.026 1.297-3.323 1.297s-2.448-.49-3.323-1.297c-.807-.875-1.297-2.026-1.297-3.323s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323z"/>
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 transform"
-                style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}
-                aria-label="YouTube"
-              >
-                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-              </a>
-            </div>
-            <p className="text-gray-300 text-sm">
-              Follow us for updates, photos, and team achievements!
-            </p>
-          </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-700/50 mt-10 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © {currentYear} Spirit Athletics. All rights reserved.
-            </p>
-            <p className="text-gray-400 text-sm mt-2 md:mt-0 flex items-center">
-              <span className="w-2 h-2 rounded-full mr-2" style={{ background: 'linear-gradient(to right, #0000FE, #FFFFFF)' }}></span>
-              Building Champions Since 1998
-            </p>
-          </div>
+        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-white/45">
+            © {year} {SITE.name}. All rights reserved.
+          </p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {COMPANY.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="text-xs text-white/55 transition-colors hover:text-white">
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>
   );
-};
+}
 
-export default Footer; 
+function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">{title}</h3>
+      <ul className="mt-4 grid gap-2.5">{children}</ul>
+    </div>
+  );
+}

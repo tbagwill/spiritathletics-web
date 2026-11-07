@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { ArrowRight, X } from 'lucide-react';
 
 type Props = {
   /** Unique key stored in localStorage so dismissal persists across page loads */
@@ -9,55 +10,56 @@ type Props = {
   message: string;
   linkHref?: string;
   linkLabel?: string;
+  icon?: React.ReactNode;
 };
 
-export default function AnnouncementBanner({ id, message, linkHref, linkLabel }: Props) {
+export default function AnnouncementBanner({ id, message, linkHref, linkLabel, icon }: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     // Only show if the user hasn't dismissed this specific banner before
-    const dismissed = localStorage.getItem(`banner-dismissed-${id}`);
-    if (!dismissed) setVisible(true);
+    try {
+      if (!localStorage.getItem(`banner-dismissed-${id}`)) setVisible(true);
+    } catch {
+      setVisible(true);
+    }
   }, [id]);
 
   const dismiss = () => {
-    localStorage.setItem(`banner-dismissed-${id}`, '1');
+    try {
+      localStorage.setItem(`banner-dismissed-${id}`, '1');
+    } catch {
+      /* private mode: dismiss for this visit only */
+    }
     setVisible(false);
   };
 
   if (!visible) return null;
 
   return (
-    <div
-      className="relative w-full text-white text-sm font-medium animate-fade-in"
-      style={{ background: 'linear-gradient(90deg, #0000FE, #1d4ed8, #4169E1)' }}
-    >
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
-        {/* Message */}
-        <p className="text-center leading-snug">
+    <div className="bg-spirit-deep relative isolate overflow-hidden font-sans text-white motion-safe:animate-fade">
+      <div aria-hidden className="bg-dot-grid absolute inset-0 -z-10 opacity-20 [mask-image:linear-gradient(90deg,transparent,black,transparent)]" />
+      <div className="mx-auto flex max-w-7xl items-center justify-center gap-x-3 gap-y-1 py-2.5 pl-4 pr-12 text-sm max-sm:flex-wrap sm:px-12">
+        <p className="flex items-center gap-2 font-medium leading-snug">
+          {icon ? <span className="shrink-0 text-white/80 [&>svg]:size-4">{icon}</span> : null}
           {message}
-          {linkHref && linkLabel && (
-            <>
-              {' '}
-              <Link
-                href={linkHref}
-                className="underline underline-offset-2 font-semibold hover:text-blue-100 transition-colors whitespace-nowrap"
-              >
-                {linkLabel} →
-              </Link>
-            </>
-          )}
         </p>
-
-        {/* Dismiss button */}
+        {linkHref && linkLabel ? (
+          <Link
+            href={linkHref}
+            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-spirit shadow-sm transition-colors hover:bg-spirit-50"
+          >
+            {linkLabel}
+            <ArrowRight className="size-3.5" aria-hidden />
+          </Link>
+        ) : null}
         <button
+          type="button"
           onClick={dismiss}
           aria-label="Dismiss announcement"
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors p-1 rounded"
+          className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="size-4" aria-hidden />
         </button>
       </div>
     </div>

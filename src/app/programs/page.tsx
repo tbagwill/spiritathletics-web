@@ -1,301 +1,199 @@
 import Link from 'next/link';
+import { ArrowRight, CalendarDays, CircleCheck, Clock, Dumbbell } from 'lucide-react';
+import { PageHero } from '@/components/site/PageHero';
+import { CtaPanel, IconTile, SectionHeader, cardClass } from '@/components/site/blocks';
+import { buttonStyles } from '@/components/ui/Button';
+import { NEXT_SEASON_NOTE, PROGRAMS } from '@/lib/programs';
 
-export default function Programs() {
-  const programs = [
-    {
-      id: 'non-competitive',
-      title: 'Non-Competitive/Performance Teams',
-      subtitle: 'Building Foundations',
-      description: 'Perfect for beginners and young athletes looking to learn the fundamentals of cheerleading in a supportive, non-competitive environment.',
-      features: ['Basic tumbling skills', 'Fundamental stunts', 'Dance and choreography', 'Team building'],
-      ageRange: 'Ages 4-16',
-      commitment: 'Once per week',
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-      ),
-      gradient: 'linear-gradient(135deg, #0000FE, #4169E1)',
-    },
-    {
-      id: 'novice',
-      title: 'Novice',
-      subtitle: 'First Steps to Competition',
-      description: 'An introduction to competitive cheerleading with basic skills development and local competition opportunities.',
-      features: ['Competition preparation', 'Skill progression', 'Team routines', 'Local competitions'],
-      ageRange: 'Ages 4-14',
-      commitment: 'Once per week',
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      ),
-      gradient: 'linear-gradient(135deg, #4169E1, #0000FE)',
-    },
-    {
-      id: 'prep',
-      title: 'Prep',
-      subtitle: 'Competitive Excellence',
-      description: 'Beginner/intermediate level competitive program focusing on skill advancement and regional competition participation.',
-      features: ['Beginner/intermediate tumbling', 'Complex stunting', 'Regional competitions', 'Performance excellence'],
-      ageRange: 'Ages 5-18',
-      commitment: '1-2x per week',
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-      ),
-      gradient: 'linear-gradient(135deg, #4169E1, #000000)',
-    },
-    {
-      id: 'elite-all-star',
-      title: 'Elite All-Star',
-      subtitle: 'Championship Level',
-      description: 'Our premier competitive program for advanced athletes seeking to compete at the highest levels including nationals.',
-      features: ['Advanced-level skills', 'National competitions', 'Elite choreography', 'Championship training'],
-      ageRange: 'Ages 5-18',
-      commitment: '2-3x per week',
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
-      ),
-      gradient: 'linear-gradient(135deg, #000000, #333333)',
-    },
-  ];
+export const metadata = {
+  title: 'Programs · Spirit Athletics',
+  description:
+    'Non-Competitive, Novice, Prep and Elite All-Star cheerleading programs for athletes ages 4–18 in Hesperia, CA.',
+};
 
+const GETTING_STARTED = [
+  {
+    icon: CalendarDays,
+    title: 'Annual tryouts',
+    body: 'Tryouts are held the first week of June each year for the upcoming season.',
+  },
+  {
+    icon: Dumbbell,
+    title: 'Tumbling classes',
+    body: 'Year-round tumbling classes are available to help prepare for the next season.',
+  },
+  {
+    icon: Clock,
+    title: 'Season information',
+    body: 'New athletes are rarely accepted after August. Plan ahead for the best opportunities.',
+  },
+];
+
+export default function ProgramsPage() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,254,0.9), rgba(0,0,0,0.7), rgba(65,105,225,0.8))' }}></div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-10 w-6 h-6 rounded-full animate-float" style={{ backgroundColor: '#0000FE' }}></div>
-        <div className="absolute top-40 right-20 w-4 h-4 bg-white rounded-full animate-float-delayed"></div>
-        <div className="absolute bottom-20 left-1/4 w-5 h-5 bg-gray-300 rounded-full animate-float-slow"></div>
-        
-        <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #FFFFFF, #4169E1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Our
-            </span>
-            <span className="text-white"> Programs</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-300">
-            From first-time cheerleaders to elite competitors, we have a program designed to help every athlete reach their full potential.
-          </p>
+    <div className="bg-canvas font-sans text-slate-900">
+      <PageHero
+        eyebrow="Programs"
+        title="Our"
+        accent="programs"
+        lead="From first-time cheerleaders to elite competitors, we have a program designed to help every athlete reach their full potential."
+      />
+
+      {/* Program cards */}
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <SectionHeader
+          eyebrow="Find the right fit"
+          title="Four levels, one path."
+          lead="Each program provides age-appropriate training, skill development, and competitive opportunities that match your athlete’s goals and experience."
+        />
+        <div className="mt-8 grid gap-4 sm:mt-10 md:grid-cols-2">
+          {PROGRAMS.map((p) => (
+            <Link
+              key={p.slug}
+              href={`/programs/${p.slug}`}
+              className={cardClass(true, 'group flex flex-col p-6 sm:p-7')}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <IconTile
+                  icon={p.icon}
+                  size="lg"
+                  className="transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110"
+                />
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                  Level {p.level} of {PROGRAMS.length}
+                </span>
+              </div>
+              <h3 className="mt-5 text-2xl font-semibold tracking-tight">{p.name}</h3>
+              <p className="text-sm font-medium text-spirit">{p.tagline}</p>
+              <p className="mt-3 leading-relaxed text-slate-600">{p.summary}</p>
+              <ul className="mb-6 mt-5 grid gap-2 sm:grid-cols-2">
+                {p.highlights.map((h) => (
+                  <li key={h} className="flex items-center gap-2 text-sm text-slate-700">
+                    <CircleCheck className="size-4 shrink-0 text-spirit" aria-hidden />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+                <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1">{p.ages}</span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1">{p.schedule}</span>
+                </div>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-spirit">
+                  Learn more
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
-      {/* Programs Overview */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <h2 className="text-4xl font-bold mb-6">
-              <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                Find Your Perfect Program
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Each program is carefully designed to provide age-appropriate training, skill development, 
-              and competitive opportunities that match your athlete&apos;s goals and experience level.
-            </p>
-          </div>
+      {/* Comparison */}
+      <section className="bg-spirit-deep relative isolate overflow-hidden text-white">
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -right-24 -top-24 size-[420px] rounded-full bg-[#4169E1] opacity-40 blur-[110px]" />
+          <div className="bg-dot-grid absolute inset-0 opacity-20 [mask-image:radial-gradient(ellipse_at_top_right,black_15%,transparent_60%)]" />
+        </div>
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+          <SectionHeader
+            onDark
+            eyebrow="Compare"
+            title="Programs side by side."
+            lead="Compare our programs to find the right fit for your athlete’s skill level and goals."
+          />
 
-          {/* Program Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {programs.map((program, index) => (
-              <Link 
-                key={program.id} 
-                href={`/programs/${program.id}`}
-                className="group block"
-              >
-                <div className={`bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-100 overflow-hidden animate-fade-in-up`} style={{ animationDelay: `${(index + 1) * 100}ms` }}>
-                  {/* Card Header */}
-                  <div className="p-6" style={{ background: program.gradient }}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                        {program.icon}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-white/80 text-sm font-medium">{program.ageRange}</div>
-                        <div className="text-white/60 text-xs">{program.commitment}</div>
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">{program.title}</h3>
-                    <p className="text-white/90 font-medium">{program.subtitle}</p>
+          {/* Phones: one card per program */}
+          <div className="mt-8 grid gap-3 md:hidden">
+            {PROGRAMS.map((p) => (
+              <Link key={p.slug} href={`/programs/${p.slug}`} className="rounded-3xl bg-white p-5 text-slate-900 shadow-2xl">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-semibold">{p.shortName}</div>
+                    <div className="text-sm text-slate-500">{p.tagline}</div>
                   </div>
-
-                  {/* Card Content */}
-                  <div className="p-6">
-                    <p className="text-gray-600 leading-relaxed mb-6">
-                      {program.description}
-                    </p>
-
-                    {/* Features List */}
-                    <div className="space-y-3 mb-6">
-                      <h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide">Program Highlights</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {program.features.map((feature, featureIndex) => (
-                          <div key={featureIndex} className="flex items-center text-sm text-gray-600">
-                            <div className="w-1.5 h-1.5 rounded-full mr-2" style={{ backgroundColor: '#0000FE' }}></div>
-                            {feature}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Call to Action */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium" style={{ color: '#0000FE' }}>
-                        Learn More
-                      </span>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ background: program.gradient }}>
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+                  <ArrowRight className="size-4 text-slate-300" aria-hidden />
                 </div>
+                <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                  <Spec label="Ages" value={p.ages.replace('Ages ', '')} />
+                  <Spec label="Practice" value={p.schedule} />
+                  <Spec label="Travel" value={p.travel} />
+                  <Spec label="Focus" value={p.focus} />
+                </dl>
               </Link>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Program Comparison */}
-      <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #f8fafc, #e2e8f0)' }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <h2 className="text-4xl font-bold mb-6">
-              <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                Program Comparison
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Compare our programs to find the perfect fit for your athlete&apos;s skill level and goals.
-            </p>
-          </div>
-
-          {/* Comparison Table */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden animate-fade-in-up delay-200">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                    <th className="px-6 py-4 text-left text-white font-semibold">Program</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold">Age Range</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold">Practice Schedule</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold">Travel Required</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold">Focus Areas</th>
+          {/* Tablets and up: table */}
+          <div className="mt-10 hidden overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl md:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/80 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  <th scope="col" className="px-6 py-4">Program</th>
+                  <th scope="col" className="px-6 py-4">Ages</th>
+                  <th scope="col" className="px-6 py-4">Practice</th>
+                  <th scope="col" className="px-6 py-4">Travel</th>
+                  <th scope="col" className="px-6 py-4">Focus</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {PROGRAMS.map((p) => (
+                  <tr key={p.slug} className="transition-colors hover:bg-spirit-50/50">
+                    <th scope="row" className="px-6 py-4 font-normal">
+                      <Link href={`/programs/${p.slug}`} className="group inline-flex items-center gap-3">
+                        <IconTile icon={p.icon} size="sm" />
+                        <span>
+                          <span className="block font-semibold text-slate-900 group-hover:text-spirit">{p.shortName}</span>
+                          <span className="block text-slate-500">{p.tagline}</span>
+                        </span>
+                      </Link>
+                    </th>
+                    <td className="px-6 py-4 text-slate-700">{p.ages.replace('Ages ', '')}</td>
+                    <td className="px-6 py-4 text-slate-700">{p.schedule}</td>
+                    <td className="px-6 py-4 text-slate-700">{p.travel}</td>
+                    <td className="px-6 py-4 text-slate-700">{p.focus}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-800">Non-Competitive/Performance Teams</div>
-                      <div className="text-sm text-gray-600">Building Foundations</div>
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-600">4-16 years</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Once per week</td>
-                    <td className="px-6 py-4 text-center text-gray-600">None</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Fun & Fundamentals</td>
-                  </tr>
-                  <tr className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-800">Novice</div>
-                      <div className="text-sm text-gray-600">First Steps to Competition</div>
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-600">4-14 years</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Once per week</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Local Travel Only</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Skill Building</td>
-                  </tr>
-                  <tr className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-800">Prep</div>
-                      <div className="text-sm text-gray-600">Competitive Excellence</div>
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-600">5-18 years</td>
-                    <td className="px-6 py-4 text-center text-gray-600">1-2x per week</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Limited Travel</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Beginner/Intermediate Skills</td>
-                  </tr>
-                  <tr className="hover:bg-blue-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-800">Elite All-Star</div>
-                      <div className="text-sm text-gray-600">Championship Level</div>
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-600">5-18 years</td>
-                    <td className="px-6 py-4 text-center text-gray-600">2-3x per week</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Full Travel</td>
-                    <td className="px-6 py-4 text-center text-gray-600">Advanced Performance</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
 
-      {/* Getting Started */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Ready to Get Started?
-            </span>
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed animate-fade-in-up delay-200">
-            Want to prepare for your next season? Contact us for information on tryouts and/or classes to get ready for our next season.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-fade-in-up delay-300">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+      {/* Getting started */}
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <SectionHeader eyebrow="Getting started" title="Plan ahead for next season." />
+        <div className="mt-8 grid gap-3 sm:mt-10 sm:gap-4 md:grid-cols-3">
+          {GETTING_STARTED.map(({ icon, title, body }) => (
+            <div key={title} className={cardClass(false, 'flex gap-4 p-5 md:block md:p-6')}>
+              <IconTile icon={icon} />
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight md:mt-5">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600 md:mt-1.5">{body}</p>
               </div>
-              <h3 className="font-bold text-gray-800 mb-2">Annual Tryouts</h3>
-              <p className="text-gray-600 text-sm">Tryouts held the first week of June each year for the upcoming season.</p>
             </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}>
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-gray-800 mb-2">Tumbling Classes</h3>
-              <p className="text-gray-600 text-sm">Year-round tumbling classes available to help prepare for the next season.</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #000000, #333333)' }}>
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-gray-800 mb-2">Season Information</h3>
-              <p className="text-gray-600 text-sm">New athletes rarely accepted after August. Plan ahead for the best opportunities.</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-400">
-            <button className="text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg" style={{ background: 'linear-gradient(135deg, #0000FE, #0000CC)' }}>
-              Tryout Information
-            </button>
-            <button className="border-2 text-black px-8 py-4 rounded-full font-semibold transition-all duration-300" style={{ borderColor: '#0000FE' }}>
-              Tumbling Classes
-            </button>
-          </div>
+          ))}
         </div>
       </section>
+
+      <CtaPanel title="Ready to get started?" body={NEXT_SEASON_NOTE}>
+        <Link href="/tryouts" className={buttonStyles({ variant: 'white', size: 'lg' })}>
+          Tryout information
+          <ArrowRight className="size-4" aria-hidden />
+        </Link>
+        <Link href="/book/classes" className={buttonStyles({ variant: 'glass', size: 'lg' })}>
+          Tumbling classes
+        </Link>
+      </CtaPanel>
     </div>
   );
-} 
+}
+
+function Spec({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium uppercase tracking-[0.12em] text-slate-400">{label}</dt>
+      <dd className="mt-0.5 font-medium text-slate-800">{value}</dd>
+    </div>
+  );
+}
