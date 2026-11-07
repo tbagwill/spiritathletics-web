@@ -7,6 +7,7 @@ import { cn } from '@/components/ui/cn';
 import { ScanResultSheet, type ScanOutcome } from './ScanResultSheet';
 
 // A code still sitting in the frame after its popup closes shouldn't re-trigger "already checked in".
+// Counted from when staff tap "Scan another", since the result stays up until they do.
 const REPEAT_IGNORE_MS = 8000;
 
 type Controls = { stop: () => void; switchTorch?: (on: boolean) => Promise<void> };
@@ -67,6 +68,8 @@ export default function Scanner({ slug, title, subtitle }: { slug: string; title
   useWakeLock();
 
   const dismiss = useCallback(() => {
+    // Restart the repeat guard now: the guest may still be holding the same code up.
+    if (lastRef.current) lastRef.current = { ...lastRef.current, at: Date.now() };
     setOutcome(null);
     busyRef.current = false;
   }, []);

@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-import { Ban, Check, CircleX, TriangleExclamationPoint } from 'lucide-react';
+import { Ban, Check, CircleX, ScanLine, TriangleExclamationPoint } from 'lucide-react';
 import { cn } from '@/components/ui/cn';
 
 export type ScanOutcome =
@@ -9,8 +8,8 @@ export type ScanOutcome =
   | { kind: 'already'; customerName: string; message: string }
   | { kind: 'wrong_event' | 'voided' | 'not_found' | 'error'; message: string };
 
-// Successes clear themselves so the line keeps moving; problems wait for a tap so staff notice them.
-const AUTO_DISMISS_MS = 2600;
+// Every result stays on screen until staff tap "Scan another", so nobody misses the wristband count.
+// Scanning is paused while it's up (Scanner ignores codes until the sheet is dismissed).
 
 const STYLE = {
   ok: { panel: 'bg-emerald-500 text-white', icon: Check, label: 'Checked in' },
@@ -24,18 +23,11 @@ const STYLE = {
 export function ScanResultSheet({ outcome, onDismiss }: { outcome: ScanOutcome; onDismiss: () => void }) {
   const style = STYLE[outcome.kind];
   const Icon = style.icon;
-  const autoDismiss = outcome.kind === 'ok';
-
-  useEffect(() => {
-    if (!autoDismiss) return;
-    const t = setTimeout(onDismiss, AUTO_DISMISS_MS);
-    return () => clearTimeout(t);
-  }, [autoDismiss, onDismiss]);
 
   return (
+    // No tap-outside dismissal: only "Scan another" clears it, so a stray tap can't hide the count.
     <div
       className="absolute inset-0 z-20 flex items-end justify-center bg-black/55 p-4 pb-[max(env(safe-area-inset-bottom),16px)] backdrop-blur-sm motion-safe:animate-fade sm:items-center"
-      onClick={onDismiss}
       role="dialog"
       aria-modal="true"
       aria-label={style.label}
@@ -73,24 +65,22 @@ export function ScanResultSheet({ outcome, onDismiss }: { outcome: ScanOutcome; 
           <div className="mt-3 text-base leading-relaxed opacity-95">{outcome.message}</div>
         )}
 
+        {outcome.kind === 'ok' ? (
+          <div className="mt-5 text-sm opacity-85">Hand out the wristbands, then tap below.</div>
+        ) : null}
+
         <button
           type="button"
           onClick={onDismiss}
+          autoFocus
           className={cn(
-            'mt-7 w-full rounded-full py-3.5 text-base font-semibold transition-transform active:scale-[0.98]',
+            'mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full py-4 text-base font-semibold transition-transform active:scale-[0.98]',
             outcome.kind === 'already' ? 'bg-ink text-white' : 'bg-white text-ink',
           )}
         >
-          Scan next
+          <ScanLine className="size-5" aria-hidden />
+          Scan another
         </button>
-
-        {autoDismiss ? (
-          <span
-            aria-hidden
-            className="absolute inset-x-0 bottom-0 h-1 origin-left bg-white/60 animate-drain"
-            style={{ animationDuration: `${AUTO_DISMISS_MS}ms` }}
-          />
-        ) : null}
       </div>
     </div>
   );
