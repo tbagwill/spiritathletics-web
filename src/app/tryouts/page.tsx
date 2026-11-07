@@ -1,398 +1,384 @@
-'use client';
+import Link from 'next/link';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  CircleCheck,
+  ClipboardList,
+  Info,
+  Mail,
+  MapPin,
+  Phone,
+  Star,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
+import { PageHero } from '@/components/site/PageHero';
+import { CtaPanel, IconTile, SectionHeader, cardClass } from '@/components/site/blocks';
+import { buttonStyles } from '@/components/ui/Button';
+import { cn } from '@/components/ui/cn';
+import { PROGRAMS } from '@/lib/programs';
+import { SITE, mailto } from '@/lib/site';
 
-export default function Tryouts() {
-  const clinicSchedule = [
-    {
-      date: 'June 1st',
-      label: 'Level 1',
-      sessions: [
-        { group: 'Ages 6–9', time: '4:30 PM – 6:30 PM' },
-        { group: 'Ages 10–18', time: '6:30 PM – 8:30 PM' },
-      ],
-    },
-    {
-      date: 'June 2nd',
-      label: 'Levels 2 / 3',
-      sessions: [
-        { group: 'Ages 6–9', time: '4:30 PM – 6:30 PM' },
-        { group: 'Ages 10–18', time: '6:30 PM – 8:30 PM' },
-      ],
-    },
-    {
-      date: 'June 3rd',
-      label: 'Levels 4 / 5 / 6',
-      sessions: [
-        { group: 'All Ages', time: '6:00 PM – 8:30 PM' },
-      ],
-    },
-  ];
+export const dynamic = 'force-dynamic';
 
-  const tryoutSessions = [
-    { group: 'Ages 4–6', time: '1:00 PM – 2:00 PM', note: 'Tiny division' },
-    { group: 'Ages 6–9', time: '2:00 PM – 4:00 PM' },
-    { group: 'Ages 10–18', time: '4:00 PM – 6:00 PM' },
-  ];
+export const metadata = {
+  title: 'Tryouts · Spirit Athletics',
+  description: 'Tryout clinics, tryout day, placement fees and what to expect for Spirit Athletics competitive teams.',
+};
 
-  const parentMeetings = [
-    { group: 'Returning Families', time: '5:30 PM – 6:30 PM' },
-    { group: 'New Families', time: '6:45 PM – 8:00 PM' },
-  ];
+// ── Update these each season. Once RESULTS_END passes, the page switches to "complete". ──
+const SEASON = '2026–27';
+const RESULTS_END = new Date('2026-06-08T07:00:00Z'); // end of Sun, June 7 (Pacific)
+const DATES_LINE = 'Clinics June 1–3 · Tryouts June 6 · Results June 7';
+
+const KEY_DATES: { icon: LucideIcon; label: string; value: string }[] = [
+  { icon: BookOpen, label: 'Clinics', value: 'June 1 – 3' },
+  { icon: Star, label: 'Tryouts', value: 'Saturday, June 6' },
+  { icon: ClipboardList, label: 'Results & parent meetings', value: 'Sunday, June 7' },
+];
+
+const CLINICS = [
+  {
+    date: 'June 1',
+    label: 'Level 1',
+    sessions: [
+      { group: 'Ages 6–9', time: '4:30 – 6:30 PM' },
+      { group: 'Ages 10–18', time: '6:30 – 8:30 PM' },
+    ],
+  },
+  {
+    date: 'June 2',
+    label: 'Levels 2 / 3',
+    sessions: [
+      { group: 'Ages 6–9', time: '4:30 – 6:30 PM' },
+      { group: 'Ages 10–18', time: '6:30 – 8:30 PM' },
+    ],
+  },
+  {
+    date: 'June 3',
+    label: 'Levels 4 / 5 / 6',
+    sessions: [{ group: 'All ages', time: '6:00 – 8:30 PM' }],
+  },
+];
+
+const TRYOUT_SESSIONS = [
+  { group: 'Ages 4–6', time: '1:00 – 2:00 PM', note: 'Tiny division' },
+  { group: 'Ages 6–9', time: '2:00 – 4:00 PM' },
+  { group: 'Ages 10–18', time: '4:00 – 6:00 PM' },
+];
+
+const PARENT_MEETINGS = [
+  { group: 'Returning families', time: '5:30 – 6:30 PM' },
+  { group: 'New families', time: '6:45 – 8:00 PM' },
+];
+
+const STEPS = [
+  {
+    title: 'Skills assessment',
+    body: 'Evaluation of tumbling, stunting, jumping, and dance abilities appropriate for your age and experience.',
+  },
+  {
+    title: 'Learn a routine',
+    body: 'Coaches teach a short routine showcasing your ability to learn choreography and perform with confidence.',
+  },
+  {
+    title: 'Team placement',
+    body: 'Based on skills and goals, our coaches recommend the best program level for your success and growth.',
+  },
+];
+
+const BRING = [
+  'Athletic clothing you can move freely in',
+  'Clean athletic shoes (cheer shoes preferred)',
+  'Hair pulled back in a high ponytail or bun',
+  'Water bottle and a positive attitude',
+  'Completed forms and Parent Portal registration',
+];
+
+export default function TryoutsPage() {
+  const complete = Date.now() > RESULTS_END.getTime();
 
   return (
-    <div className="min-h-screen">
-
-      {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,254,0.92), rgba(0,0,0,0.72), rgba(65,105,225,0.85))' }} />
+    <div className="bg-canvas font-sans text-slate-900">
+      <PageHero
+        eyebrow={complete ? `${SEASON} tryouts are complete` : `${SEASON} season placements`}
+        title="Join the"
+        accent="Spirit family"
+        lead={
+          complete
+            ? 'Thank you to every athlete who tried out. Tryouts are held the first week of June each year; next season’s dates and registration will be posted here.'
+            : DATES_LINE
+        }
+        bottomSpace
+      >
+        <div className="flex flex-col gap-3 sm:flex-row">
+          {complete ? (
+            <>
+              <Link href="/book/classes" className={buttonStyles({ variant: 'white', size: 'lg' })}>
+                Prepare with tumbling classes
+                <ArrowRight className="size-4" aria-hidden />
+              </Link>
+              <Link href="/programs" className={buttonStyles({ variant: 'glass', size: 'lg' })}>
+                Explore programs
+              </Link>
+            </>
+          ) : (
+            <>
+              <a
+                href={SITE.portalHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonStyles({ variant: 'white', size: 'lg' })}
+              >
+                Register now
+                <ArrowUpRight className="size-4" aria-hidden />
+              </a>
+              <a href={mailto('Tryout question')} className={buttonStyles({ variant: 'glass', size: 'lg' })}>
+                Questions? Email us
+              </a>
+            </>
+          )}
         </div>
-        <div className="absolute top-20 left-10 w-6 h-6 rounded-full bg-blue-400 opacity-60 animate-float" />
-        <div className="absolute top-40 right-20 w-4 h-4 bg-white rounded-full opacity-40 animate-float-delayed" />
-        <div className="absolute bottom-20 left-1/4 w-5 h-5 bg-blue-300 rounded-full opacity-40 animate-float-slow" />
+        <p className="mt-5 flex items-center gap-2 text-sm text-white/60">
+          <MapPin className="size-4" aria-hidden />
+          {SITE.name} · {SITE.addressLine1}, {SITE.addressLine2}
+        </p>
+      </PageHero>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center justify-center px-6 py-2.5 mb-6 bg-white/15 backdrop-blur-sm rounded-full border border-white/30 animate-fade-in-up">
-            <span className="text-white font-semibold text-base">🏆 2026–27 Season Placements</span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-5 animate-fade-in-up delay-200">
-            <span className="text-white">Join The</span>
-            <br />
-            <span style={{ background: 'linear-gradient(45deg, #FFFFFF, #bfdbfe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Spirit Family
-            </span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed mb-3 animate-fade-in-up delay-300">
-            Clinics June 1–3 · Tryouts June 6th · Results June 7th
+      {/* Key dates */}
+      <section aria-label="Key dates" className="relative z-10 mx-auto -mt-16 max-w-6xl px-4 sm:-mt-20 sm:px-6">
+        <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
+          {KEY_DATES.map(({ icon, label, value }) => (
+            <div key={label} className={cardClass(false, 'flex items-center gap-4 p-5 shadow-soft-lg sm:block sm:p-6')}>
+              <IconTile icon={icon} />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400 sm:mt-4">{label}</p>
+                <p className={cn('text-lg font-semibold tracking-tight', complete ? 'text-slate-500' : 'text-slate-900')}>
+                  {value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        {complete ? (
+          <p className="mt-4 flex items-start gap-2 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 ring-1 ring-slate-200/70">
+            <Info className="mt-0.5 size-4 shrink-0 text-spirit" aria-hidden />
+            The dates, fees and schedule on this page are from the {SEASON} season and are shown for reference.
           </p>
-          <p className="text-base text-blue-200 mb-8 animate-fade-in-up delay-300">
-            Spirit Athletics — 17537 Bear Valley Rd, Hesperia, CA 92345
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-500">
-            <button
-              className="bg-white text-blue-700 px-8 py-4 rounded-full font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
-              onClick={() => window.location.href = 'https://portal.iclasspro.com/spiritathletics7750/dashboard'}
-            >
-              Register Now
-            </button>
-            <a
-              href="mailto:frontdesk@spiritathletics.net"
-              className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300 text-center"
-            >
-              Questions? Email Us
-            </a>
+        ) : null}
+      </section>
+
+      {/* Fees */}
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <SectionHeader eyebrow="Placement fees" title={`${SEASON} placement fees.`} />
+        <div className="mt-8 grid max-w-3xl gap-4 sm:grid-cols-2">
+          <div className="relative overflow-hidden rounded-3xl bg-white p-6 shadow-soft-lg ring-2 ring-spirit/30">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold tracking-tight">Clinic + tryout</h3>
+              <span className="rounded-full bg-spirit-50 px-2.5 py-1 text-xs font-semibold text-spirit">Best value</span>
+            </div>
+            <div className="mt-3 text-4xl font-semibold tabular-nums tracking-tight text-spirit">$65</div>
+            <dl className="mt-4 divide-y divide-slate-100 text-sm">
+              <div className="flex justify-between py-2">
+                <dt className="text-slate-600">Clinic fee</dt>
+                <dd className="font-semibold">$35</dd>
+              </div>
+              <div className="flex justify-between py-2">
+                <dt className="text-slate-600">Tryout fee</dt>
+                <dd className="font-semibold">$30</dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-xs text-slate-500">Recommended for all athletes. Clinics prepare you for tryouts.</p>
+          </div>
+          <div className={cardClass(false, 'p-6')}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold tracking-tight">Tryout only</h3>
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">No clinic</span>
+            </div>
+            <div className="mt-3 text-4xl font-semibold tabular-nums tracking-tight">$60</div>
+            <dl className="mt-4 divide-y divide-slate-100 text-sm">
+              <div className="flex justify-between py-2">
+                <dt className="text-slate-600">Tryout fee</dt>
+                <dd className="font-semibold">$60</dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-xs font-medium text-amber-700">Excludes the Tiny division (ages 4 and 5).</p>
           </div>
         </div>
       </section>
 
-      {/* ── Quick-glance Important Dates ──────────────────────────────── */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-            {[
-              { emoji: '📚', label: 'Clinics', value: 'June 1 – 3' },
-              { emoji: '⭐', label: 'Tryouts', value: 'Saturday, June 6' },
-              { emoji: '📋', label: 'Results & Parent Meetings', value: 'Sunday, June 7' },
-            ].map((item) => (
-              <div key={item.label} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-100">
-                <div className="text-3xl mb-2">{item.emoji}</div>
-                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">{item.label}</p>
-                <p className="text-xl font-bold text-blue-700">{item.value}</p>
-              </div>
-            ))}
-          </div>
+      {/* Schedule */}
+      <section className="bg-spirit-deep relative isolate overflow-hidden text-white">
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -right-24 -top-24 size-[420px] rounded-full bg-[#4169E1] opacity-40 blur-[110px]" />
+          <div className="bg-dot-grid absolute inset-0 opacity-20 [mask-image:radial-gradient(ellipse_at_top_right,black_15%,transparent_60%)]" />
         </div>
-      </section>
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+          <SectionHeader onDark eyebrow="Full schedule" title="Clinics, tryouts and results." />
 
-      {/* ── Placement Fees ────────────────────────────────────────────── */}
-      <section className="py-16 px-4" style={{ background: 'linear-gradient(135deg, #f8fafc, #e2e8f0)' }}>
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-10 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              2026–27 Placement Fees
-            </span>
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* Clinic + Tryout */}
-            <div className="bg-white rounded-2xl shadow-lg border-2 border-blue-200 p-6 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-500" />
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Best Value</p>
-                  <h3 className="text-lg font-bold text-gray-900">Clinic + Tryout</h3>
-                </div>
-              </div>
-              <div className="text-4xl font-extrabold text-blue-700 mb-3">$65</div>
-              <div className="space-y-1.5 text-sm text-gray-600">
-                <div className="flex justify-between py-1 border-b border-gray-100">
-                  <span>Clinic Fee</span>
-                  <span className="font-semibold text-gray-800">$35</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span>Tryout Fee</span>
-                  <span className="font-semibold text-gray-800">$30</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-400 mt-3">Recommended for all athletes — clinics prepare you for tryouts</p>
-            </div>
-
-            {/* Tryout Only */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gray-400 to-gray-500" />
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #374151, #1f2937)' }}>
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">No Clinic</p>
-                  <h3 className="text-lg font-bold text-gray-900">Tryout Only</h3>
-                </div>
-              </div>
-              <div className="text-4xl font-extrabold text-gray-700 mb-3">$60</div>
-              <div className="space-y-1.5 text-sm text-gray-600">
-                <div className="flex justify-between py-1 border-b border-gray-100">
-                  <span>Tryout Fee</span>
-                  <span className="font-semibold text-gray-800">$60</span>
-                </div>
-              </div>
-              <div className="mt-3 flex items-start gap-1.5">
-                <svg className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <p className="text-xs text-amber-700">Excludes Tiny division (ages 4 &amp; 5)</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Full Schedule ─────────────────────────────────────────────── */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Full Schedule
-            </span>
-          </h2>
-
-          <div className="space-y-8">
-            {/* ── Clinics ── */}
-            <div>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Tryout Clinics <span className="text-blue-600">June 1–3</span></h3>
-                  <p className="text-sm text-gray-500">Prep sessions to get ready for tryout day — strongly recommended</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {clinicSchedule.map((day) => (
-                  <div key={day.date} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-100">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="font-bold text-blue-700 text-base">{day.date}</p>
-                      <span className="text-xs bg-blue-600 text-white font-semibold px-2.5 py-1 rounded-full">{day.label}</span>
-                    </div>
-                    <div className="space-y-2">
-                      {day.sessions.map((s) => (
-                        <div key={s.group} className="bg-white rounded-xl px-3 py-2 border border-blue-100">
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{s.group}</p>
-                          <p className="text-sm font-bold text-gray-800 mt-0.5">{s.time}</p>
-                        </div>
-                      ))}
-                    </div>
+          <ScheduleGroup
+            title="Tryout clinics"
+            when="June 1 – 3"
+            note="Prep sessions to get ready for tryout day. Strongly recommended."
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
+              {CLINICS.map((day) => (
+                <div key={day.date} className="rounded-3xl bg-white p-5 text-slate-900 shadow-2xl">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold">{day.date}</p>
+                    <span className="rounded-full bg-spirit-50 px-2.5 py-1 text-xs font-semibold text-spirit">{day.label}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Tryouts ── */}
-            <div>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}>
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Tryout Day — <span className="text-amber-600">Saturday, June 6th</span></h3>
-                  <p className="text-sm text-gray-500">Team placement evaluations by our coaching staff</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {tryoutSessions.map((s) => (
-                  <div key={s.group} className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-5 border border-amber-100">
-                    <p className="font-bold text-amber-800 text-base mb-1">{s.group}</p>
-                    <p className="text-xl font-bold text-amber-700">{s.time}</p>
-                    {s.note && <p className="text-xs text-amber-600 mt-1">{s.note}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Parent Meetings ── */}
-            <div>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}>
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Results &amp; Parent Meetings — <span className="text-green-700">Sunday, June 7th</span></h3>
-                  <p className="text-sm text-gray-500">Team results announced · mandatory for all families</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {parentMeetings.map((m) => (
-                  <div key={m.group} className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border border-green-100">
-                    <p className="font-bold text-green-800 text-base mb-1">{m.group}</p>
-                    <p className="text-xl font-bold text-green-700">{m.time}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── What to Expect ────────────────────────────────────────────── */}
-      <section className="py-16 px-4" style={{ background: 'linear-gradient(135deg, #f8fafc, #e2e8f0)' }}>
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              What to Expect at Tryouts
-            </span>
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-            <div className="space-y-6 animate-fade-in-up">
-              {[
-                { n: '1', title: 'Skills Assessment', body: 'Evaluation of tumbling, stunting, jumping, and dance abilities appropriate for your age and experience level.' },
-                { n: '2', title: 'Learn a Routine', body: 'Coaches will teach a short routine showcasing your ability to learn choreography and perform with confidence.' },
-                { n: '3', title: 'Team Placement', body: 'Based on skills and goals, our coaches recommend the best program level for your success and growth.' },
-              ].map((step) => (
-                <div key={step.n} className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                    <span className="text-white font-bold text-sm">{step.n}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-gray-800 mb-1">{step.title}</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">{step.body}</p>
-                  </div>
+                  <ul className="mt-3 grid gap-2">
+                    {day.sessions.map((s) => (
+                      <li key={s.group} className="rounded-2xl bg-slate-50 px-3 py-2 ring-1 ring-inset ring-slate-200/70">
+                        <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">{s.group}</p>
+                        <p className="text-sm font-semibold">{s.time}</p>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
+          </ScheduleGroup>
 
-            <div className="bg-white rounded-2xl shadow-md border border-blue-100 p-7 animate-fade-in-up delay-200">
-              <h3 className="text-xl font-bold text-gray-800 mb-5">What to Bring</h3>
-              <ul className="space-y-3">
-                {[
-                  'Athletic clothing you can move freely in',
-                  'Clean athletic shoes (cheer shoes preferred)',
-                  'Hair pulled back — high ponytail or bun',
-                  'Water bottle and positive attitude',
-                  'Completed forms &amp; Parent Portal registration',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm text-gray-600">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span dangerouslySetInnerHTML={{ __html: item }} />
-                  </li>
-                ))}
-              </ul>
+          <ScheduleGroup title="Tryout day" when="Saturday, June 6" note="Team placement evaluations by our coaching staff.">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {TRYOUT_SESSIONS.map((s) => (
+                <SessionCard key={s.group} group={s.group} time={s.time} note={s.note} />
+              ))}
             </div>
-          </div>
+          </ScheduleGroup>
+
+          <ScheduleGroup
+            title="Results & parent meetings"
+            when="Sunday, June 7"
+            note="Team results announced. Mandatory for all families."
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {PARENT_MEETINGS.map((m) => (
+                <SessionCard key={m.group} group={m.group} time={m.time} />
+              ))}
+            </div>
+          </ScheduleGroup>
         </div>
       </section>
 
-      {/* ── Program Levels ────────────────────────────────────────────── */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-10 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Program Levels
-            </span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              { title: 'Non-Competitive', ages: 'Ages 4–16', freq: 'Once per week', desc: 'Fun, supportive environment — perfect for beginners', gradient: 'from-blue-600 to-indigo-500' },
-              { title: 'Novice', ages: 'Ages 4–14', freq: 'Once per week', desc: 'Intro to competitive cheer with local travel only', gradient: 'from-indigo-600 to-blue-700' },
-              { title: 'Prep', ages: 'Ages 5–18', freq: '1–2× per week', desc: 'Beginner/intermediate competitive program, limited travel', gradient: 'from-blue-800 to-indigo-800' },
-              { title: 'Elite All-Star', ages: 'Ages 5–18', freq: '2–3× per week', desc: 'Premier program — full travel including East Coast', gradient: 'from-gray-800 to-gray-900' },
-            ].map((lvl) => (
-              <div key={lvl.title} className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-up">
-                <div className={`w-12 h-12 rounded-xl mb-4 bg-gradient-to-br ${lvl.gradient} flex items-center justify-center`}>
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                  </svg>
+      {/* What to expect */}
+      <section className="mx-auto grid max-w-6xl items-start gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2 lg:gap-14">
+        <div>
+          <SectionHeader eyebrow="What to expect" title="How tryouts work." />
+          <ol className="mt-8 grid gap-6">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="flex gap-4">
+                <span className="bg-spirit-gradient flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 className="font-semibold">{s.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-600">{s.body}</p>
                 </div>
-                <h3 className="font-bold text-gray-900 mb-1">{lvl.title}</h3>
-                <p className="text-xs text-blue-600 font-semibold mb-1">{lvl.ages} · {lvl.freq}</p>
-                <p className="text-sm text-gray-500 leading-snug">{lvl.desc}</p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
+        </div>
+        <div className={cardClass(false, 'p-6 sm:p-7 lg:mt-14')}>
+          <h3 className="text-lg font-semibold tracking-tight">What to bring</h3>
+          <ul className="mt-4 grid gap-3">
+            {BRING.map((item) => (
+              <li key={item} className="flex items-start gap-3 text-sm text-slate-700">
+                <CircleCheck className="mt-0.5 size-4 shrink-0 text-spirit" aria-hidden />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {/* ── CTA ───────────────────────────────────────────────────────── */}
-      <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1, #000000)' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-4 animate-fade-in-up">Ready to Join Our Championship Team?</h2>
-          <p className="text-xl text-blue-100 mb-10 animate-fade-in-up delay-200">
-            Clinics June 1–3 · Tryouts June 6 · Don&apos;t miss your spot!
-          </p>
+      {/* Program levels */}
+      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 sm:pb-20">
+        <SectionHeader eyebrow="Program levels" title="Where athletes are placed." />
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          {PROGRAMS.map((p) => (
+            <Link key={p.slug} href={`/programs/${p.slug}`} className={cardClass(true, 'group flex flex-col p-5')}>
+              <IconTile icon={p.icon} size="sm" />
+              <h3 className="mt-4 font-semibold tracking-tight">{p.shortName}</h3>
+              <p className="text-xs font-semibold text-spirit">
+                {p.ages} · {p.schedule}
+              </p>
+              <p className="mt-2 text-sm leading-snug text-slate-600">{p.summary}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-8 animate-fade-in-up delay-300">
-            <h3 className="text-xl font-bold text-white mb-5">Contact Us</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-blue-200 font-semibold uppercase tracking-wide">Phone</p>
-                  <a href="tel:+17609477130" className="font-semibold hover:text-blue-200 transition-colors">(760) 947-7130</a>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-blue-200 font-semibold uppercase tracking-wide">Email</p>
-                  <a href="mailto:frontdesk@spiritathletics.net" className="font-semibold hover:text-blue-200 transition-colors">frontdesk@spiritathletics.net</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            className="bg-white text-blue-700 px-10 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-xl"
-            onClick={() => window.location.href = 'https://portal.iclasspro.com/spiritathletics7750/dashboard'}
+      {complete ? (
+        <CtaPanel
+          title="Get ready for next season."
+          body="Tumbling classes run year-round, and our staff can help you find the right program before tryouts."
+        >
+          <Link href="/book/classes" className={buttonStyles({ variant: 'white', size: 'lg' })}>
+            Book a tumbling class
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
+          <a href={mailto('Tryout question')} className={buttonStyles({ variant: 'glass', size: 'lg' })}>
+            <Mail className="size-4" aria-hidden />
+            Email us
+          </a>
+        </CtaPanel>
+      ) : (
+        <CtaPanel title="Ready to join our championship team?" body={`${DATES_LINE}. Don’t miss your spot!`}>
+          <a
+            href={SITE.portalHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonStyles({ variant: 'white', size: 'lg' })}
           >
             Register on Parent Portal
-          </button>
-        </div>
-      </section>
+            <ArrowUpRight className="size-4" aria-hidden />
+          </a>
+          <a href={SITE.phoneHref} className={buttonStyles({ variant: 'glass', size: 'lg' })}>
+            <Phone className="size-4" aria-hidden />
+            {SITE.phoneDisplay}
+          </a>
+        </CtaPanel>
+      )}
+    </div>
+  );
+}
+
+function ScheduleGroup({
+  title,
+  when,
+  note,
+  children,
+}: {
+  title: string;
+  when: string;
+  note: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-10">
+      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
+        <span className="text-sm font-semibold text-white/70">{when}</span>
+      </div>
+      <p className="-mt-2 mb-4 text-sm text-white/65">{note}</p>
+      {children}
+    </div>
+  );
+}
+
+function SessionCard({ group, time, note }: { group: string; time: string; note?: string }) {
+  return (
+    <div className="rounded-3xl bg-white p-5 text-slate-900 shadow-2xl">
+      <div className="flex items-center gap-2">
+        <Users className="size-4 text-spirit" aria-hidden />
+        <p className="font-semibold">{group}</p>
+      </div>
+      <p className="mt-1 text-xl font-semibold tabular-nums tracking-tight text-spirit">{time}</p>
+      {note ? <p className="mt-1 text-xs text-slate-500">{note}</p> : null}
     </div>
   );
 }

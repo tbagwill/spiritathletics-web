@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatPt } from '@/lib/time';
+import { HeroBackdrop } from '@/app/showcase/_components/HeroBackdrop';
 
 interface ShopCampaign {
   id: string;
@@ -175,39 +176,32 @@ export default function ShopContent() {
             </Link>
           </div>
         )}
-        <div className="text-center py-16">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-8 mb-8 overflow-hidden">
-              <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 to-indigo-500 -mt-8 mb-6" />
-              <div className="w-20 h-20 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center ring-2 ring-blue-100">
-                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="py-10 text-center sm:py-16">
+          <div className="mx-auto max-w-2xl">
+            <div className="relative isolate overflow-hidden rounded-[32px] bg-ink px-6 py-12 text-white shadow-2xl sm:px-12 sm:py-14">
+              <HeroBackdrop compact />
+              <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-inset ring-white/15">
+                <svg className="size-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-blue-900 mb-2">
-                No Pop-Up Currently Open
-              </h1>
-              <p className="text-base sm:text-lg text-gray-700 mb-6">
-                Our pop-up shop isn't currently running, but the next window is coming soon! 
-                We'll have exclusive Spirit Athletics apparel and merchandise available for a limited time.
+              <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">Pop-up shop</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">No pop-up currently open</h1>
+              <p className="mx-auto mt-3 max-w-md leading-relaxed text-white/70">
+                Our pop-up shop isn&apos;t running right now, but the next window is coming soon, with exclusive Spirit
+                Athletics apparel and merchandise for a limited time.
               </p>
-              <div className="bg-blue-50/80 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-blue-800 text-sm">
-                  <strong>How it works:</strong> We open pop-up campaigns with limited-time ordering windows. 
-                  Once the window closes, we place bulk orders and fulfill them within 2-3 weeks.
-                </p>
-              </div>
-              <div className="space-y-4">
-                <p className="text-gray-700">
-                  Want to be notified when the next pop-up opens?
-                </p>
-                <Link 
-                  href="/contact" 
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md"
-                >
-                  Contact Us for Updates
-                </Link>
-              </div>
+              <Link
+                href="/contact"
+                className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-white px-6 font-semibold text-spirit shadow-soft transition-colors hover:bg-spirit-50"
+              >
+                Contact us for updates
+              </Link>
+            </div>
+            <div className="mt-4 rounded-3xl bg-white p-5 text-left text-sm leading-relaxed text-slate-600 shadow-soft ring-1 ring-slate-200/70 sm:p-6">
+              <span className="font-semibold text-slate-900">How it works:</span> we open pop-up campaigns with
+              limited-time ordering windows. Once the window closes, we place bulk orders and fulfill them within 2–3
+              weeks.
             </div>
           </div>
         </div>

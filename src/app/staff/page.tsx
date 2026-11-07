@@ -1,200 +1,123 @@
-export default function Staff() {
-  const staffMembers = [
-    {
-      name: 'Patricia "Patti" Perniciaro',
-      title: 'Head Coach, Owner',
-      image: '/images/staff/patti-placeholder.jpg'
-    },
-    {
-      name: 'Julie Bagwill',
-      title: 'Co Owner',
-      image: '/images/staff/julie-placeholder.jpg'
-    },
-    {
-      name: 'John Migaiolo',
-      title: 'Program Director',
-      image: '/images/staff/john-placeholder.jpg'
-    },
-    {
-      name: 'Candice Vargas',
-      title: 'Senior Coach, Social Media',
-      image: '/images/staff/candice-placeholder.jpg'
-    },
-    {
-      name: 'Tyler Bagwill',
-      title: 'Senior Coach, Digital Media',
-      image: '/images/staff/tyler-placeholder.jpg'
-    },
-    {
-      name: 'Rhyan Chollier',
-      title: 'Senior Coach',
-      image: '/images/staff/rhyan-placeholder.jpg'
-    },
-    {
-      name: 'Bethany Snow',
-      title: 'Senior Coach',
-      image: '/images/staff/bethany-placeholder.jpg'
-    },
-    {
-      name: 'Jessica Thomas',
-      title: 'Senior Coach',
-      image: '/images/staff/jessica-placeholder.jpg'
-    },
-    {
-      name: 'Natalie Falzone',
-      title: 'Senior Coach',
-      image: '/images/staff/natalie-placeholder.jpg'
-    },
-    {
-      name: 'Aniya Willis',
-      title: 'Senior Coach',
-      image: '/images/staff/aniya-placeholder.jpg'
-    },
-    {
-      name: 'Aliszia Orland',
-      title: 'Senior Coach',
-      image: '/images/staff/aliszia-placeholder.jpg'
-    },
-    {
-      name: 'Olivia Hahn',
-      title: 'Coach',
-      image: '/images/staff/olivia-placeholder.jpg'
-    },
-    {
-      name: 'Kimberly Gonzalez',
-      title: 'Junior Coach',
-      image: '/images/staff/kimberly-placeholder.jpg'
-    },
-    {
-      name: 'Isabelle Vargas',
-      title: 'Junior Coach',
-      image: '/images/staff/isabelle-placeholder.jpg'
-    },
-    {
-      name: 'Alejandra "Alli" Arreola',
-      title: 'Front Desk',
-      image: '/images/staff/alli-placeholder.jpg'
-    }
-  ];
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { PageHero } from '@/components/site/PageHero';
+import { CtaPanel, SectionHeader, cardClass } from '@/components/site/blocks';
+import { buttonStyles } from '@/components/ui/Button';
+import { cn } from '@/components/ui/cn';
 
+export const metadata = {
+  title: 'Staff · Spirit Athletics',
+  description: 'Meet the owners, coaches and front desk team at Spirit Athletics.',
+};
+
+type Member = { name: string; title: string };
+
+const LEADERSHIP: Member[] = [
+  { name: 'Patricia "Patti" Perniciaro', title: 'Head Coach, Owner' },
+  { name: 'Julie Bagwill', title: 'Co-Owner' },
+  { name: 'John Migaiolo', title: 'Program Director' },
+];
+
+const COACHES: Member[] = [
+  { name: 'Candice Vargas', title: 'Senior Coach, Social Media' },
+  { name: 'Tyler Bagwill', title: 'Senior Coach, Digital Media' },
+  { name: 'Rhyan Chollier', title: 'Senior Coach' },
+  { name: 'Bethany Snow', title: 'Senior Coach' },
+  { name: 'Jessica Thomas', title: 'Senior Coach' },
+  { name: 'Natalie Falzone', title: 'Senior Coach' },
+  { name: 'Aniya Willis', title: 'Senior Coach' },
+  { name: 'Aliszia Orland', title: 'Senior Coach' },
+  { name: 'Olivia Hahn', title: 'Coach' },
+  { name: 'Kimberly Gonzalez', title: 'Junior Coach' },
+  { name: 'Isabelle Vargas', title: 'Junior Coach' },
+];
+
+const SUPPORT: Member[] = [{ name: 'Alejandra "Alli" Arreola', title: 'Front Desk' }];
+
+/** "Patricia "Patti" Perniciaro" → "PP" */
+function initials(name: string) {
+  const words = name.replace(/"[^"]*"/g, ' ').split(/\s+/).filter(Boolean);
+  return `${words[0]?.[0] ?? ''}${words.length > 1 ? words[words.length - 1][0] : ''}`.toUpperCase();
+}
+
+function Avatar({ name, size }: { name: string; size: 'lg' | 'md' }) {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,254,0.9), rgba(0,0,0,0.7), rgba(65,105,225,0.8))' }}></div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-10 w-6 h-6 rounded-full animate-float" style={{ backgroundColor: '#0000FE' }}></div>
-        <div className="absolute top-40 right-20 w-4 h-4 bg-white rounded-full animate-float-delayed"></div>
-        <div className="absolute bottom-20 left-1/4 w-5 h-5 bg-gray-300 rounded-full animate-float-slow"></div>
-        
-        <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #FFFFFF, #4169E1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Our
-            </span>
-            <span className="text-white"> Staff</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-300">
-            Meet the dedicated team of professionals who make Spirit Athletics a place where champions are made.
-          </p>
-        </div>
+    <span
+      aria-hidden
+      className={cn(
+        'bg-spirit-gradient shadow-spirit flex shrink-0 items-center justify-center rounded-full font-semibold tracking-wide text-white',
+        size === 'lg' ? 'size-20 text-2xl' : 'size-12 text-base',
+      )}
+    >
+      {initials(name)}
+    </span>
+  );
+}
+
+export default function StaffPage() {
+  return (
+    <div className="bg-canvas font-sans text-slate-900">
+      <PageHero
+        eyebrow="Our team"
+        title="Our"
+        accent="staff"
+        lead="Meet the dedicated team of professionals who make Spirit Athletics a place where champions are made."
+      />
+
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <SectionHeader eyebrow="Leadership" title="The people behind the program." />
+        <ul className="mt-8 grid gap-4 sm:mt-10 md:grid-cols-3">
+          {LEADERSHIP.map((m) => (
+            <li key={m.name} className={cardClass(false, 'flex items-center gap-5 p-6 md:flex-col md:p-8 md:text-center')}>
+              <Avatar name={m.name} size="lg" />
+              <div>
+                <h3 className="text-xl font-semibold tracking-tight">{m.name}</h3>
+                <p className="mt-0.5 font-medium text-spirit">{m.title}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Leadership Team */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Leadership Team
-            </span>
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
-            {staffMembers.slice(0, 3).map((member, index) => (
-              <div key={index} className="text-center animate-fade-in-up" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
-                <div className="relative mb-6">
-                  <div className="w-48 h-48 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                    {/* Placeholder for profile image */}
-                    <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0000FE, #4169E1)' }}>
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">{member.name}</h3>
-                <p className="text-lg font-semibold" style={{ color: '#0000FE' }}>{member.title}</p>
+      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 sm:pb-20">
+        <SectionHeader eyebrow="Coaching staff" title="Coaches on the floor every day." />
+        <ul className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
+          {COACHES.map((m) => (
+            <li key={m.name} className={cardClass(false, 'flex items-center gap-4 p-4 sm:p-5')}>
+              <Avatar name={m.name} size="md" />
+              <div className="min-w-0">
+                <h3 className="font-semibold tracking-tight">{m.name}</h3>
+                <p className="text-sm text-slate-500">{m.title}</p>
               </div>
-            ))}
-          </div>
-        </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Coaching Staff */}
-      <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #f8fafc, #e2e8f0)' }}>
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Coaching Staff
-            </span>
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {staffMembers.slice(3, 14).map((member, index) => (
-              <div key={index} className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
-                <div className="relative mb-6">
-                  <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #4169E1, #0000FE)' }}>
-                    <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">{member.name}</h3>
-                <p className="text-lg font-semibold" style={{ color: '#0000FE' }}>{member.title}</p>
+      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 sm:pb-20">
+        <SectionHeader eyebrow="Support staff" title="Your first hello at the gym." />
+        <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {SUPPORT.map((m) => (
+            <li key={m.name} className={cardClass(false, 'flex items-center gap-4 p-4 sm:p-5')}>
+              <Avatar name={m.name} size="md" />
+              <div className="min-w-0">
+                <h3 className="font-semibold tracking-tight">{m.name}</h3>
+                <p className="text-sm text-slate-500">{m.title}</p>
               </div>
-            ))}
-          </div>
-        </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Support Staff */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16 animate-fade-in-up">
-            <span style={{ background: 'linear-gradient(45deg, #0000FE, #000000)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Support Staff
-            </span>
-          </h2>
-          
-          <div className="flex justify-center">
-            {staffMembers.slice(14).map((member, index) => (
-              <div key={index} className="bg-gradient-to-br from-blue-50 to-gray-50 p-8 rounded-2xl shadow-lg border border-blue-100 text-center animate-fade-in-up max-w-md">
-                <div className="relative mb-6">
-                  <div className="w-40 h-40 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-white" style={{ background: 'linear-gradient(135deg, #000000, #333333)' }}>
-                    <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">{member.name}</h3>
-                <p className="text-lg font-semibold" style={{ color: '#0000FE' }}>{member.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CtaPanel title="Train with our coaches." body="Book a private lesson or a group class with the Spirit Athletics staff.">
+        <Link href="/book/privates" className={buttonStyles({ variant: 'white', size: 'lg' })}>
+          Book a private lesson
+          <ArrowRight className="size-4" aria-hidden />
+        </Link>
+        <Link href="/book/classes" className={buttonStyles({ variant: 'glass', size: 'lg' })}>
+          Browse classes
+        </Link>
+      </CtaPanel>
     </div>
   );
-} 
+}

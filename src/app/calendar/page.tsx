@@ -40,7 +40,7 @@ const KEY_DATES: { icon: LucideIcon; title: string; when: string; body: string }
   {
     icon: Trophy,
     title: 'Competition season',
-    when: 'October – March',
+    when: 'December – April',
     body: 'Peak competition season with local, regional, and national events.',
   },
   {
