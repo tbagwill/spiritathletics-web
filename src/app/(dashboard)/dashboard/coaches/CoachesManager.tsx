@@ -381,8 +381,8 @@ export default function CoachesManager({ currentUserId }: { currentUserId: strin
                     value={form.role}
                     onValueChange={(role) => setForm({ ...form, role })}
                     options={[
-                      { value: 'COACH', label: 'Coach', description: 'Their own bookings, classes and availability' },
-                      { value: 'ADMIN', label: 'Admin', description: 'Everything, including coaches and events' },
+                      { value: 'COACH', label: 'Coach', description: 'Day-to-day coaching tools' },
+                      { value: 'ADMIN', label: 'Admin', description: 'Coaching tools, plus managing coaches and events' },
                     ]}
                   />
                 )}

@@ -609,7 +609,7 @@ ${clinic.registrations.length === 0 ? '<p style="color:#9ca3af;margin-top:16px;"
                 checked={form.isFeatured}
                 onChange={(checked) => setForm({ ...form, isFeatured: checked })}
                 label="Featured"
-                description="Highlighted at the top of the clinics list."
+                description="Adds a “Featured event” badge to the clinic card."
               />
             </div>
           </FormGroup>
