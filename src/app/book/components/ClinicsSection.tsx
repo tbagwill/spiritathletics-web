@@ -30,21 +30,17 @@ export default async function ClinicsSection() {
   }));
 
   return (
-    <section className="mb-12">
+    <section id="clinics" className="mb-14 scroll-mt-24">
       {/* Section header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-8 rounded-full bg-gradient-to-b from-purple-500 to-indigo-500" />
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Special Events &amp; Clinics</h2>
-            <p className="text-sm text-gray-500">Limited spots — register to secure your place</p>
-          </div>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-spirit">Special events</p>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Clinics</h2>
+          <p className="mt-1 text-sm text-slate-500">Limited spots. Register to secure your place.</p>
         </div>
-        <div className="ml-2 flex-shrink-0">
-          <span className="text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3 py-1 rounded-full shadow-sm">
-            {clinics.length} upcoming
-          </span>
-        </div>
+        <span className="rounded-full bg-spirit-50 px-3 py-1 text-xs font-semibold text-spirit ring-1 ring-inset ring-spirit-400/30">
+          {clinics.length} upcoming
+        </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

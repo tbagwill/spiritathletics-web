@@ -1,10 +1,9 @@
-import Link from 'next/link';
 import { Suspense } from 'react';
 import BookingSuccessContent from './BookingSuccessContent';
 
 export default function BookingSuccessPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4 py-16">
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-4 py-16 font-sans">
       <Suspense
         fallback={
           <div className="text-center">
