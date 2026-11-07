@@ -14,24 +14,46 @@ type FieldProps = {
   label: string;
   hint?: React.ReactNode;
   error?: string | null;
+  /** Fields are required by default; mark the exceptions instead of starring everything. */
+  optional?: boolean;
   className?: string;
   children: (id: string) => React.ReactNode;
 };
 
 /** Label + control + hint/error, with the id wired up for accessibility. */
-export function Field({ label, hint, error, className, children }: FieldProps) {
+export function Field({ label, hint, error, optional, className, children }: FieldProps) {
   const id = useId();
   return (
     <div className={cn('space-y-1.5', className)}>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-800">
+      <label htmlFor={id} className="flex items-baseline justify-between gap-2 text-sm font-medium text-slate-800">
         {label}
+        {optional ? <span className="text-xs font-normal text-slate-400">Optional</span> : null}
       </label>
       {children(id)}
       {error ? (
-        <p className="text-xs font-medium text-red-600">{error}</p>
+        <p role="alert" className="text-xs font-medium text-red-600">
+          {error}
+        </p>
       ) : hint ? (
-        <p className="text-xs text-slate-500">{hint}</p>
+        <p className="text-xs leading-relaxed text-slate-500">{hint}</p>
       ) : null}
+    </div>
+  );
+}
+
+/** Form-level message shown above the submit button. */
+export function FormAlert({ children, tone = 'error' }: { children: React.ReactNode; tone?: 'error' | 'info' | 'success' }) {
+  return (
+    <div
+      role={tone === 'error' ? 'alert' : 'status'}
+      className={cn(
+        'rounded-2xl px-4 py-3 text-sm leading-relaxed ring-1 ring-inset',
+        tone === 'error' && 'bg-red-50 text-red-800 ring-red-200',
+        tone === 'info' && 'bg-slate-50 text-slate-700 ring-slate-200',
+        tone === 'success' && 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+      )}
+    >
+      {children}
     </div>
   );
 }
@@ -58,6 +80,32 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         aria-invalid={invalid || undefined}
         {...rest}
       />
+    </div>
+  );
+});
+
+/** Password input with a show/hide toggle. */
+export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type' | 'icon'>>(function PasswordInput(
+  { className, invalid, ...rest },
+  ref,
+) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        ref={ref}
+        type={visible ? 'text' : 'password'}
+        className={cn(controlStyles, 'h-11 pr-16', invalid && 'ring-red-400 focus:ring-red-500', className)}
+        aria-invalid={invalid || undefined}
+        {...rest}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        className="absolute inset-y-0 right-1.5 my-auto h-8 rounded-lg px-2.5 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+      >
+        {visible ? 'Hide' : 'Show'}
+      </button>
     </div>
   );
 });

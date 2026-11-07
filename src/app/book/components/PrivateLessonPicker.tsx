@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import BookPrivateDialog from './BookPrivateDialog';
 import { ptTodayString } from '@/lib/time';
+import { Field, Input } from '@/components/ui/Field';
+import { Select } from '@/components/ui/Select';
 
 type Coach = { id: string; name: string; serviceId: string; specialties: string[] };
 
@@ -12,24 +13,16 @@ type Props = {
 };
 
 const durations = [
-  { key: 'SOLO_30', label: '30 min — $40', selection: { kind: 'SOLO' as const, duration: 30 } },
-  { key: 'SOLO_45', label: '45 min — $50', selection: { kind: 'SOLO' as const, duration: 45 } },
-  { key: 'SOLO_60', label: '60 min (Solo) — $60', selection: { kind: 'SOLO' as const, duration: 60 } },
-  { key: 'SEMI_60', label: '60 min (Semi-Private, 2 athletes) — $35 per athlete ($70 total)', selection: { kind: 'SEMI_PRIVATE' as const, duration: 60 } },
+  { key: 'SOLO_30', label: '30 min · Solo · $40', selection: { kind: 'SOLO' as const, duration: 30 } },
+  { key: 'SOLO_45', label: '45 min · Solo · $50', selection: { kind: 'SOLO' as const, duration: 45 } },
+  { key: 'SOLO_60', label: '60 min · Solo · $60', selection: { kind: 'SOLO' as const, duration: 60 } },
+  { key: 'SEMI_60', label: '60 min · Semi-private · $70', description: '2 athletes, $35 each', selection: { kind: 'SEMI_PRIVATE' as const, duration: 60 } },
 ];
 
 export default function PrivateLessonPicker({ coaches }: Props) {
-  const { register, watch } = useForm<{ coachId: string; date: string; durationKey: string }>({
-    defaultValues: {
-      coachId: coaches[0]?.id ?? '',
-      durationKey: 'SOLO_60', // Default to 60 min Solo
-      date: ptTodayString(),
-    },
-  });
-
-  const coachId = watch('coachId');
-  const durationKey = watch('durationKey');
-  const date = watch('date');
+  const [coachId, setCoachId] = useState(coaches[0]?.id ?? '');
+  const [durationKey, setDurationKey] = useState('SOLO_60'); // Default to 60 min Solo
+  const [date, setDate] = useState(ptTodayString());
 
   const [slots, setSlots] = useState<{ startUTC: string; endUTC: string; display: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -98,55 +91,39 @@ export default function PrivateLessonPicker({ coaches }: Props) {
 
       <div className="space-y-6 animate-fade-in">
       {/* Selection Form */}
-      <div className="rounded-3xl bg-white p-5 shadow-soft ring-1 ring-slate-200 sm:p-6">
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900">Select Your Preferences</h3>
-            <p className="text-sm text-slate-500">Choose a coach, length, and date</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Coach</label>
-            <select
-              {...register('coachId')}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-slate-900 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
-              style={{ fontSize: '16px' }} // Prevents zoom on iOS
-            >
-              {coaches.map((c) => (
-                <option key={c.id} value={c.id} className="bg-white text-slate-900">
-                  {c.specialties.length > 0 ? `${c.name} — ${c.specialties.join(', ')}` : c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Duration &amp; Pricing</label>
-            <select
-              {...register('durationKey')}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-slate-900 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
-              style={{ fontSize: '16px' }} // Prevents zoom on iOS
-            >
-              {durations.map((d) => (
-                <option key={d.key} value={d.key} className="bg-white text-slate-900">{d.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Date</label>
-            <input
-              type="date"
-              {...register('date')}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-slate-900 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
-              style={{ fontSize: '16px' }} // Prevents zoom on iOS
-            />
-          </div>
+      <div className="rounded-3xl bg-white p-5 shadow-soft ring-1 ring-slate-200/70 sm:p-6">
+        <h3 className="text-lg font-semibold tracking-tight text-slate-900">Pick a coach</h3>
+        <p className="mt-0.5 text-sm text-slate-500">Then choose a lesson length and date to see open times.</p>
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Coach" className="sm:col-span-2">
+            {(id) => (
+              <Select
+                id={id}
+                value={coachId}
+                onValueChange={setCoachId}
+                options={coaches.map((c) => ({
+                  value: c.id,
+                  label: c.name,
+                  description: c.specialties.length > 0 ? c.specialties.join(', ') : undefined,
+                }))}
+              />
+            )}
+          </Field>
+          <Field label="Lesson length">
+            {(id) => (
+              <Select
+                id={id}
+                value={durationKey}
+                onValueChange={setDurationKey}
+                options={durations.map((d) => ({ value: d.key, label: d.label, description: d.description }))}
+              />
+            )}
+          </Field>
+          <Field label="Date">
+            {(id) => (
+              <Input id={id} type="date" value={date} min={ptTodayString()} onChange={(e) => setDate(e.target.value)} />
+            )}
+          </Field>
         </div>
       </div>
 

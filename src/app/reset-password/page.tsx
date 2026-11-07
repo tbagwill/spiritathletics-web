@@ -3,6 +3,11 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { KeyRound } from 'lucide-react';
+import { HeroBackdrop } from '@/app/showcase/_components/HeroBackdrop';
+import { IconTile } from '@/components/site/blocks';
+import { Button, buttonStyles } from '@/components/ui/Button';
+import { Field, FormAlert, PasswordInput } from '@/components/ui/Field';
 
 function ResetPasswordInner() {
   const searchParams = useSearchParams();
@@ -63,73 +68,72 @@ function ResetPasswordInner() {
   };
 
   return (
-    <div className="min-h-screen px-4 py-12 flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-black">
-      <div className="w-full max-w-md">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-blue-100 text-gray-900">
-          <h1 className="text-2xl font-bold mb-6">Reset Password</h1>
+    <div className="relative isolate flex min-h-[calc(100dvh-4rem)] items-center justify-center overflow-hidden bg-ink px-4 py-16 font-sans">
+      <HeroBackdrop />
+      <div className="w-full max-w-sm motion-safe:animate-rise">
+        <div className="text-center text-white">
+          <IconTile icon={KeyRound} tone="glass" size="lg" className="mx-auto" />
+          <h1 className="mt-5 text-2xl font-semibold tracking-tight">Reset password</h1>
+          <p className="mt-1 text-sm text-white/60">Choose a new password for your coach account.</p>
+        </div>
 
-          {status === 'checking' && (
-            <p className="text-gray-600">Verifying your reset link…</p>
-          )}
+        <div className="mt-8 rounded-[28px] bg-white p-6 text-slate-900 shadow-2xl sm:p-7">
+          {status === 'checking' ? (
+            <div className="grid gap-3" aria-label="Checking your reset link">
+              <div className="skeleton h-11 rounded-xl" />
+              <div className="skeleton h-11 rounded-xl" />
+            </div>
+          ) : null}
 
-          {status === 'invalid' && (
-            <div className="space-y-4">
-              <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm">
-                This password reset link is invalid or has expired. Please ask an administrator to send a new one.
-              </div>
-              <Link href="/dashboard-login" className="text-blue-600 font-medium hover:underline">
+          {status === 'invalid' ? (
+            <div className="grid gap-4">
+              <FormAlert>
+                This reset link is invalid or has expired. Ask an admin to send you a new one.
+              </FormAlert>
+              <Link href="/dashboard-login" className={buttonStyles({ variant: 'outline', className: 'w-full' })}>
                 Back to login
               </Link>
             </div>
-          )}
+          ) : null}
 
-          {status === 'done' && (
-            <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-3 text-sm">
-                Your password has been updated. Redirecting you to the login page…
-              </div>
-              <Link href="/dashboard-login" className="text-blue-600 font-medium hover:underline">
+          {status === 'done' ? (
+            <div className="grid gap-4">
+              <FormAlert tone="success">Your password is updated. Taking you to the login page…</FormAlert>
+              <Link href="/dashboard-login" className={buttonStyles({ className: 'w-full' })}>
                 Go to login now
               </Link>
             </div>
-          )}
+          ) : null}
 
-          {status === 'valid' && (
-            <form onSubmit={onSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm">{error}</div>
-              )}
-              <div>
-                <label className="block text-sm font-semibold mb-1">New Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600/50 transition-all text-gray-900"
-                  placeholder="At least 8 characters"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1">Confirm Password</label>
-                <input
-                  type="password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600/50 transition-all text-gray-900"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full px-6 py-2.5 rounded-lg text-white font-semibold transition-all duration-200 hover:shadow-lg disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #0000FE, #1e40af)' }}
-              >
-                {submitting ? 'Updating…' : 'Update Password'}
-              </button>
+          {status === 'valid' ? (
+            <form onSubmit={onSubmit} noValidate className="grid gap-4">
+              <Field label="New password" hint="At least 8 characters.">
+                {(id) => (
+                  <PasswordInput
+                    id={id}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoFocus
+                  />
+                )}
+              </Field>
+              <Field label="Confirm new password">
+                {(id) => (
+                  <PasswordInput
+                    id={id}
+                    autoComplete="new-password"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                  />
+                )}
+              </Field>
+              {error ? <FormAlert>{error}</FormAlert> : null}
+              <Button type="submit" size="lg" loading={submitting} className="mt-1 w-full">
+                {submitting ? 'Updating…' : 'Update password'}
+              </Button>
             </form>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
@@ -138,7 +142,7 @@ function ResetPasswordInner() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-500">Loading…</div>}>
+    <Suspense fallback={<div className="min-h-[60vh] bg-ink" />}>
       <ResetPasswordInner />
     </Suspense>
   );

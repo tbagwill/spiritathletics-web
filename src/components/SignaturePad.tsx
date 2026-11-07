@@ -5,9 +5,11 @@ import SignatureCanvas from 'react-signature-canvas';
 
 interface SignaturePadProps {
   onSignatureChange: (dataUrl: string | null) => void;
+  label?: string;
+  invalid?: boolean;
 }
 
-export default function SignaturePad({ onSignatureChange }: SignaturePadProps) {
+export default function SignaturePad({ onSignatureChange, label = 'Signature', invalid }: SignaturePadProps) {
   const sigRef = useRef<SignatureCanvas | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isEmpty, setIsEmpty] = useState(true);
@@ -78,37 +80,41 @@ export default function SignaturePad({ onSignatureChange }: SignaturePadProps) {
   }, [emitSignature]);
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-semibold text-gray-700">
-        Signature (Parent/Guardian)
-      </label>
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm font-medium text-slate-800">{label}</span>
+        {!isEmpty ? (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="rounded-full px-2 py-0.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+          >
+            Clear
+          </button>
+        ) : null}
+      </div>
       <div
         ref={containerRef}
-        className="relative border-2 border-gray-300 rounded-lg bg-white h-40"
+        className={`relative h-44 rounded-2xl bg-white ring-1 ring-inset transition-shadow ${
+          invalid && isEmpty ? 'ring-red-400' : 'ring-slate-300 hover:ring-slate-400'
+        }`}
       >
         <SignatureCanvas
           ref={sigRef}
-          penColor="black"
+          penColor="#0a0c16"
           canvasProps={{
-            className: 'w-full h-full rounded-lg touch-none select-none',
+            className: 'w-full h-full rounded-2xl touch-none select-none',
             style: { touchAction: 'none', WebkitUserSelect: 'none' },
           }}
           onEnd={emitSignature}
         />
+        {/* Signature line */}
+        <div className="pointer-events-none absolute inset-x-6 bottom-10 border-b border-dashed border-slate-300" />
         {isEmpty && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-400 text-sm">
-            Sign here
+          <div className="pointer-events-none absolute inset-x-0 bottom-3 text-center text-xs text-slate-400">
+            Sign above the line with your finger or mouse
           </div>
         )}
-      </div>
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleClear}
-          className="text-sm text-gray-500 hover:text-red-600 transition-colors px-3 py-1 rounded border border-gray-300 hover:border-red-300"
-        >
-          Clear Signature
-        </button>
       </div>
     </div>
   );
