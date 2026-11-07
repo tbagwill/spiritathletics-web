@@ -70,4 +70,67 @@ Do this on **iPhone Safari** and, if you can, an **Android** phone.
 The real Fall 2026 fix (start → **Nov 8, 1:00 PM**, plus the tier toggles) is a launch step, not a staging test: see checklist section 1.
 
 ### E. Before deploy
-Continue with [showcase-launch-checklist.md](showcase-launch-checklist.md), sections 4–6: production config, cleanup, deploy, and day-of.
+Finish Part 3 below, then continue with [showcase-launch-checklist.md](showcase-launch-checklist.md), sections 4–6: production config, cleanup, deploy, and day-of.
+
+---
+
+## Part 3: release regression (everything else going live)
+
+Production is on `d613d9e`. Pushing `main` also releases the site redesign and the rebuilt forms, so test anywhere money changes hands or a record gets created. Run these on **staging** with a real phone where possible. They create test records on staging only; nothing here touches production.
+
+**Short on time?** Do A1, A2, A3, B and F first.
+
+### A. Booking popups (rebuilt; highest priority)
+- [ ] **A1. Private lesson, card:**
+  - Use Quick Book on `/book/privates`, then press Continue to payment and pay with `4242 4242 4242 4242`.
+  - The success page and confirmation email arrive.
+  - The booking shows in Dashboard → Bookings and on the front desk board.
+- [ ] **A2. Private lesson, cash:** choose "Pay at the gym" → Book lesson. You land on the cash success page; Stripe never opens.
+- [ ] **A3. Cancel link:** use the link in A1's email. The booking cancels, the card payment is refunded in the Stripe test dashboard, and the time slot reopens.
+- [ ] **A4. Booking approval:** turn it on in Dashboard → Preferences, then book a private lesson. It waits as a request until you approve it. Turn it back off afterwards.
+- [ ] **A5. Class with 2 athletes:**
+  - Create a class in Dashboard → Classes; this also tests the class editor.
+  - Book it for 2 athletes: the total doubles. Add and remove an athlete and confirm the total updates.
+- [ ] **A6. Clinic with 2 spots:**
+  - Create the clinic in Dashboard → Clinics.
+  - Register 2 athletes: "Add another athlete" disappears at the limit.
+  - The names appear on the public registrant list, and the clinic then shows Sold out.
+- [ ] **A7. Bad input:** submit with empty fields and with a mistyped email. Each field shows its own message, and nothing is sent.
+
+### B. Waiver (on a phone)
+- [ ] Sign with your finger, then use "Sign for another athlete" for a sibling. The parent details stay filled in.
+- [ ] Both waivers appear in Dashboard → Waivers with the signature, and the search finds them.
+- [ ] Press Submit with something missing: "Still needed: …" lists exactly what's missing.
+
+### C. Shop (no live campaign, so staging only)
+- [ ] Create a campaign and a product in shop admin (tests both editors).
+- [ ] Add to cart, then open checkout: the cart items are listed, and the preorder box is required.
+- [ ] Pay with a test card. The order shows in shop admin → Orders.
+- [ ] End the campaign: `/shop` shows "No pop-up currently open".
+
+### D. Staff accounts
+- [ ] A wrong password shows the new message, and the right one opens the dashboard.
+- [ ] Add a coach (the default password note shows), then press Send reset. The reset email arrives, the reset page works, and you can log in as them.
+- [ ] Deactivate that coach: their login is blocked, and they disappear from private lesson booking.
+- [ ] Add an availability rule: it shows in Quick Book. Reserve a slot: it disappears from the public times.
+
+### E. Every page on a phone (the redesign touched them all)
+- [ ] **Menu, header and footer:** the menu opens and closes, every link works, and the Book button works.
+- [ ] **Homepage:**
+  - The show card's countdown ticks and "Get tickets" works.
+  - Dismiss the banner and reload: it stays dismissed.
+- [ ] **Calendar:** opens in List view on a phone, the Month toggle works, and "Open in Google Calendar" works.
+- [ ] **Contact:**
+  - Tapping the phone number dials.
+  - The email topics open your mail app with the subject filled in.
+  - Directions open Maps.
+- [ ] **Forms:** the waiver link works, the program information PDF downloads, and "Request from the front desk" opens an email.
+- [ ] **Other pages:**
+  - Parent Portal opens iClassPro.
+  - Tryouts says "2026–27 tryouts are complete".
+  - Programs and each level page load.
+- [ ] **Devices:** at least one iPhone (Safari) and one Android (Chrome), plus one phone in dark mode.
+
+### F. Right after the production deploy (live site)
+- [ ] `/showcase/fall-2026/tickets` shows the prices and the reduced fee you set. VIP shows Sold out, and there's no Early Bird.
+- [ ] Then run the 5-minute live check in [showcase-launch-checklist.md](showcase-launch-checklist.md) section 4, step 5.

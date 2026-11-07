@@ -5,12 +5,11 @@ Work top to bottom. Section 1 must be done **before** the deploy in section 4.
 ## 1. Fix the real event in production (before deploying)
 On Nov 6, Claude wiped production's ticketing tables (a backup was taken first) and rebuilt Fall 2026 fresh. Production now holds only Fall 2026, with 0 orders, 0 tickets and nothing sold.
 - [x] **Start time → Sun, Nov 8, 1:00 PM PT.** (Was saved as Nov 4.)
-- [x] **Standard: Early Bird off.** Online is door-only: Standard at $25 from Sun 8 AM.
-- [ ] **Senior/Child: decide on "show online".** It is hidden right now.
-- [ ] **VIP:** to show a SOLD OUT badge, turn "show online" on and set capacity to 0. Leave it hidden if you'd rather not list it.
-- [ ] Double-check title, venue, address, doors (12:30 PM), end time, and the $3 fee.
+- [x] **Standard: Early Bird off.** Early Bird is not used for this event.
+- [x] **Tiers, prices and fee set (Nov 6).** Online ticket prices were raised, the per-order convenience fee was reduced, and VIP shows Sold out.
+- [x] Title, venue, address, doors (12:30 PM) and end time double-checked.
 
-Change the last three in the admin of your **local** site: run `npm run dev`, then go to `localhost:3000/admin/events` → Fall 2026. Your local site reads the production database, and the live site doesn't have the new admin yet.
+To change anything later before deploy, use the admin of your **local** site: run `npm run dev`, then go to `localhost:3000/admin/events` → Fall 2026. Your local site reads the production database.
 
 ## 2. Code fixes (before deploy)
 - [x] Door-only state: when no online tier has Early Bird on, the ticket page should say "Online tickets go on sale Sun at 8:00 AM" instead of showing Early Bird messaging with nothing buyable. *(Built with the UI refresh.)*
@@ -27,6 +26,7 @@ Full plan and results: [showcase-test-plan.md](showcase-test-plan.md). 74 automa
 - [ ] Sales closed: move sales close into the past and confirm the page says closed and checkout is refused.
 - [ ] Attendance board numbers and CSV export match Stripe totals.
 - [ ] Ticket email looks right in Apple Mail (iPhone) as well as Gmail.
+- [ ] **Release regression:** bookings (card, cash, cancel), waiver, shop, staff accounts, and every page on a phone. Steps are in [showcase-test-plan.md](showcase-test-plan.md) Part 3. If you're short on time, do A1–A3, B and F.
 
 ## 4. Go live (in this order, Friday or Saturday)
 Already verified on Nov 6:
@@ -35,14 +35,14 @@ Already verified on Nov 6:
 - [x] `.env.local` is back on localhost, and the tunnel is retired.
 
 Then:
-1. [ ] **Section 1 is done:** Fall 2026 starts **Sun, Nov 8, 1:00 PM**, and no online tier has Early Bird on. *(Date and Early Bird fixed Nov 6; Senior/Child and VIP still up to you.)*
+1. [x] **Section 1 is done:** Fall 2026 starts **Sun, Nov 8, 1:00 PM**, no online tier has Early Bird on, and tiers and fee are final.
 2. [x] **Production ticketing tables are fresh.** The TEST event, its 6 test orders, 17 tickets and the failed-fulfillment log row were deleted on Nov 6. Fall 2026 is the only event.
 3. [ ] **Deploy exactly what you tested:** `git log -1 --oneline origin/staging` and `git log -1 --oneline` should show the same commit.
 4. [ ] **Deploy:** `git push origin main`. Vercel builds production in about 2 minutes.
 5. [ ] **Live check (5 minutes):**
-   - The homepage banner says "Spirit Spectacular Fall 2026 — Sun, Nov 8". There's **no** yellow staging banner.
+   - The homepage banner says "Spirit Spectacular Fall 2026 · Sun, Nov 8", and the hero shows the show card with a countdown. There's **no** yellow staging banner.
    - `/showcase` shows Nov 8 and "On sale Sun, Nov 8 at 8:00 AM".
-   - `/showcase/fall-2026/tickets` says online tickets go on sale Sunday. Nothing is buyable yet, which is expected.
+   - `/showcase/fall-2026/tickets` says online tickets go on sale Sunday, shows your prices and the reduced fee, and VIP shows Sold out. Nothing is buyable yet, which is expected.
    - On a staff phone, sign in, then open `/dashboard/events/fall-2026/scan`. The camera starts.
 6. **If anything looks wrong:** Vercel → **Deployments** → the previous production deployment → **Instant Rollback**. Rolling back is safe because the database changes only added new tables, which the old code ignores.
 
