@@ -96,7 +96,8 @@ export function DateTimePicker({
   const today = new Date();
 
   return (
-    <Popover.Root open={open} onOpenChange={handleOpenChange}>
+    // modal: own scroll lock, so the time list scrolls even inside a Sheet/Dialog.
+    <Popover.Root modal open={open} onOpenChange={handleOpenChange}>
       <div className="relative">
         <Popover.Trigger asChild>
           <button
@@ -132,7 +133,9 @@ export function DateTimePicker({
           align="start"
           sideOffset={8}
           collisionPadding={12}
-          className="z-[100] rounded-2xl bg-white p-3 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
+          // On phones the calendar and time list stack, which can be taller than the space left
+          // on screen; keep the panel inside the viewport and let it scroll.
+          className="z-[100] max-h-[var(--radix-popover-content-available-height)] max-w-[calc(100vw-24px)] overflow-y-auto overscroll-contain rounded-2xl bg-white p-3 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
         >
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="w-[266px]">
@@ -192,7 +195,7 @@ export function DateTimePicker({
 
             <div className="sm:w-[124px] sm:border-l sm:border-slate-100 sm:pl-3">
               <div className="mb-2 px-1 text-[11px] font-medium uppercase tracking-wide text-slate-400">Time · PT</div>
-              <div ref={timeListRef} className="no-scrollbar relative h-40 overflow-y-auto sm:h-[262px]">
+              <div ref={timeListRef} className="no-scrollbar relative h-40 overflow-y-auto overscroll-contain sm:h-[262px]">
                 {slots.map((slot) => {
                   const selected = parsed?.time === slot;
                   return (

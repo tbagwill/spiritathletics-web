@@ -1,7 +1,7 @@
 'use client';
 
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from './cn';
 import { controlStyles } from './Field';
 
@@ -42,9 +42,16 @@ export function Select<T extends string>({ id, value, onValueChange, options, pl
         <SelectPrimitive.Content
           position="popper"
           sideOffset={6}
-          className="z-[100] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl bg-white p-1.5 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
+          collisionPadding={12}
+          // Cap the list at the space left on screen so long lists scroll inside the
+          // menu. The page is scroll-locked while it's open, so without this a long
+          // list on a phone runs off-screen and can't be reached.
+          className="z-[100] max-h-[min(var(--radix-select-content-available-height),24rem)] w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl bg-white p-1.5 shadow-soft-lg ring-1 ring-slate-200 motion-safe:animate-pop"
         >
-          <SelectPrimitive.Viewport>
+          <SelectPrimitive.ScrollUpButton className="flex h-7 shrink-0 items-center justify-center text-slate-400">
+            <ChevronUp className="size-4" />
+          </SelectPrimitive.ScrollUpButton>
+          <SelectPrimitive.Viewport className="overscroll-contain [-webkit-overflow-scrolling:touch]">
             {options.map((o) => (
               <SelectPrimitive.Item
                 key={o.value}
@@ -62,6 +69,9 @@ export function Select<T extends string>({ id, value, onValueChange, options, pl
               </SelectPrimitive.Item>
             ))}
           </SelectPrimitive.Viewport>
+          <SelectPrimitive.ScrollDownButton className="flex h-7 shrink-0 items-center justify-center text-slate-400">
+            <ChevronDown className="size-4" />
+          </SelectPrimitive.ScrollDownButton>
         </SelectPrimitive.Content>
       </SelectPrimitive.Portal>
     </SelectPrimitive.Root>

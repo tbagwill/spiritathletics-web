@@ -264,7 +264,7 @@ export default function HistoryBoard({ isAdmin }: { isAdmin: boolean }) {
                 setCoachId(e.target.value);
                 setLoading(true);
               }}
-              className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-10 sm:text-sm"
+              className="block w-full rounded-xl bg-white px-3.5 text-base text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 transition-shadow duration-150 hover:ring-slate-400 focus:outline-none focus:ring-2 focus:ring-spirit-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 h-11 sm:h-10 sm:text-sm"
             >
               <option value="">All coaches</option>
               {coaches.map((c) => (

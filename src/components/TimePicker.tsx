@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import * as Popover from '@radix-ui/react-popover';
 
 type Accent = 'blue' | 'amber';
 
@@ -52,59 +53,74 @@ export default function TimePicker({
 }: Props) {
   const [open, setOpen] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const selectedRef = useRef<HTMLButtonElement | null>(null);
   const a = ACCENTS[accent];
 
   const options: number[] = [];
   for (let m = minMinutes; m <= maxMinutes; m += step) options.push(m);
 
-  // Scroll the selected option into view when the menu opens.
-  useEffect(() => {
-    if (open && selectedRef.current) {
-      selectedRef.current.scrollIntoView({ block: 'center' });
+  // Center the selected time inside the list only. scrollIntoView would also scroll
+  // the page or the surrounding sheet, which made the screen jump on phones.
+  const centerSelected = (e: Event) => {
+    e.preventDefault();
+    const list = listRef.current;
+    const selected = list?.querySelector<HTMLButtonElement>('[aria-selected="true"]');
+    if (!list) return;
+    if (selected) {
+      list.scrollTop = selected.offsetTop - list.clientHeight / 2 + selected.clientHeight / 2;
+      selected.focus({ preventScroll: true });
+    } else {
+      list.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
     }
-  }, [open]);
+  };
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        aria-label={ariaLabel}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        className={`flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left outline-none transition-all focus:ring-2 ${a.ringFocus}`}
-      >
-        <span className="flex items-center gap-2.5">
-          <svg className={`h-5 w-5 ${a.iconText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="text-base font-semibold text-slate-900">{formatMinutes(value)}</span>
-        </span>
-        <svg
-          className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+    // modal: the picker gets its own scroll lock. Without it, a parent Sheet/Dialog
+    // (e.g. Create a class) blocks scrolling inside this portaled list.
+    <Popover.Root modal open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          aria-label={ariaLabel}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className={`flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left outline-none transition-all focus:ring-2 ${a.ringFocus}`}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+          <span className="flex items-center gap-2.5">
+            <svg className={`h-5 w-5 ${a.iconText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-base font-semibold text-slate-900">{formatMinutes(value)}</span>
+          </span>
+          <svg
+            className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </Popover.Trigger>
 
-      {open && (
-        <>
-          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+      <Popover.Portal>
+        <Popover.Content
+          align="start"
+          sideOffset={8}
+          collisionPadding={12}
+          onOpenAutoFocus={centerSelected}
+          className="z-[100] w-[var(--radix-popover-trigger-width)] min-w-[10rem] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-soft-lg motion-safe:animate-pop"
+        >
           <div
             ref={listRef}
             role="listbox"
-            className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-soft-lg"
+            aria-label={ariaLabel}
+            className="max-h-[min(15rem,calc(var(--radix-popover-content-available-height)-1rem))] overflow-y-auto overscroll-contain"
           >
             {options.map((m) => {
               const isSelected = m === value;
               return (
                 <button
                   key={m}
-                  ref={isSelected ? selectedRef : undefined}
                   type="button"
                   role="option"
                   aria-selected={isSelected}
@@ -115,7 +131,7 @@ export default function TimePicker({
                   className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
                     isSelected
                       ? `${a.activeBg} text-white`
-                      : 'text-slate-700 hover:bg-slate-100'
+                      : 'text-slate-700 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none'
                   }`}
                 >
                   {formatMinutes(m)}
@@ -128,8 +144,8 @@ export default function TimePicker({
               );
             })}
           </div>
-        </>
-      )}
-    </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

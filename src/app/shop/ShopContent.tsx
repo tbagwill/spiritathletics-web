@@ -465,7 +465,7 @@ function ProductCard({
                 const size = product.sizes.find(s => s.id === e.target.value);
                 setSelectedSize(size || null);
               }}
-              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              className="w-full h-10 px-2 text-base sm:h-auto sm:py-1 sm:text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
             >
               {sortedSizes.map((size) => (
                 <option key={size.id} value={size.id}>
