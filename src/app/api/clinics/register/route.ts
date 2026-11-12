@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { rateLimitHit } from '@/lib/rateLimit';
 import { formatPt } from '@/lib/time';
 import { Resend } from 'resend';
+import { CapacityError, lockClinic, spotsLeftMessage } from '@/lib/capacity';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -49,20 +50,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: `Only ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} remaining` }, { status: 400 });
     }
 
-    const registrations = await prisma.$transaction(
-      athleteFirstNames.map((name) =>
-        prisma.clinicRegistration.create({
-          data: {
-            clinicId,
-            customerName,
-            customerEmail,
-            athleteFirstName: name,
-            paymentMethod: 'CASH',
-            status: 'CONFIRMED',
-          },
-        })
-      )
-    );
+    let registrations;
+    try {
+      registrations = await prisma.$transaction(async (tx) => {
+        // Serialize registrations for this clinic, then re-count under the lock so two
+        // families can't both take the last spots.
+        await lockClinic(tx, clinicId);
+        const count = await tx.clinicRegistration.count({ where: { clinicId, status: 'CONFIRMED' } });
+        const left = clinic.capacity - count;
+        if (numAthletes > left) throw new CapacityError(spotsLeftMessage(left));
+        const created = [];
+        for (const name of athleteFirstNames) {
+          created.push(await tx.clinicRegistration.create({
+            data: {
+              clinicId,
+              customerName,
+              customerEmail,
+              athleteFirstName: name,
+              paymentMethod: 'CASH',
+              status: 'CONFIRMED',
+            },
+          }));
+        }
+        return created;
+      });
+    } catch (err) {
+      if (err instanceof CapacityError) {
+        return NextResponse.json({ ok: false, error: err.message }, { status: 400 });
+      }
+      throw err;
+    }
 
     try {
       const when = formatPt(clinic.dateTimeUTC, "EEE, MMM d • h:mm a 'PT'");

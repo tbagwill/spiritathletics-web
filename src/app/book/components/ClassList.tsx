@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import ClassListClient from './ClassListClient';
 import { ptDateString } from '@/lib/time';
+import { classCoachNames } from '@/lib/classCoaches';
 
 export default async function ClassList() {
   const now = new Date();
@@ -16,7 +17,11 @@ export default async function ClassList() {
       classTemplate: {
         include: {
           service: {
-            include: { coach: { include: { user: true } } },
+            include: { coach: { include: { user: { select: { name: true } } } } },
+          },
+          coaches: {
+            include: { coach: { include: { user: { select: { name: true } } } } },
+            orderBy: { createdAt: 'asc' },
           },
         },
       },
@@ -41,8 +46,10 @@ export default async function ClassList() {
   });
 
   // Convert Date objects to strings for client component
-  const serializedOccurrences = inBounds.map(occ => ({
+  const serializedOccurrences = inBounds.map(({ classTemplate: { coaches, ...classTemplate }, ...occ }) => ({
     ...occ,
+    classTemplate,
+    coachNames: classCoachNames({ service: classTemplate.service, coaches }),
     startDateTimeUTC: occ.startDateTimeUTC.toISOString(),
   }));
 

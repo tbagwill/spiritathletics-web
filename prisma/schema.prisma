@@ -31,6 +31,7 @@ model CoachProfile {
   availabilityExceptions AvailabilityException[]
   availabilityRules      AvailabilityRule[]
   bookings               Booking[]
+  classAssignments       ClassTemplateCoach[]
   user                   User                    @relation(fields: [userId], references: [id])
   settings               CoachSettings?
   NotificationPreference NotificationPreference?
@@ -86,7 +87,22 @@ model ClassTemplate {
   startDate        DateTime?
   endDate          DateTime?
   occurrences      ClassOccurrence[]
+  coaches          ClassTemplateCoach[]
   service          Service           @relation(fields: [serviceId], references: [id])
+}
+
+/// Extra coaches assigned to a class, on top of the lead coach (Service.coachId).
+model ClassTemplateCoach {
+  id              String        @id @default(cuid())
+  classTemplateId String
+  coachId         String
+  notifiedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  classTemplate   ClassTemplate @relation(fields: [classTemplateId], references: [id], onDelete: Cascade)
+  coach           CoachProfile  @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@unique([classTemplateId, coachId])
+  @@index([coachId])
 }
 
 model ClassOccurrence {

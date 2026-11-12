@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { formatPt } from '@/lib/time';
 import BookClassDialog from './BookClassDialog';
+import { joinNames } from '@/lib/classCoaches';
 
 interface ClassOccurrence {
   id: string;
@@ -24,6 +25,8 @@ interface ClassOccurrence {
     location?: string | null;
   };
   bookings: { id: string }[];
+  /** Lead coach first, then assigned coaches. */
+  coachNames: string[];
 }
 
 interface ClassListClientProps {
@@ -90,7 +93,7 @@ export default function ClassListClient({ occurrences }: ClassListClientProps) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {occurrences.map((occ) => {
           const service = occ.classTemplate.service;
-          const coachName = service.coach?.user?.name ?? null;
+          const coachName = joinNames(occ.coachNames) || service.coach?.user?.name || null;
           const booked = occ.bookings.length;
           const remaining = occ.capacity - booked;
           const fillPercent = Math.round((booked / occ.capacity) * 100);
@@ -116,7 +119,7 @@ export default function ClassListClient({ occurrences }: ClassListClientProps) {
                         <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        {coachName}
+                        {occ.coachNames.length > 1 ? `Coaches ${coachName}` : coachName}
                       </p>
                     )}
                   </div>
@@ -159,6 +162,7 @@ export default function ClassListClient({ occurrences }: ClassListClientProps) {
                       startPtText={startPtText}
                       priceCents={priceCents}
                       coachName={coachName}
+                      spotsLeft={Math.min(remaining, 10)}
                       onSuccess={handleBookingSuccess}
                     />
                   ) : (

@@ -60,9 +60,31 @@ export async function GET(req: NextRequest) {
     },
   });
 
+  // Class bookings for classes a coach is assigned to (not the lead), keyed by coach.
+  const assignedClassBookings = await prisma.booking.findMany({
+    where: {
+      status: 'CONFIRMED',
+      type: 'CLASS',
+      startDateTimeUTC: { gte: todayStartUtc, lte: todayEndUtc },
+      classOccurrence: { classTemplate: { coaches: { some: { coachId: { in: coaches.map((c) => c.id) } } } } },
+    },
+    include: {
+      service: true,
+      classOccurrence: { select: { classTemplate: { select: { coaches: { select: { coachId: true } } } } } },
+    },
+    orderBy: { startDateTimeUTC: 'asc' },
+  });
+
   for (const coach of coaches) {
     try {
-      const agendaItems: AgendaBooking[] = coach.bookings.map((b) => ({
+      const ownIds = new Set(coach.bookings.map((b) => b.id));
+      const coCoached = assignedClassBookings.filter(
+        (b) => !ownIds.has(b.id) && b.classOccurrence?.classTemplate.coaches.some((c) => c.coachId === coach.id),
+      );
+      const dayBookings = [...coach.bookings, ...coCoached].sort(
+        (a, b) => a.startDateTimeUTC.getTime() - b.startDateTimeUTC.getTime(),
+      );
+      const agendaItems: AgendaBooking[] = dayBookings.map((b) => ({
         type: b.type,
         title: b.isManualBlock ? 'Reserved Slot' : (b.type === 'CLASS' ? b.service.title : 'Private Lesson'),
         when: formatPt(b.startDateTimeUTC, "h:mm a 'PT'"),

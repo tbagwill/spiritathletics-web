@@ -48,7 +48,13 @@ async function requireStaff() {
 }
 
 function coachBookingFilter(coachId: string): Prisma.BookingWhereInput {
-  return { OR: [{ coachId }, { service: { coachId } }] };
+  return {
+    OR: [
+      { coachId },
+      { service: { coachId } },
+      { classOccurrence: { classTemplate: { coaches: { some: { coachId } } } } },
+    ],
+  };
 }
 
 export async function GET(req: NextRequest) {

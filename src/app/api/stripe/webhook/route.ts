@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { classCoachNames, joinNames } from '@/lib/classCoaches';
+import { classCoachEmailRecipients } from '@/lib/classCoachesServer';
+import { CapacityError, lockClassOccurrence, lockClinic, lockCoachSchedule, refundUnavailableCheckout } from '@/lib/capacity';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { stripe, getStripeConfig } from '@/lib/stripe';
@@ -298,55 +301,86 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
   const existing = await prisma.booking.findFirst({ where: { stripeSessionId: session.id } });
   if (existing) return;
 
-  await prisma.$transaction(async (tx) => {
-    const occ = await tx.classOccurrence.findUnique({
-      where: { id: classOccurrenceId },
-      include: {
-        classTemplate: { include: { service: { include: { coach: { include: { user: true } } } } } },
-      },
-    });
-    if (!occ || occ.status !== 'SCHEDULED') throw new Error('Class occurrence not available');
+  let result;
+  try {
+    result = await prisma.$transaction(async (tx) => {
+      // Serialize bookings for this session so concurrent payments can't overbook it.
+      await lockClassOccurrence(tx, classOccurrenceId);
 
-    const count = await tx.booking.count({ where: { classOccurrenceId, status: 'CONFIRMED' } });
-    if (count + athleteNamesList.length > occ.capacity) throw new Error('Class is full');
+      // Re-check under the lock: a redelivered webhook may have fulfilled this session already.
+      const already = await tx.booking.findFirst({ where: { stripeSessionId: session.id }, select: { id: true } });
+      if (already) return null;
 
-    const service = await tx.service.findUnique({ where: { id: serviceId } });
-    if (!service) throw new Error('Service not found');
-
-    const bookings = [];
-    for (const athleteName of athleteNamesList) {
-      const cancellationToken = uuidv4();
-      const booking = await tx.booking.create({
-        data: {
-          type: 'CLASS',
-          status: 'CONFIRMED',
-          customerName,
-          customerEmail,
-          athleteName,
-          notes: notes || null,
-          coachId: service.coachId,
-          serviceId,
-          classOccurrenceId,
-          startDateTimeUTC: occ.startDateTimeUTC,
-          endDateTimeUTC: new Date(occ.startDateTimeUTC.getTime() + (service.durationMinutes ?? 60) * 60000),
-          priceCents: service.basePriceCents,
-          paymentMethod: 'CARD',
-          cancellationToken,
-          stripeSessionId: session.id,
-          numAthletes: 1,
+      const occ = await tx.classOccurrence.findUnique({
+        where: { id: classOccurrenceId },
+        include: {
+          classTemplate: {
+            include: {
+              service: { include: { coach: { include: { user: true } } } },
+              coaches: { include: { coach: { include: { user: true } } }, orderBy: { createdAt: 'asc' } },
+            },
+          },
         },
       });
-      bookings.push(booking);
-    }
+      if (!occ || occ.status !== 'SCHEDULED') throw new CapacityError('Class occurrence not available');
 
+      const count = await tx.booking.count({ where: { classOccurrenceId, status: 'CONFIRMED' } });
+      if (count + athleteNamesList.length > occ.capacity) throw new CapacityError('Class is full');
+
+      const service = await tx.service.findUnique({ where: { id: serviceId } });
+      if (!service) throw new CapacityError('Service not found');
+
+      const bookings = [];
+      for (const athleteName of athleteNamesList) {
+        const cancellationToken = uuidv4();
+        const booking = await tx.booking.create({
+          data: {
+            type: 'CLASS',
+            status: 'CONFIRMED',
+            customerName,
+            customerEmail,
+            athleteName,
+            notes: notes || null,
+            coachId: service.coachId,
+            serviceId,
+            classOccurrenceId,
+            startDateTimeUTC: occ.startDateTimeUTC,
+            endDateTimeUTC: new Date(occ.startDateTimeUTC.getTime() + (service.durationMinutes ?? 60) * 60000),
+            priceCents: service.basePriceCents,
+            paymentMethod: 'CARD',
+            cancellationToken,
+            stripeSessionId: session.id,
+            numAthletes: 1,
+          },
+        });
+        bookings.push(booking);
+      }
+      return { bookings, occ, service };
+    });
+  } catch (err) {
+    if (!(err instanceof CapacityError)) throw err; // transient: let Stripe retry
+    // Paid, but the class filled up (or was cancelled) during checkout. Refund instead of retrying.
+    const occ = await prisma.classOccurrence.findUnique({
+      where: { id: classOccurrenceId },
+      include: { classTemplate: { include: { service: { select: { title: true } } } } },
+    }).catch(() => null);
+    await refundUnavailableCheckout(session, {
+      kind: 'CLASS',
+      title: occ?.classTemplate.service.title ?? 'Spirit Athletics class',
+      when: occ ? formatPt(occ.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'") : null,
+      reason: err.message,
+    });
+    return;
+  }
+  if (!result) return;
+
+  // Emails go out after the transaction commits, so a slow email provider never holds the lock.
+  const { bookings, occ, service } = result;
+  try {
     const firstBooking = bookings[0];
-    const coachEmail = occ.classTemplate.service.coach?.user?.email || null;
-    const coachId = occ.classTemplate.service.coachId;
-    const settings = coachId
-      ? await tx.coachSettings.findUnique({ where: { coachId } }).catch(() => null)
-      : null;
-    const sendCoachConfirmation = settings?.emailBookingConfirmed !== false;
-    const coachEmails = sendCoachConfirmation ? [coachEmail, ...(settings?.alertEmails || [])] : [];
+    const coachEmails = await classCoachEmailRecipients(occ.classTemplateId, occ.classTemplate.service.coachId)
+      .catch(() => [] as string[]);
+    const coachNames = joinNames(classCoachNames(occ.classTemplate)) || 'Coach';
     const when = formatPt(occ.startDateTimeUTC, "EEE, MMM d • h:mm a 'PT'");
     const location = process.env.ORG_ADDRESS || 'Spirit Athletics, 17537 Bear Valley Rd, Hesperia, CA 92345';
     const baseUrl = process.env.BASE_PROD_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
@@ -358,7 +392,7 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
       uid: firstBooking.cancellationToken,
       start: occ.startDateTimeUTC,
       end: new Date(occ.startDateTimeUTC.getTime() + (service.durationMinutes ?? 60) * 60000),
-      summary: `${title} — ${occ.classTemplate.service.coach?.user?.name ?? 'Coach'}`,
+      summary: `${title} — ${coachNames}`,
       location,
       description: `Cancel: ${cancelUrl}`,
       organizerEmail: process.env.SENDER_EMAIL || 'booking@spiritathletics.net',
@@ -375,7 +409,7 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
         customerName,
         paymentMethod: 'CARD',
         priceCents: totalCents,
-        coachName: occ.classTemplate.service.coach?.user?.name ?? 'Coach',
+        coachName: coachNames,
         kind: 'CLASS',
       }),
       htmlCoach: buildCoachHtml(title, when, customerName, allAthleteNames, {
@@ -386,7 +420,10 @@ async function handleClassBookingCompleted(session: Stripe.Checkout.Session) {
       }),
       icsContent: ics,
     });
-  });
+  } catch (err) {
+    // The booking is saved; don't make Stripe retry (it would be a no-op anyway).
+    console.error('Class booking confirmation email failed', err);
+  }
 }
 
 // ─── Private Lesson Booking ───────────────────────────────────────────────────
@@ -408,6 +445,8 @@ async function handlePrivateBookingCompleted(session: Stripe.Checkout.Session) {
   const pricing = computePrivatePrice(selection);
 
   await prisma.$transaction(async (tx) => {
+    // Serialize bookings for this coach so concurrent payments can't take the same slot.
+    await lockCoachSchedule(tx, coachId);
     // Final conflict check
     const overlapCount = await tx.booking.count({
       where: {
@@ -531,27 +570,48 @@ async function handleClinicRegistrationCompleted(session: Stripe.Checkout.Sessio
   const existing = await prisma.clinicRegistration.findFirst({ where: { stripeSessionId: session.id } });
   if (existing) return;
 
-  const clinic = await prisma.clinic.findUnique({ where: { id: clinicId } });
-  if (!clinic) throw new Error(`Clinic ${clinicId} not found`);
+  let clinic;
+  try {
+    clinic = await prisma.$transaction(async (tx) => {
+      // Serialize registrations for this clinic so concurrent payments can't overbook it.
+      await lockClinic(tx, clinicId);
 
-  const count = await prisma.clinicRegistration.count({
-    where: { clinicId, status: 'CONFIRMED' },
-  });
-  if (count + athleteFirstNames.length > clinic.capacity) throw new Error('Clinic is full');
+      // Re-check under the lock: a redelivered webhook may have fulfilled this session already.
+      const already = await tx.clinicRegistration.findFirst({ where: { stripeSessionId: session.id }, select: { id: true } });
+      if (already) return null;
 
-  for (const athleteFirstName of athleteFirstNames) {
-    await prisma.clinicRegistration.create({
-      data: {
-        clinicId,
-        customerName,
-        customerEmail,
-        athleteFirstName,
-        stripeSessionId: session.id,
-        paymentMethod: 'CARD',
-        status: 'CONFIRMED',
-      },
+      const c = await tx.clinic.findUnique({ where: { id: clinicId } });
+      if (!c || !c.isActive) throw new CapacityError('Clinic not available');
+
+      const count = await tx.clinicRegistration.count({ where: { clinicId, status: 'CONFIRMED' } });
+      if (count + athleteFirstNames.length > c.capacity) throw new CapacityError('Clinic is full');
+
+      await tx.clinicRegistration.createMany({
+        data: athleteFirstNames.map((athleteFirstName) => ({
+          clinicId,
+          customerName,
+          customerEmail,
+          athleteFirstName,
+          stripeSessionId: session.id,
+          paymentMethod: 'CARD' as const,
+          status: 'CONFIRMED' as const,
+        })),
+      });
+      return c;
     });
+  } catch (err) {
+    if (!(err instanceof CapacityError)) throw err; // transient: let Stripe retry
+    // Paid, but the clinic filled up (or was deactivated) during checkout. Refund instead of retrying.
+    const c = await prisma.clinic.findUnique({ where: { id: clinicId } }).catch(() => null);
+    await refundUnavailableCheckout(session, {
+      kind: 'CLINIC',
+      title: c?.title ?? 'Spirit Athletics clinic',
+      when: c ? formatPt(c.dateTimeUTC, "EEE, MMM d • h:mm a 'PT'") : null,
+      reason: err.message,
+    });
+    return;
   }
+  if (!clinic) return;
 
   try {
     const when = formatPt(clinic.dateTimeUTC, "EEE, MMM d • h:mm a 'PT'");

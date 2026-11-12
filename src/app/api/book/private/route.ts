@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { lockCoachSchedule } from '@/lib/capacity';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
@@ -47,6 +48,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
+      // Serialize bookings for this coach so two families can't take the same slot.
+      await lockCoachSchedule(tx, coachId);
       // Comprehensive overlap check - only check CONFIRMED bookings (pending don't block)
       const startUTC = new Date(startDateTimeUTC);
       const endUTC = new Date(endDateTimeUTC);

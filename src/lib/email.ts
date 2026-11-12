@@ -114,7 +114,7 @@ ${opts?.customerName ? `Hi ${escape(opts.customerName)}, ` : ''}${isCash ? 'Your
 <p style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">${escape(title)}</p>
 </td></tr>
 ${opts?.coachName ? `<tr><td style="padding-bottom:16px;">
-<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Coach</p>
+<p style="margin:0 0 4px 0;color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${opts.coachName.includes(' & ') ? 'Coaches' : 'Coach'}</p>
 <p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">${escape(opts.coachName)}</p>
 </td></tr>` : ''}
 ${opts?.athleteNames ? `<tr><td style="padding-bottom:16px;">
@@ -1159,3 +1159,164 @@ ${cancelUrl ? `<tr><td style="padding:0 40px 32px 40px;text-align:center;">
 function escape(s: string) {
 	return s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
 } 
+
+// ─── Class coach assignment ─────────────────────────────────────────────────
+
+const ASSIGN_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function minutesToClock(m: number) {
+	const h = Math.floor(m / 60) % 12 || 12;
+	const mm = (m % 60).toString().padStart(2, '0');
+	return `${h}:${mm} ${m % 1440 < 720 ? 'AM' : 'PM'}`;
+}
+
+function dateOnlyLabel(d: Date) {
+	return d.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export type ClassCoachAssignedParams = {
+	to: string[];
+	coachName: string;
+	leadCoachName: string;
+	allCoachNames: string[];
+	title: string;
+	weekday: number;
+	startTimeMinutes: number;
+	durationMinutes: number;
+	capacity: number;
+	location?: string | null;
+	startDate?: Date | null;
+	endDate?: Date | null;
+};
+
+export async function sendClassCoachAssignedEmail(p: ClassCoachAssignedParams) {
+	const when = `${ASSIGN_WEEKDAYS[p.weekday]}s at ${minutesToClock(p.startTimeMinutes)} PT`;
+	await resend.emails.send({
+		from: `Spirit Athletics <${SENDER}>`,
+		to: p.to,
+		subject: `[Coach] You're coaching ${p.title} — ${when}`,
+		html: buildCoachClassAssignedHtml(p),
+	});
+}
+
+export function buildCoachClassAssignedHtml(p: ClassCoachAssignedParams) {
+	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net';
+	const when = `${ASSIGN_WEEKDAYS[p.weekday]}s • ${minutesToClock(p.startTimeMinutes)}–${minutesToClock(p.startTimeMinutes + p.durationMinutes)} PT`;
+	const runs = `${p.startDate ? dateOnlyLabel(p.startDate) : 'Now'} – ${p.endDate ? dateOnlyLabel(p.endDate) : 'ongoing'}`;
+	const row = (label: string, value: string) => `<tr><td style="padding:8px 0;">
+<p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">${label}</p>
+<p style="margin:4px 0 0 0;color:#1e293b;font-size:16px;font-weight:600;">${escape(value)}</p>
+</td></tr>`;
+	return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Assignment</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f7fb;">
+<tr><td align="center" style="padding:40px 20px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:100%;">
+
+<tr><td style="padding:0;">
+<img src="${baseUrl}/images/WebEmails-Bookings.png" alt="Spirit Athletics Bookings" width="600" style="display:block;width:100%;height:auto;border:0;">
+</td></tr>
+
+<tr><td style="padding:40px 40px 20px 40px;">
+<h1 style="margin:0 0 12px 0;color:#1e293b;font-size:28px;font-weight:700;line-height:1.3;">You're on the coaching team</h1>
+<div style="margin:0 0 16px 0;">${programKindBadge('CLASS')}</div>
+<p style="margin:0 0 24px 0;color:#64748b;font-size:16px;line-height:1.6;">
+Hi ${escape(p.coachName)}, ${escape(p.leadCoachName)} added you as a coach for this class. Bookings for it will now show up in your dashboard and booking emails.
+</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%);border-radius:8px;">
+<tr><td style="padding:24px;">
+<p style="margin:0 0 16px 0;color:rgba(255,255,255,0.9);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Class Details</p>
+<p style="margin:0 0 8px 0;color:#ffffff;font-size:20px;font-weight:700;">${escape(p.title)}</p>
+<p style="margin:0;color:rgba(255,255,255,0.95);font-size:16px;font-weight:500;">${escape(when)}</p>
+</td></tr>
+</table>
+</td></tr>
+
+<tr><td style="padding:0 40px 32px 40px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;border-radius:8px;border:2px solid #e2e8f0;">
+<tr><td style="padding:20px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+${row('Runs', runs)}
+${row('Spots', `${p.capacity} athletes`)}
+${row('Coaches', p.allCoachNames.join(', '))}
+${p.location ? row('Location', p.location) : ''}
+</table>
+</td></tr>
+</table>
+</td></tr>
+
+<tr><td align="center" style="padding:0 40px 32px 40px;">
+<a href="${baseUrl}/dashboard/classes" style="display:inline-block;background-color:#2563eb;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">View in dashboard</a>
+</td></tr>
+
+<tr><td style="padding:24px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;">
+<p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
+Spirit Athletics &bull; 17537 Bear Valley Rd, Hesperia, CA 92345
+</p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+
+// ─── Booking couldn't be completed (filled up during checkout) ───────────────
+
+export async function sendBookingUnavailableRefundEmail(p: {
+	to: string;
+	customerName: string;
+	kind: 'CLASS' | 'CLINIC';
+	title: string;
+	when: string | null;
+	refunded: boolean;
+}) {
+	const noun = p.kind === 'CLASS' ? 'class' : 'clinic';
+	await resend.emails.send({
+		from: `Spirit Athletics <${SENDER}>`,
+		to: [p.to],
+		subject: `${programSubjectPrefix(p.kind)}${p.refunded ? "We've refunded you" : "We couldn't complete your registration"}: ${p.title}`,
+		html: buildBookingUnavailableRefundHtml(p, noun),
+	});
+}
+
+export function buildBookingUnavailableRefundHtml(
+	p: { customerName: string; kind: 'CLASS' | 'CLINIC'; title: string; when: string | null; refunded: boolean },
+	noun: string,
+) {
+	const first = (p.customerName || '').split(' ')[0] || 'there';
+	const body = p.refunded
+		? `Sorry! The last spots in this ${noun} were taken while you were checking out, so we couldn't save a spot for you. Your payment has been refunded in full. It can take 5–10 business days to show on your statement.`
+		: `Sorry! The last spots in this ${noun} were taken while you were checking out, so we couldn't save a spot for you. Our team has been notified and will refund your payment. We'll be in touch shortly.`;
+	return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Registration update</title></head>
+<body style="margin:0;padding:24px 12px;background:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#1e293b;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;">
+<tr><td style="padding:28px;">
+<div style="margin:0 0 12px 0;">${programKindBadge(p.kind)}</div>
+<div style="font-size:20px;font-weight:700;margin-bottom:12px;">This ${noun} filled up</div>
+<p style="margin:0 0 10px;font-size:15px;line-height:1.55;">Hi ${escape(first)},</p>
+<p style="margin:0 0 14px;font-size:14px;line-height:1.55;color:#475569;">${escape(body)}</p>
+<p style="margin:0 0 14px;font-size:14px;line-height:1.55;color:#475569;">
+<strong>${escape(p.title)}</strong>${p.when ? `<br/>${escape(p.when)}` : ''}
+</p>
+<p style="margin:0;font-size:14px;line-height:1.55;color:#475569;">
+Want another time? See what's open at <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://spiritathletics.net'}/book" style="color:#2563eb;">spiritathletics.net/book</a>, or contact <a href="mailto:info@spiritathletics.net" style="color:#2563eb;">info@spiritathletics.net</a>.
+</p>
+</td></tr>
+</table>
+</body>
+</html>`;
+}

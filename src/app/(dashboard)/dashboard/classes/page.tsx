@@ -10,6 +10,15 @@ import { Field, FormAlert, Input, MoneyInput, Textarea } from '@/components/ui/F
 import { Select } from '@/components/ui/Select';
 import { FormGroup, Sheet } from '@/components/ui/Sheet';
 import { Switch } from '@/components/ui/Switch';
+import {
+  MAX_ATHLETES_PER_COACH,
+  MAX_EXTRA_COACHES,
+  MIN_CLASS_CAPACITY,
+  RECOMMENDED_ATHLETES_PER_COACH,
+  coachRuleError,
+  isOverRecommended,
+  maxCapacityFor,
+} from '@/lib/classCoaches';
 
 const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] as const;
 
@@ -25,8 +34,14 @@ type ClassTemplate = {
     description?: string;
     durationMinutes?: number | null;
     basePriceCents: number;
+    coach?: { user: { name: string | null } } | null;
   };
+  coaches?: { coachId: string; coach: { user: { name: string | null } } }[];
+  /** False when you're an assigned (non-lead) coach; only the lead coach edits. */
+  isOwner?: boolean;
 };
+
+type CoachOption = { id: string; name: string; isMe: boolean };
 
 function formatDateOnly(iso?: string | null) {
   if (!iso) return null;
@@ -51,6 +66,8 @@ export default function ClassesManagerPage() {
   const [duration, setDuration] = useState(60);
   const [price, setPrice] = useState(3000);
   const [capacity, setCapacity] = useState(10);
+  const [coachIds, setCoachIds] = useState<string[]>([]);
+  const [coachOptions, setCoachOptions] = useState<CoachOption[]>([]);
   const [classStartDate, setClassStartDate] = useState<string>(ptTodayString());
   const [classEndDate, setClassEndDate] = useState<string>("");
   const [runIndefinitely, setRunIndefinitely] = useState(true);
@@ -66,10 +83,24 @@ export default function ClassesManagerPage() {
     if (res.ok && data.ok) setTemplates(data.templates);
   };
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    fetch('/api/dashboard/coaches/options')
+      .then((r) => r.json())
+      .then((d) => { if (d.ok) setCoachOptions(d.coaches); })
+      .catch(() => {});
+  }, []);
+
+  const coachCount = 1 + coachIds.length;
+  const maxSpots = maxCapacityFor(coachCount);
+  const coachError = coachRuleError(capacity, coachCount);
+  const overRecommended = !coachError && isOverRecommended(capacity, coachCount);
+  const otherCoaches = coachOptions.filter((c) => !c.isMe);
+  const toggleCoach = (id: string) =>
+    setCoachIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
   const resetForm = () => {
     setTitle(''); setDescription(''); setWeekday(3); setStart(16 * 60);
-    setDuration(60); setPrice(3000); setCapacity(10);
+    setDuration(60); setPrice(3000); setCapacity(10); setCoachIds([]);
     setClassStartDate(ptTodayString()); setClassEndDate('');
     setRunIndefinitely(true);
     setEditingId(null);
@@ -90,6 +121,9 @@ export default function ClassesManagerPage() {
     setDuration(t.service.durationMinutes ?? 60);
     setPrice(t.service.basePriceCents);
     setCapacity(t.capacity);
+    // Drop coaches who've since been deactivated; the rule check below will flag it if spots now need another coach.
+    const activeIds = new Set(coachOptions.map((c) => c.id));
+    setCoachIds((t.coaches ?? []).map((c) => c.coachId).filter((id) => coachOptions.length === 0 || activeIds.has(id)));
     setClassStartDate(t.startDate ? t.startDate.slice(0, 10) : ptTodayString());
     const hasEnd = !!t.endDate;
     setRunIndefinitely(!hasEnd);
@@ -103,12 +137,14 @@ export default function ClassesManagerPage() {
     setError(null);
     if (!title || !description) return setError('Title and description are required');
     if (!runIndefinitely && !classEndDate) return setError('Pick an end date, or check "Run indefinitely".');
+    if (coachError) return setError(coachError);
     setLoading(true);
     try {
       const body = {
         title, description, weekday, startTimeMinutes: start,
         durationMinutes: duration, basePriceCents: price,
         capacity,
+        coachIds,
         startDate: classStartDate || null,
         endDate: runIndefinitely ? null : (classEndDate || null),
       };
@@ -246,7 +282,7 @@ export default function ClassesManagerPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" form="class-form" loading={loading}>
+              <Button type="submit" form="class-form" loading={loading} disabled={!!coachError}>
                 {loading ? 'Saving…' : editingId ? 'Save changes' : 'Create class'}
               </Button>
             </div>
@@ -311,6 +347,49 @@ export default function ClassesManagerPage() {
               </div>
             </FormGroup>
 
+            <FormGroup
+              title="Coaches"
+              description={`Classes over ${MAX_ATHLETES_PER_COACH} athletes need at least 2 coaches. Only add coaches who've already agreed to work this class. They'll get an email.`}
+            >
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white">
+                  You (lead coach)
+                </span>
+                {otherCoaches.map((c) => {
+                  const selected = coachIds.includes(c.id);
+                  const atLimit = !selected && coachIds.length >= MAX_EXTRA_COACHES;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleCoach(c.id)}
+                      disabled={atLimit}
+                      aria-pressed={selected}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset transition-colors disabled:opacity-40 ${
+                        selected
+                          ? 'bg-blue-50 text-blue-800 ring-blue-300'
+                          : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      {selected ? (
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+                        </svg>
+                      )}
+                      {c.name}
+                    </button>
+                  );
+                })}
+              </div>
+              {otherCoaches.length === 0 ? (
+                <p className="text-xs text-slate-500">No other active coaches to add yet.</p>
+              ) : null}
+            </FormGroup>
+
             <FormGroup title="Price and spots">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Price per athlete">
@@ -318,8 +397,19 @@ export default function ClassesManagerPage() {
                 </Field>
                 <div className="space-y-1.5">
                   <span className="block text-sm font-medium text-slate-800">Spots</span>
-                  <Stepper value={capacity} onChange={setCapacity} min={3} max={10} unit="athletes" />
-                  <p className="text-xs text-slate-500">3 to 10 athletes. Bigger groups should be a clinic.</p>
+                  <Stepper value={capacity} onChange={setCapacity} min={MIN_CLASS_CAPACITY} max={Math.max(maxSpots, capacity)} unit="athletes" />
+                  {coachError ? (
+                    <p role="alert" className="text-xs font-medium text-red-600">{coachError}</p>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      {MIN_CLASS_CAPACITY} to {maxSpots} athletes with {coachCount} coach{coachCount === 1 ? '' : 'es'}. Up to {MAX_ATHLETES_PER_COACH} per coach; we recommend about {RECOMMENDED_ATHLETES_PER_COACH}.
+                    </p>
+                  )}
+                  {overRecommended ? (
+                    <p className="text-xs font-medium text-amber-700">
+                      That&apos;s more than {RECOMMENDED_ATHLETES_PER_COACH} athletes per coach. Consider adding another coach.
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </FormGroup>
@@ -403,6 +493,11 @@ export default function ClassesManagerPage() {
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           {WEEKDAYS[t.weekday]}
                         </span>
+                        {t.isOwner === false ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800">
+                            Co-coach
+                          </span>
+                        ) : null}
                       </div>
                       
                       {/* Class Details - Vertical Layout */}
@@ -421,6 +516,18 @@ export default function ClassesManagerPage() {
                           </svg>
                           <span className="font-medium">Capacity:</span>
                           <span>{t.capacity} athletes maximum</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span className="font-medium">Coaches:</span>
+                          <span>
+                            {[t.service.coach?.user.name, ...(t.coaches ?? []).map((c) => c.coach.user.name)]
+                              .filter(Boolean)
+                              .join(', ') || '—'}
+                          </span>
                         </div>
                         
                         <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
@@ -451,7 +558,8 @@ export default function ClassesManagerPage() {
                       </div>
                     </div>
                     
-                    {/* Actions */}
+                    {/* Actions (lead coach only) */}
+                    {t.isOwner !== false ? (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => openEdit(t)}
@@ -474,6 +582,7 @@ export default function ClassesManagerPage() {
                       </svg>
                     </button>
                     </div>
+                    ) : null}
                   </div>
                 </div>
               ))}

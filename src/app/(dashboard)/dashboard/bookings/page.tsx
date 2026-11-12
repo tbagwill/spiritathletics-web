@@ -30,7 +30,13 @@ export default async function BookingsPage() {
   const rangeStart = ptMidnightUtc(ptTodayString());
   const rangeEnd = addDays(rangeStart, 15);
   const coachFilter = !isAdmin && coach
-    ? { OR: [{ coachId: coach.id }, { service: { coachId: coach.id } }] }
+    ? {
+        OR: [
+          { coachId: coach.id },
+          { service: { coachId: coach.id } },
+          { classOccurrence: { classTemplate: { coaches: { some: { coachId: coach.id } } } } },
+        ],
+      }
     : {};
 
   const [bookings, clinics] = await Promise.all([

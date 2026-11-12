@@ -92,10 +92,26 @@ Production is on `d613d9e`. Pushing `main` also releases the site redesign and t
 - [ ] **A5. Class with 2 athletes:**
   - Create a class in Dashboard → Classes; this also tests the class editor.
   - Book it for 2 athletes: the total doubles. Add and remove an athlete and confirm the total updates.
+- [ ] **A5b. Multi-coach class:**
+  - With only you as coach, the Spots stepper stops at 10.
+  - Add a second coach: Spots now goes up to 20. At 17 spots, the "more than 8 athletes per coach" warning appears but you can still save.
+  - Save. The added coach gets a "You're coaching…" email. Saving again without changing coaches sends no second email.
+  - Edit, set spots to 14, then remove the second coach. A red rule message appears and Save is disabled.
+  - Sign in as the second coach. The class shows a Co-coach badge with no edit or delete buttons. A booking shows in their Bookings list and booking email.
+  - On /book/classes, the card and the booking dialog list both coaches.
 - [ ] **A6. Clinic with 2 spots:**
   - Create the clinic in Dashboard → Clinics.
   - Register 2 athletes: "Add another athlete" disappears at the limit.
   - The names appear on the public registrant list, and the clinic then shows Sold out.
+- [ ] **A6b. Simultaneous bookings can't overbook:**
+  - Make a class session with 2 spots left. Run `npx tsx scripts/test-overbooking.ts class <occurrenceId> <serviceId> 5`. Exactly 2 should book and 3 should be rejected.
+  - Repeat for a clinic: `npx tsx scripts/test-overbooking.ts clinic <clinicId> 5`.
+  - Cancel the "Race Test" bookings in the dashboard afterwards.
+- [ ] **A6c. Card payment for a class that filled during checkout gets refunded:**
+  - Make a class with 1 spot left. In tab 1, start a card booking and stop on the Stripe page.
+  - In tab 2, take the last spot with cash.
+  - Finish paying in tab 1 (test card 4242…). No booking is created. Stripe shows the payment refunded, and the customer gets a "This class filled up" email.
+  - Repeat with a clinic.
 - [ ] **A7. Bad input:** submit with empty fields and with a mistyped email. Each field shows its own message, and nothing is sent.
 
 ### B. Waiver (on a phone)

@@ -16,6 +16,8 @@ type Props = {
   startPtText: string;
   priceCents: number;
   coachName?: string | null;
+  /** Spots remaining, so families can't add more athletes than will fit. */
+  spotsLeft?: number;
   onSuccess?: () => void;
 };
 
@@ -24,7 +26,7 @@ type FormValues = {
   customerEmail: string;
 };
 
-export default function BookClassDialog({ occurrenceId, serviceId, title, startPtText, priceCents, coachName }: Props) {
+export default function BookClassDialog({ occurrenceId, serviceId, title, startPtText, priceCents, coachName, spotsLeft }: Props) {
   const formId = `book-class-${occurrenceId}`;
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -118,7 +120,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
         meta={
           <>
             <SheetMeta icon={<CalendarDays />}>{startPtText}</SheetMeta>
-            {coachName ? <SheetMeta icon={<UserRound />}>Coach {coachName}</SheetMeta> : null}
+            {coachName ? <SheetMeta icon={<UserRound />}>{coachName.includes(' & ') ? 'Coaches' : 'Coach'} {coachName}</SheetMeta> : null}
             <SheetMeta icon={<CircleDollarSign />}>{money(priceCents)} per athlete</SheetMeta>
           </>
         }
@@ -160,7 +162,7 @@ export default function BookClassDialog({ occurrenceId, serviceId, title, startP
                 />
               )}
             </Field>
-            <AthleteNames names={athleteNames} onChange={setAthleteNames} error={athleteError} />
+            <AthleteNames names={athleteNames} onChange={setAthleteNames} max={spotsLeft} error={athleteError} />
           </div>
 
           <PaymentChoice
