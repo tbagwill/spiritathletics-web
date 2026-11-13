@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { formatPt } from '@/lib/time';
 import { HeroBackdrop } from '@/app/showcase/_components/HeroBackdrop';
+import { ProductImageLightbox } from './ProductImageLightbox';
 
 interface ShopCampaign {
   id: string;
@@ -377,6 +378,29 @@ function ProductCard({
   const [imgIndex, setImgIndex] = useState(0);
   useEffect(() => { setImgIndex(0); }, [product.id]);
   const primaryImage = images[imgIndex] || null;
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+
+  // Full-area tap target that opens the image viewer. Rendered first so the
+  // carousel arrows/dots stack above it and keep working as before.
+  const openViewerButton = (
+    <button
+      type="button"
+      className="absolute inset-0 cursor-zoom-in"
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
+      aria-label={`View larger image of ${product.name}`}
+    >
+      <Image
+        src={primaryImage || ''}
+        alt={product.name}
+        fill
+        className="object-cover"
+      />
+      <span className="pointer-events-none absolute right-2 top-2 rounded-full bg-black/55 px-2 py-1 text-[11px] font-medium text-white">
+        Tap to view
+      </span>
+    </button>
+  );
 
   const CardContent = (
     <div className={`bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-all duration-200 ${
@@ -385,12 +409,7 @@ function ProductCard({
       {primaryImage ? (
         images.length > 1 ? (
           <div className="relative h-48">
-            <Image
-              src={primaryImage}
-              alt={product.name}
-              fill
-              className="object-cover"
-            />
+            {openViewerButton}
             {/* Prev/Next controls */}
             <button
               type="button"
@@ -423,12 +442,7 @@ function ProductCard({
           </div>
         ) : (
           <div className="relative h-48">
-            <Image
-              src={primaryImage}
-              alt={product.name}
-              fill
-              className="object-cover"
-            />
+            {openViewerButton}
           </div>
         )
       ) : (
@@ -499,7 +513,19 @@ function ProductCard({
     </div>
   );
 
-  return CardContent;
+  return (
+    <>
+      {CardContent}
+      {lightboxOpen && images.length > 0 && (
+        <ProductImageLightbox
+          images={images}
+          startIndex={imgIndex}
+          alt={product.name}
+          onClose={closeLightbox}
+        />
+      )}
+    </>
+  );
 }
 
 function getTimeRemaining(endDate: string): string | null {
